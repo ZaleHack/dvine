@@ -1,8 +1,0 @@
-# Local database files should not be versioned
-/data/
-
-# Generated catalog of imported tables
-server/config/tables-catalog.json
-
-# Node dependencies
-node_modules/
