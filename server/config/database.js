@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
+import { loadEnv } from './loadEnv.js';
 
-dotenv.config();
+loadEnv();
 
 class DatabaseManager {
   constructor() {
