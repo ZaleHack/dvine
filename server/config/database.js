@@ -52,10 +52,11 @@ class DatabaseManager {
   async #initInternal() {
     try {
       console.log('🔌 Initializing MySQL connection...');
+      const databaseName = (process.env.DB_NAME || 'autres').replace(/[^A-Za-z0-9_]/g, '_');
       const baseConfig = {
         host: process.env.DB_HOST || 'localhost',
         user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
+        password: process.env.DB_PASSWORD || 'zalehack',
         multipleStatements: true,
         waitForConnections: true,
         connectionLimit: 10,
@@ -65,11 +66,11 @@ class DatabaseManager {
 
       // Create database if it doesn't exist
       const tmp = await mysql.createConnection(baseConfig);
-      await tmp.query('CREATE DATABASE IF NOT EXISTS autres CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+      await tmp.query(`CREATE DATABASE IF NOT EXISTS \`${databaseName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
       await tmp.end();
 
       // Create pool using the "autres" database
-      this.pool = mysql.createPool({ ...baseConfig, database: 'autres' });
+      this.pool = mysql.createPool({ ...baseConfig, database: databaseName });
 
       // Test de connexion
       const connection = await this.pool.getConnection();

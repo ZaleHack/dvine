@@ -1,496 +1,244 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SORA - Solution Opérationnelle de Recherche Avancée</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet">
-    
-    <!-- Chart.js CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" rel="stylesheet">
-    
-  <!-- Custom CSS -->
-  <link href="/css/styles.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dvine Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --red-600: #c1121f;
+        --red-500: #e01e37;
+        --red-100: #ffe5e9;
+        --red-50: #fff5f6;
+        --gray-900: #0f172a;
+        --gray-600: #475467;
+        --gray-100: #f2f4f7;
+      }
 
-  <style>
-    form {
-      border: 1px solid #ffffff;
-    }
-    .form-control,
-    .form-select {
-      border: 1px solid #ffffff;
-    }
-  </style>
-    
-    <!-- Lucide icons via CDN -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-</head>
-<body class="bg-light">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#" onclick="showPage('home')">
-                <i data-lucide="database" class="me-2"></i>
-                SORA
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item" id="statsNavItem" style="display: none;">
-                        <a class="nav-link" href="#" onclick="showPage('stats')">
-                            <i data-lucide="bar-chart-3" class="me-1"></i>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showPage('home')">
-                            <i data-lucide="home" class="me-1"></i>
-                            Recherche
-                        </a>
-                    </li>
-                    <li class="nav-item" id="uploadNavItem" style="display: none;">
-                        <a class="nav-link" href="#" onclick="showPage('upload')">
-                            <i data-lucide="upload" class="me-1"></i>
-                            Upload
-                        </a>
-                    </li>
-                    <li class="nav-item" id="usersNavItem" style="display: none;">
-                        <a class="nav-link" href="#" onclick="showPage('users')">
-                            <i data-lucide="users" class="me-1"></i>
-                            Utilisateurs
-                        </a>
-                    </li>
-                </ul>
-                
-                <ul class="navbar-nav">
-                    <li class="nav-item" id="authSection">
-                        <!-- Section d'authentification sera gérée par JavaScript -->
-                    </li>
-                </ul>
-            </div>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 10% 20%, rgba(255, 210, 215, 0.7), transparent 50%),
+          radial-gradient(circle at 80% 0%, rgba(255, 235, 238, 0.9), transparent 50%),
+          linear-gradient(180deg, #ffffff 0%, #fff5f5 100%);
+        color: var(--gray-900);
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 48px 24px 64px;
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .logo img {
+        width: 56px;
+        height: 56px;
+      }
+
+      .logo span {
+        display: block;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--red-500);
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .logo strong {
+        display: block;
+        font-size: 1.35rem;
+        letter-spacing: 0.08em;
+      }
+
+      .badge {
+        background: rgba(224, 30, 55, 0.12);
+        color: var(--red-500);
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+      }
+
+      .hero {
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(193, 18, 31, 0.08);
+        border-radius: 32px;
+        padding: 48px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+        box-shadow: 0 25px 60px -45px rgba(193, 18, 31, 0.45);
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 5vw, 3.6rem);
+        margin: 0 0 16px;
+        letter-spacing: -0.02em;
+      }
+
+      .lead {
+        font-size: 1.15rem;
+        color: var(--gray-600);
+        line-height: 1.6;
+        margin-bottom: 32px;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--gray-900);
+        color: #fff;
+        padding: 0.95rem 1.5rem;
+        border-radius: 999px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .cta.secondary {
+        background: transparent;
+        color: var(--gray-900);
+        border: 1px solid rgba(15, 23, 42, 0.2);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 24px;
+        border: 1px solid rgba(15, 23, 42, 0.05);
+        padding: 32px;
+        box-shadow: 0 16px 35px -28px rgba(15, 23, 42, 0.7);
+        min-height: 200px;
+      }
+
+      .card h3 {
+        margin-top: 0;
+        font-size: 1.15rem;
+      }
+
+      .card p {
+        color: var(--gray-600);
+        line-height: 1.6;
+      }
+
+      footer {
+        text-align: center;
+        color: var(--gray-600);
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 640px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .hero {
+          padding: 32px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="logo">
+          <img src="/dvine-logo.svg" alt="Logo Dvine Intelligence" />
+          <div>
+            <span>Dvine</span>
+            <strong>Intelligence</strong>
+          </div>
         </div>
-    </nav>
+        <div class="badge">Veille stratégique</div>
+      </header>
 
-    <!-- Contenu principal -->
-    <div class="container-fluid mt-4">
-        <!-- Page de connexion -->
-        <div id="loginPage" class="page-content">
-            <div class="row justify-content-center">
-                <div class="col-md-4">
-                    <div class="card shadow">
-                        <div class="card-header bg-primary text-white text-center">
-                            <h4><i data-lucide="lock" class="me-2"></i>Connexion SORA</h4>
-                        </div>
-                        <div class="card-body">
-                            <form id="loginForm">
-                                <div class="mb-3">
-                                    <label for="username" class="form-label">Nom d'utilisateur</label>
-                                    <input type="text" class="form-control" id="username" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">Mot de passe</label>
-                                    <input type="password" class="form-control" id="password" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i data-lucide="log-in" class="me-2"></i>
-                                    Se connecter
-                                </button>
-                            </form>
-                            <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <section class="hero">
+        <div>
+          <div class="badge">Nouvelle génération</div>
+          <h1>La cellule décisionnelle dédiée à la sécurité nationale.</h1>
+          <p class="lead">
+            Dvine Intelligence fédère les analystes autour d'une base unifiée, sécurisée et immédiatement opérationnelle.
+            Interfaces en rouge et blanc, alertes contextualisées et partage de briefs en un clic.
+          </p>
+          <a class="cta" href="#contact">Planifier une démonstration</a>
+          <a class="cta secondary" href="#modules">Découvrir les modules</a>
         </div>
-
-        <!-- Page d'accueil / Recherche -->
-        <div id="homePage" class="page-content" style="display: none;">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h2 class="text-center mb-4">
-                                <i data-lucide="search" class="me-2 text-primary"></i>
-                                Recherche Unifiée SORA
-                            </h2>
-                            
-                            <!-- Barre de recherche principale -->
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <div class="position-relative mb-4">
-                                        <i data-lucide="search" class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                                        <input type="text"
-                                               class="form-control form-control-lg ps-5 pe-5 rounded-pill shadow-sm"
-                                               id="searchQuery"
-                                               placeholder="Entrez votre recherche (CNI, nom, téléphone, immatriculation...)"
-                                               autocomplete="off">
-                                        <button class="btn btn-primary rounded-pill position-absolute top-50 end-0 translate-middle-y me-2 px-4" type="button" id="searchBtn">
-                                            Rechercher
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Zone des résultats -->
-            <div id="resultsSection" style="display: none;">
-                <div class="row mt-4">
-                    <!-- Filtres -->
-                    <div class="col-lg-3">
-                        <div class="card shadow-sm">
-                            <div class="card-header">
-                                <h6 class="mb-0">
-                                    <i data-lucide="filter" class="me-2"></i>
-                                    Filtres
-                                    <button class="btn btn-sm btn-outline-secondary float-end" onclick="clearFilters()">
-                                        Réinitialiser
-                                    </button>
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div id="filtersContainer"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Résultats -->
-                    <div class="col-lg-9">
-                        <div class="card shadow-sm">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">
-                                    <i data-lucide="list" class="me-2"></i>
-                                    Résultats <span id="resultsCount" class="badge bg-primary ms-2"></span>
-                                </h6>
-                                <div>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="exportResults('csv')">
-                                        <i data-lucide="download" class="me-1"></i>CSV
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="exportResults('excel')">
-                                        <i data-lucide="download" class="me-1"></i>Excel
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table id="resultsTable" class="table table-striped table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Source</th>
-                                                <th>Base</th>
-                                                <th>Aperçu</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div>
+          <div class="card">
+            <h3>Accès sécurisé</h3>
+            <p>Les identités et habilitations sont synchronisées avec la base MySQL dédiée. Les comptes sont prêts dès le premier démarrage.</p>
+          </div>
+          <div class="card">
+            <h3>Briefs opérationnels</h3>
+            <p>Composez des dossiers, attribuez des priorités et suivez les contributions des unités sans exposer les données sensibles.</p>
+          </div>
         </div>
+      </section>
 
-        <!-- Page Dashboard -->
-        <div id="statsPage" class="page-content" style="display: none;">
-            <h2 class="mb-4">
-                <i data-lucide="bar-chart-3" class="me-2 text-primary"></i>
-                Tableau de bord statistiques
-            </h2>
-            
-            <!-- Métriques principales -->
-            <div class="row mb-4">
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="card text-white bg-primary">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 id="totalSearches">0</h4>
-                                    <p class="mb-0">Recherches totales</p>
-                                </div>
-                                <i data-lucide="search" class="align-self-center" style="width: 2rem; height: 2rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="card text-white bg-success">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 id="totalTables">9</h4>
-                                    <p class="mb-0">Tables indexées</p>
-                                </div>
-                                <i data-lucide="database" class="align-self-center" style="width: 2rem; height: 2rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="card text-white bg-info">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 id="activeUsers">0</h4>
-                                    <p class="mb-0">Utilisateurs actifs</p>
-                                </div>
-                                <i data-lucide="users" class="align-self-center" style="width: 2rem; height: 2rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="card text-white bg-warning">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h4 id="avgResponseTime">0ms</h4>
-                                    <p class="mb-0">Temps de réponse moyen</p>
-                                </div>
-                                <i data-lucide="clock" class="align-self-center" style="width: 2rem; height: 2rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Graphiques -->
-            <div class="row">
-                <div class="col-lg-6 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6>Top 10 des tables consultées</h6>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="topTablesChart" width="400" height="300"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6>Répartition des résultats par source</h6>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="sourceDistributionChart" width="400" height="300"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-12 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6>Évolution des recherches (7 derniers jours)</h6>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="timeSeriesChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <section id="modules">
+        <h2>Modules clés</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Analyse situationnelle</h3>
+            <p>Synthèses quotidiennes, suivi d'événements critiques et diffusion de points de situation à partir d'une base unique.</p>
+          </div>
+          <div class="card">
+            <h3>Coordination des équipes</h3>
+            <p>Gestion des profils internes, attribution des missions, remontée des indices essentiels.</p>
+          </div>
+          <div class="card">
+            <h3>Veille multicanale</h3>
+            <p>Centralisez les rapports terrain, flux radio sécurisés et notifications d'incidents sans passer par des outils externes.</p>
+          </div>
         </div>
+      </section>
 
-        <!-- Page Upload (ADMIN seulement) -->
-        <div id="uploadPage" class="page-content" style="display: none;">
-            <h2 class="mb-4">
-                <i data-lucide="upload" class="me-2 text-primary"></i>
-                Gestion des données
-            </h2>
-            
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6>Upload de fichier CSV/Excel</h6>
-                        </div>
-                        <div class="card-body">
-                            <form id="uploadForm">
-                                <div class="mb-3">
-                                    <label for="targetTable" class="form-label">Table cible</label>
-                                    <select class="form-select" id="targetTable" required>
-                                        <option value="">Choisir une table...</option>
-                                        <option value="esolde_mytable">esolde - mytable</option>
-                                        <option value="rhpolice_personne_concours">rhpolice - personne_concours</option>
-                                        <option value="renseignement_agentfinance">renseignement - agentfinance</option>
-                                        <option value="autres_vehicules">autres - vehicules</option>
-                                        <option value="autres_entreprises">autres - entreprises</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="uploadFile" class="form-label">Fichier à uploader</label>
-                                    <input type="file" class="form-control" id="uploadFile" accept=".csv" required>
-                                    <div class="form-text">Formats acceptés: CSV</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="uploadMode" class="form-label">Mode d'upload</label>
-                                    <select class="form-select" id="uploadMode" required>
-                                        <option value="insert">Insert (nouvelles données uniquement)</option>
-                                        <option value="upsert">Upsert (mise à jour ou insertion)</option>
-                                        <option value="append">Append (ajouter à la fin)</option>
-                                    </select>
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary">
-                                    <i data-lucide="upload" class="me-2"></i>
-                                    Commencer l'upload
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6>Historique des uploads</h6>
-                        </div>
-                        <div class="card-body">
-                            <div id="uploadHistory">
-                                <!-- Historique sera chargé dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <section id="contact">
+        <h2>Activation rapide</h2>
+        <div class="card">
+          <p>
+            Déploiement sous 24h sur vos serveurs. La plateforme initialise la base de données, crée les schémas requis et met à disposition les comptes essentiels.
+          </p>
+          <p>
+            Contactez l'équipe Dvine Intelligence pour configurer vos accès chiffrés, intégrer vos référentiels et personnaliser les workflows.
+          </p>
         </div>
+      </section>
 
-        <!-- Page Utilisateurs (ADMIN seulement) -->
-        <div id="usersPage" class="page-content" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>
-                    <i data-lucide="users" class="me-2 text-primary"></i>
-                    Gestion des utilisateurs
-                </h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">
-                    <i data-lucide="user-plus" class="me-2"></i>
-                    Nouvel utilisateur
-                </button>
-            </div>
-            
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="usersTable" class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Rôle</th>
-                                    <th>Statut</th>
-                                    <th>Créé le</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <footer>
+        © <span id="year"></span> Dvine Intelligence — Cellule de supervision et de coordination stratégique.
+      </footer>
     </div>
-
-    <!-- Modal détail d'enregistrement -->
-    <div class="modal fade" id="detailModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Détails de l'enregistrement</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="detailModalBody">
-                    <!-- Contenu chargé dynamiquement -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal utilisateur -->
-    <div class="modal fade" id="userModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Nouvel utilisateur</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form id="userForm">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="userUsername" class="form-label">Nom d'utilisateur</label>
-                            <input type="text" class="form-control" id="userUsername" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="userEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="userEmail" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="userPassword" class="form-label">Mot de passe</label>
-                            <input type="password" class="form-control" id="userPassword" required minlength="10">
-                            <div class="form-text">Minimum 10 caractères</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="userRole" class="form-label">Rôle</label>
-                            <select class="form-select" id="userRole" required>
-                                <option value="LECTEUR">Lecteur</option>
-                                <option value="ANALYSTE">Analyste</option>
-                                <option value="ADMIN">Administrateur</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary">Créer</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading overlay -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Chargement...</span>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
-    
-    <!-- Application JS -->
-    <script src="/js/app.js"></script>
-</body>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
 </html>

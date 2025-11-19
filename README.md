@@ -1,12 +1,16 @@
-# Plateforme SORA
+# Plateforme Dvine Intelligence
 
-Ce dépôt contient l'application SORA (interface web et serveur Node.js) utilisée pour la gestion des profils, des demandes d'identification, des recherches transverses et des notifications internes.
+Ce dépôt contient l'application Dvine Intelligence (interface web et serveur Node.js) utilisée pour la coordination stratégique, la gestion des profils internes et la distribution de renseignements opérationnels en temps réel.
 
 ## Prérequis
 
 - Node.js 18+
 - Une instance MySQL accessible
 - (Optionnel) Un cluster ElasticSearch si la recherche temps réel est activée (`USE_ELASTICSEARCH=true`)
+
+### Paramètres MySQL par défaut
+
+Le serveur Node.js se connecte à MySQL avec l'utilisateur `root` et le mot de passe `zalehack`. Lors du premier démarrage sur un serveur vierge, le script d'initialisation crée automatiquement la base `autres` ainsi que l'ensemble des tables système nécessaires (utilisateurs, profils, historiques, etc.). Adaptez ces paramètres via les variables d'environnement `DB_USER`, `DB_PASSWORD` et `DB_NAME` si besoin.
 
 ## Installation
 

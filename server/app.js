@@ -199,7 +199,7 @@ app.get('/api/health', (req, res) => {
 
 // Servir l'application React pour toutes les autres routes
 app.get('*', (req, res) => {
-  res.json({ message: 'API SORA - Utilisez /api/* pour les endpoints' });
+  res.json({ message: 'API Dvine Intelligence - Utilisez /api/* pour les endpoints' });
 });
 
 // Gestionnaire d'erreurs global
@@ -219,7 +219,7 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, () => {
-  console.log(`🚀 Serveur SORA démarré sur le port ${PORT}`);
+  console.log(`🚀 Serveur Dvine Intelligence démarré sur le port ${PORT}`);
   console.log(`📊 Base de données: MySQL`);
   console.log(`🔒 Mode: ${process.env.NODE_ENV || 'development'}`);
 
@@ -241,7 +241,7 @@ server.on('error', (error) => {
 
 // Gestion propre de l'arrêt
 const shutdown = () => {
-  console.log('Arrêt du serveur SORA...');
+  console.log('Arrêt du serveur Dvine Intelligence...');
   server.close(() => {
     database.close()
       .then(() => {
