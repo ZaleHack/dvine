@@ -479,7 +479,7 @@ class CaseService {
           .font('Helvetica-Bold')
           .fontSize(12)
           .fillColor(colors.title)
-          .text('SORA', signatureX, signatureY + 6, {
+          .text('Dvine Intelligence', signatureX, signatureY + 6, {
             width: signatureWidth,
             align: 'right'
           });
