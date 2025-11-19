@@ -54,7 +54,9 @@ class DatabaseManager {
       console.log('🔌 Initializing MySQL connection...');
       const databaseName = (process.env.DB_NAME || 'autres').replace(/[^A-Za-z0-9_]/g, '_');
       const baseConfig = {
-        host: process.env.DB_HOST || 'localhost',
+        // Using 127.0.0.1 instead of "localhost" avoids Node trying to connect
+        // to the IPv6 loopback (::1) when MySQL only listens on IPv4.
+        host: process.env.DB_HOST || '127.0.0.1',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || 'zalehack',
         multipleStatements: true,
