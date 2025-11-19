@@ -2,13 +2,14 @@
 
 @layer base {
   body {
-    @apply m-0 bg-slate-100 text-slate-900 antialiased;
+    @apply m-0 text-slate-900 antialiased;
+    background: radial-gradient(circle at top, rgba(248, 113, 113, 0.08), transparent 45%), #fff8f8;
   }
   .dark body {
     @apply bg-slate-950 text-slate-100 antialiased;
   }
   form {
-    @apply bg-white/95 rounded-2xl shadow-xl shadow-slate-200/80 backdrop-blur;
+    @apply bg-white/95 rounded-2xl shadow-xl shadow-red-200/60 backdrop-blur;
   }
   .dark form {
     @apply bg-slate-900/80 rounded-2xl shadow-2xl shadow-black/40 backdrop-blur;
@@ -19,10 +20,10 @@
     @apply bg-white text-slate-900 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-transparent;
   }
   button {
-    @apply rounded-xl font-medium;
+    @apply rounded-xl font-medium tracking-wide;
   }
   .dark button {
-    @apply rounded-xl font-medium;
+    @apply rounded-xl font-medium tracking-wide;
   }
   .dark input,
   .dark textarea,
@@ -30,7 +31,7 @@
     @apply bg-slate-900 text-slate-100 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/60;
   }
   .dark .btn-primary {
-    @apply bg-blue-600 text-white;
+    @apply bg-red-500 text-white;
   }
 }
 

@@ -1,6 +1,15 @@
-# Plateforme SORA
+# Dvine Intelligence
 
-Ce dépôt contient l'application SORA (interface web et serveur Node.js) utilisée pour la gestion des profils, des demandes d'identification, des recherches transverses et des notifications internes.
+Dvine Intelligence est la nouvelle identité de la plateforme (interface web et serveur Node.js) dédiée aux cellules d'analyse qui souhaitent visualiser les signaux essentiels sans exposer les fonctionnalités historiques de recherche transverses. L'interface met désormais l'accent sur la narration stratégique, les indicateurs clés et une esthétique rouge & blanc cohérente avec la marque.
+
+## Connexion à la base MySQL
+
+L'application démarre sur un serveur MySQL vierge en utilisant les identifiants suivants :
+
+- **Utilisateur :** `root`
+- **Mot de passe :** `zalehack`
+
+Le gestionnaire `server/config/database.js` crée automatiquement la base `autres` ainsi que toutes les tables nécessaires lors du premier démarrage, ce qui permet de déployer la plateforme sur un environnement neuf sans étapes manuelles supplémentaires.
 
 ## Prérequis
 

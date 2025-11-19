@@ -5,7 +5,7 @@ const fs = require('fs');
 class DatabaseManager {
   constructor() {
     const dataDir = path.join(__dirname, '../../data');
-    const newDbPath = path.join(dataDir, 'sora.db');
+    const newDbPath = path.join(dataDir, 'dvine-intelligence.db');
     const oldDbPath = path.join(dataDir, 'vegeta.db');
 
     // Preserve existing data by migrating the old database file if needed
