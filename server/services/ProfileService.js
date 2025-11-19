@@ -1,0 +1,1239 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { PassThrough } from 'stream';
+import Profile from '../models/Profile.js';
+import ProfileAttachment from '../models/ProfileAttachment.js';
+import ProfileFolder from '../models/ProfileFolder.js';
+import ProfileFolderShare from '../models/ProfileFolderShare.js';
+import Division from '../models/Division.js';
+import User from '../models/User.js';
+import Notification from '../models/Notification.js';
+import ElasticSearchService from './ElasticSearchService.js';
+import { isElasticsearchEnabled } from '../config/environment.js';
+import statsCache from './stats-cache.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+class ProfileService {
+  constructor() {
+    this.photosDir = path.join(__dirname, '../../uploads/profiles');
+    this.attachmentsDir = path.join(__dirname, '../../uploads/profile-attachments');
+    [this.photosDir, this.attachmentsDir].forEach(dir => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    });
+    this.useElastic = isElasticsearchEnabled();
+    this.elasticService = this.useElastic ? new ElasticSearchService() : null;
+  }
+
+  async syncProfileToSearch(profile) {
+    if (!this.elasticService || !profile) {
+      return;
+    }
+
+    try {
+      await this.elasticService.indexProfile(profile);
+    } catch (error) {
+      console.error('Erreur indexation profil Elasticsearch:', error);
+    }
+  }
+
+  async removeProfileFromSearch(profileId) {
+    if (!this.elasticService || !profileId) {
+      return;
+    }
+
+    try {
+      await this.elasticService.deleteProfile(profileId);
+    } catch (error) {
+      console.error('Erreur suppression index Elasticsearch pour le profil:', error);
+    }
+  }
+
+  _isAdmin(user) {
+    return user && (user.admin === 1 || user.admin === '1' || user.admin === true);
+  }
+
+  _buildProfileDisplayName(profile) {
+    const first = typeof profile.first_name === 'string' ? profile.first_name.trim() : '';
+    const last = typeof profile.last_name === 'string' ? profile.last_name.trim() : '';
+    const combined = [first, last].filter(Boolean).join(' ').trim();
+    if (combined) {
+      return combined;
+    }
+    const email = typeof profile.email === 'string' ? profile.email.trim() : '';
+    if (email) {
+      return email;
+    }
+    const phone = typeof profile.phone === 'string' ? profile.phone.trim() : '';
+    if (phone) {
+      return phone;
+    }
+    return `Profil #${profile.id}`;
+  }
+
+  normalizeStoredPath(value) {
+    return value ? value.replace(/\\/g, '/') : value;
+  }
+
+  async _enrichFolders(folders, user) {
+    if (!Array.isArray(folders) || folders.length === 0) {
+      return [];
+    }
+    const isAdmin = this._isAdmin(user);
+    const folderIds = folders.map(folder => folder.id).filter(Boolean);
+    const shareMap = await ProfileFolderShare.getSharesForFolders(folderIds);
+    return folders.map(folder => {
+      const sharedUserIds = shareMap.get(folder.id) || [];
+      const isOwner = folder.user_id === user.id;
+      const sharedWithMe = !isOwner && sharedUserIds.includes(user.id);
+      return {
+        ...folder,
+        profiles_count: Number(folder.profiles_count || 0),
+        is_owner: isOwner,
+        shared_with_me: sharedWithMe,
+        shared_user_ids: isAdmin || isOwner ? sharedUserIds : undefined
+      };
+    });
+  }
+
+  async listFolders(user, search = '') {
+    const result = await ProfileFolder.findAccessible({
+      userId: user.id,
+      isAdmin: this._isAdmin(user),
+      search: search ? String(search) : '',
+      limit: 200,
+      offset: 0
+    });
+    const folders = await this._enrichFolders(result.rows, user);
+    return { folders, total: result.total };
+  }
+
+  async createFolder(name, user) {
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    if (!trimmedName) {
+      throw new Error('Nom du dossier requis');
+    }
+    const created = await ProfileFolder.create({ user_id: user.id, name: trimmedName });
+    const folder = await ProfileFolder.findById(created.id);
+    const [enriched] = await this._enrichFolders([folder], user);
+    return enriched;
+  }
+
+  async renameFolder(folderId, name, user) {
+    const id = Number(folderId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('Dossier introuvable');
+    }
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    if (!trimmedName) {
+      throw new Error('Nom du dossier requis');
+    }
+    const existing = await ProfileFolder.findById(id);
+    if (!existing) {
+      throw new Error('Dossier introuvable');
+    }
+    const isAdmin = this._isAdmin(user);
+    if (!isAdmin && existing.user_id !== user.id) {
+      throw new Error('Accès refusé');
+    }
+    const updated = await ProfileFolder.update(id, { name: trimmedName });
+    const [enriched] = await this._enrichFolders([updated], user);
+    return enriched;
+  }
+
+  async deleteFolder(folderId, user) {
+    const id = Number(folderId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('Dossier introuvable');
+    }
+    const folder = await ProfileFolder.findById(id);
+    if (!folder) {
+      throw new Error('Dossier introuvable');
+    }
+    const isOwner = folder.user_id === user.id;
+    const isAdmin = this._isAdmin(user);
+    if (!isOwner && !isAdmin) {
+      throw new Error('Accès refusé');
+    }
+    const profiles = await Profile.findByFolderId(folder.id);
+    let deletedProfiles = 0;
+    if (profiles.length > 0) {
+      const profileIds = profiles.map(profile => profile.id).filter(Boolean);
+      const attachmentsMap = await ProfileAttachment.findByProfileIds(profileIds);
+      for (const profile of profiles) {
+        if (profile.photo_path) {
+          this.removeStoredFile(profile.photo_path);
+        }
+        const attachments = Array.isArray(attachmentsMap[profile.id]) ? attachmentsMap[profile.id] : [];
+        if (attachments.length) {
+          attachments.forEach(att => {
+            if (att.file_path) {
+              this.removeStoredFile(att.file_path);
+            }
+          });
+          const attachmentIds = attachments
+            .map(att => Number(att.id))
+            .filter(idValue => Number.isInteger(idValue));
+          if (attachmentIds.length) {
+            await ProfileAttachment.deleteByIds(profile.id, attachmentIds);
+          }
+        }
+        await Profile.delete(profile.id);
+        await this.removeProfileFromSearch(profile.id);
+        deletedProfiles += 1;
+      }
+      statsCache.clear('overview:');
+    }
+    await ProfileFolder.delete(folder.id, { ensureEmpty: false });
+    return { success: true, deletedProfiles };
+  }
+
+  async getFolderShareInfo(folderId, user) {
+    const folder = await ProfileFolder.findById(folderId);
+    if (!folder) {
+      throw new Error('Dossier introuvable');
+    }
+    const isOwner = folder.user_id === user.id;
+    const isAdmin = this._isAdmin(user);
+    if (!isOwner && !isAdmin) {
+      throw new Error('Accès refusé');
+    }
+    const owner = await User.findById(folder.user_id);
+    const divisionId = owner?.division_id || null;
+    const divisionUsers = divisionId
+      ? await Division.findUsers(divisionId, { includeInactive: false })
+      : [];
+    const recipients = await ProfileFolderShare.getUserIds(folder.id);
+    return {
+      folder: { id: folder.id, name: folder.name },
+      divisionId,
+      owner: { id: owner?.id, login: owner?.login },
+      users: divisionUsers,
+      recipients
+    };
+  }
+
+  async shareFolder(folderId, user, { userIds = [], shareAll = false } = {}) {
+    const folder = await ProfileFolder.findById(folderId);
+    if (!folder) {
+      throw new Error('Dossier introuvable');
+    }
+    const isOwner = folder.user_id === user.id;
+    const isAdmin = this._isAdmin(user);
+    if (!isOwner && !isAdmin) {
+      throw new Error('Accès refusé');
+    }
+    const owner = await User.findById(folder.user_id);
+    const divisionId = owner?.division_id;
+    if (!divisionId) {
+      throw new Error('Division introuvable pour le propriétaire');
+    }
+    const divisionUsers = await Division.findUsers(divisionId, { includeInactive: false });
+    const allowedIds = divisionUsers
+      .filter(member => member.id !== owner?.id)
+      .map(member => member.id);
+    const targetIds = shareAll
+      ? allowedIds
+      : Array.isArray(userIds)
+        ? userIds
+            .map(id => Number(id))
+            .filter(id => Number.isInteger(id) && id > 0 && allowedIds.includes(id))
+        : [];
+    const { added, removed } = await ProfileFolderShare.replaceShares(folder.id, targetIds);
+
+    if (added.length > 0) {
+      const ownerLogin = owner?.login || '';
+      for (const addedId of added) {
+        const data = {
+          folderId: folder.id,
+          folderName: folder.name,
+          owner: ownerLogin,
+          divisionId
+        };
+        try {
+          await Notification.create({ user_id: addedId, type: 'profile_shared', data });
+        } catch (error) {
+          console.error('Erreur création notification partage dossier profil:', error);
+        }
+      }
+    }
+
+    return {
+      added,
+      removed,
+      recipients: targetIds,
+      folder: { id: folder.id, name: folder.name }
+    };
+  }
+
+  resolveStoragePath(storedPath) {
+    if (!storedPath) return null;
+    const normalized = this.normalizeStoredPath(storedPath).replace(/^[/\\]+/, '');
+    const parts = normalized.split(/[/\\]+/);
+    return path.resolve(__dirname, '../../', parts.join(path.sep));
+  }
+
+  removeStoredFile(storedPath) {
+    const absolute = this.resolveStoragePath(storedPath);
+    if (!absolute) return;
+    try {
+      if (fs.existsSync(absolute)) {
+        fs.unlinkSync(absolute);
+      }
+    } catch (_) {}
+  }
+
+  async withAttachments(profile) {
+    if (!profile) return null;
+    const attachments = await ProfileAttachment.findByProfileId(profile.id);
+    return {
+      ...profile,
+      photo_path: this.normalizeStoredPath(profile.photo_path),
+      attachments: attachments.map(att => ({
+        ...att,
+        file_path: this.normalizeStoredPath(att.file_path)
+      }))
+    };
+  }
+
+  async removeAttachments(profileId, attachmentIds) {
+    if (!attachmentIds || attachmentIds.length === 0) return;
+    const existing = await ProfileAttachment.findByProfileId(profileId);
+    const ids = attachmentIds
+      .map(id => parseInt(id, 10))
+      .filter(id => Number.isInteger(id));
+    if (ids.length === 0) return;
+    const toDelete = existing.filter(att => ids.includes(att.id));
+    if (toDelete.length === 0) return;
+    await ProfileAttachment.deleteByIds(profileId, ids);
+    toDelete.forEach(att => this.removeStoredFile(att.file_path));
+  }
+
+  async create(data, user, files = {}) {
+    const ownerId = user?.id;
+    if (!ownerId) {
+      throw new Error('Utilisateur requis');
+    }
+    const photoFile = Array.isArray(files.photo) ? files.photo[0] : null;
+    const attachmentFiles = Array.isArray(files.attachments) ? files.attachments : [];
+    const rawFolderId = data.folder_id;
+    const normalizedFolderInput =
+      rawFolderId === undefined || rawFolderId === null
+        ? null
+        : String(rawFolderId).trim();
+    const normalizedFolderValue =
+      normalizedFolderInput &&
+      normalizedFolderInput.toLowerCase() !== 'null' &&
+      normalizedFolderInput.toLowerCase() !== 'undefined'
+        ? normalizedFolderInput
+        : null;
+    let targetFolder = null;
+    if (normalizedFolderValue) {
+      const folderId = Number(normalizedFolderValue);
+      if (!Number.isInteger(folderId) || folderId <= 0) {
+        throw new Error('Identifiant de dossier invalide');
+      }
+      const folder = await ProfileFolder.findById(folderId);
+      if (!folder) {
+        throw new Error('Dossier introuvable');
+      }
+      const isAdmin = this._isAdmin(user);
+      if (!isAdmin && folder.user_id !== ownerId) {
+        throw new Error('Accès refusé');
+      }
+      targetFolder = folder;
+    }
+    const profileData = {
+      user_id: targetFolder ? targetFolder.user_id : ownerId,
+      folder_id: targetFolder ? targetFolder.id : null,
+      first_name: data.first_name || null,
+      last_name: data.last_name || null,
+      phone: data.phone || null,
+      email: data.email || null,
+      comment: data.comment ?? '',
+      extra_fields: data.extra_fields || [],
+      // Use POSIX-style paths for storage so that paths work across OSes
+      photo_path: photoFile ? path.posix.join('uploads/profiles', photoFile.filename) : null
+    };
+    const created = await Profile.create(profileData);
+    if (attachmentFiles.length) {
+      await ProfileAttachment.createMany(
+        created.id,
+        attachmentFiles.map(file => ({
+          file_path: path.posix.join('uploads/profile-attachments', file.filename),
+          original_name: file.originalname
+        }))
+      );
+    }
+    const fresh = await Profile.findById(created.id);
+    await this.syncProfileToSearch(fresh);
+    statsCache.clear('overview:');
+    return this.withAttachments(fresh);
+  }
+
+  async update(id, data, user, files = {}) {
+    const existing = await Profile.findById(id);
+    if (!existing) throw new Error('Profil non trouvé');
+    const isAdmin = this._isAdmin(user);
+    if (!isAdmin && existing.user_id !== user.id) {
+      throw new Error('Accès refusé');
+    }
+    const photoFile = Array.isArray(files.photo) ? files.photo[0] : null;
+    const attachmentFiles = Array.isArray(files.attachments) ? files.attachments : [];
+    const removalIds = Array.isArray(data.remove_attachment_ids)
+      ? data.remove_attachment_ids
+      : [];
+    let photoPath = this.normalizeStoredPath(existing.photo_path);
+    if (photoFile) {
+      if (photoPath) {
+        this.removeStoredFile(photoPath);
+      }
+      photoPath = path.posix.join('uploads/profiles', photoFile.filename);
+    } else if (data.remove_photo) {
+      if (photoPath) {
+        this.removeStoredFile(photoPath);
+      }
+      photoPath = null;
+    }
+    const toArray = (candidate) => (Array.isArray(candidate) ? candidate : [candidate]);
+    const normalizeExtraFields = (value) => {
+      if (value === null || value === undefined || value === '') {
+        return [];
+      }
+      if (Array.isArray(value)) {
+        return value;
+      }
+      if (typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value);
+          return toArray(parsed);
+        } catch (_) {
+          return [value];
+        }
+      }
+      return toArray(value);
+    };
+
+    const extraFields =
+      data.extra_fields !== undefined
+        ? normalizeExtraFields(data.extra_fields)
+        : normalizeExtraFields(existing.extra_fields);
+
+    let targetFolderId = existing.folder_id ?? null;
+    let targetOwnerId = existing.user_id ?? user.id;
+    if (data.folder_id !== undefined) {
+      const rawFolderId = data.folder_id;
+      const normalizedFolderInput =
+        rawFolderId === null || rawFolderId === undefined
+          ? null
+          : String(rawFolderId).trim();
+      const normalizedFolderValue =
+        normalizedFolderInput &&
+        normalizedFolderInput.toLowerCase() !== 'null' &&
+        normalizedFolderInput.toLowerCase() !== 'undefined'
+          ? normalizedFolderInput
+          : null;
+      if (!normalizedFolderValue) {
+        targetFolderId = null;
+        targetOwnerId = existing.user_id ?? user.id;
+      } else {
+        const parsedFolderId = Number(normalizedFolderValue);
+        if (!Number.isInteger(parsedFolderId) || parsedFolderId <= 0) {
+          throw new Error('Identifiant de dossier invalide');
+        }
+        const folder = await ProfileFolder.findById(parsedFolderId);
+        if (!folder) {
+          throw new Error('Dossier introuvable');
+        }
+        if (!isAdmin && folder.user_id !== user.id) {
+          throw new Error('Accès refusé');
+        }
+        targetFolderId = folder.id;
+        targetOwnerId = folder.user_id;
+      }
+    }
+
+    const updateData = {
+      first_name: data.first_name ?? existing.first_name,
+      last_name: data.last_name ?? existing.last_name,
+      phone: data.phone ?? existing.phone,
+      email: data.email ?? existing.email,
+      comment: data.comment ?? existing.comment ?? '',
+      extra_fields: extraFields,
+      folder_id: targetFolderId,
+      user_id: targetOwnerId,
+      // Normalize existing paths to use forward slashes to avoid issues on different OSes
+      photo_path: photoPath
+    };
+    await Profile.update(id, updateData);
+    if (removalIds.length) {
+      await this.removeAttachments(id, removalIds);
+    }
+    if (attachmentFiles.length) {
+      await ProfileAttachment.createMany(
+        id,
+        attachmentFiles.map(file => ({
+          file_path: path.posix.join('uploads/profile-attachments', file.filename),
+          original_name: file.originalname
+        }))
+      );
+    }
+    const updated = await Profile.findById(id);
+    await this.syncProfileToSearch(updated);
+    return this.withAttachments(updated);
+  }
+
+  async delete(id, user) {
+    const existing = await Profile.findById(id);
+    if (!existing) throw new Error('Profil non trouvé');
+    if (existing.user_id !== user.id) {
+      throw new Error('Accès refusé');
+    }
+    if (existing.photo_path) {
+      this.removeStoredFile(existing.photo_path);
+    }
+    const attachments = await ProfileAttachment.findByProfileId(id);
+    attachments.forEach(att => this.removeStoredFile(att.file_path));
+    await Profile.delete(id);
+    await this.removeProfileFromSearch(id);
+    statsCache.clear('overview:');
+    return true;
+  }
+
+  async get(id, user) {
+    const profile = await Profile.findById(id);
+    if (!profile) return null;
+    const isAdmin = this._isAdmin(user);
+    if (!isAdmin && profile.user_id !== user.id) {
+      const shared = profile.folder_id
+        ? await ProfileFolderShare.isSharedWithUser(profile.folder_id, user.id)
+        : false;
+      if (!shared) {
+        return null;
+      }
+    }
+    return this.withAttachments(profile);
+  }
+
+  async list(user, search, page = 1, limit = 10, folderId = null, unassignedOnly = false) {
+    const offset = (page - 1) * limit;
+    const isAdmin = this._isAdmin(user);
+    const divisionId =
+      user.division_id !== undefined && user.division_id !== null
+        ? Number(user.division_id)
+        : null;
+    const result = await Profile.findAccessible({
+      userId: user.id,
+      divisionId,
+      isAdmin,
+      search,
+      limit,
+      offset,
+      folderId: folderId ? Number(folderId) : null,
+      unassignedOnly
+    });
+    const rows = result.rows.map(row => ({
+      ...row,
+      photo_path: this.normalizeStoredPath(row.photo_path)
+    }));
+    if (rows.length === 0) {
+      return { rows, total: result.total };
+    }
+    const attachmentsMap = await ProfileAttachment.findByProfileIds(rows.map(row => row.id));
+    const folderIds = Array.from(new Set(rows.map(row => row.folder_id).filter(Boolean)));
+    const folderShareMap = await ProfileFolderShare.getSharesForFolders(folderIds);
+    const enriched = rows.map(row => {
+      const attachments = (attachmentsMap[row.id] || []).map(att => ({
+        ...att,
+        file_path: this.normalizeStoredPath(att.file_path)
+      }));
+      const sharedUserIds = row.folder_id ? folderShareMap.get(row.folder_id) || [] : [];
+      const isOwner = row.user_id === user.id;
+      const sharedWithMe = !isOwner && row.folder_id ? sharedUserIds.includes(user.id) : false;
+      return {
+        ...row,
+        attachments,
+        is_owner: isOwner,
+        shared_with_me: sharedWithMe,
+        shared_user_ids: isAdmin || isOwner ? sharedUserIds : undefined
+      };
+    });
+    return { rows: enriched, total: result.total };
+  }
+
+  async getShareInfo(profileId, user) {
+    const profile = await Profile.findById(profileId);
+    if (!profile) {
+      throw new Error('Profil non trouvé');
+    }
+
+    if (!profile.folder_id) {
+      throw new Error('Dossier introuvable');
+    }
+
+    return this.getFolderShareInfo(profile.folder_id, user);
+  }
+
+  async shareProfile(profileId, user, { userIds = [], shareAll = false } = {}) {
+    const profile = await Profile.findById(profileId);
+    if (!profile) {
+      throw new Error('Profil non trouvé');
+    }
+
+    if (!profile.folder_id) {
+      throw new Error('Dossier introuvable');
+    }
+
+    return this.shareFolder(profile.folder_id, user, { userIds, shareAll });
+  }
+
+  async getFolderProfiles(folderId, user) {
+    const id = Number(folderId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('Identifiant de dossier invalide');
+    }
+
+    const folder = await ProfileFolder.findById(id);
+    if (!folder) {
+      throw new Error('Dossier introuvable');
+    }
+
+    const isAdmin = this._isAdmin(user);
+    const isOwner = folder.user_id === user.id;
+    let sharedWithUser = false;
+    if (!isOwner && !isAdmin) {
+      sharedWithUser = await ProfileFolderShare.isSharedWithUser(folder.id, user.id);
+      if (!sharedWithUser) {
+        throw new Error('Accès refusé');
+      }
+    }
+
+    const profiles = await Profile.findByFolderId(folder.id);
+    return profiles.map(profile => ({
+      id: profile.id,
+      display_name: this._buildProfileDisplayName(profile),
+      email: profile.email,
+      phone: profile.phone
+    }));
+  }
+
+  async exportFolderPDF(folderId, user, { profileIds = [] } = {}) {
+    try {
+      const id = Number(folderId);
+      if (!Number.isInteger(id) || id <= 0) {
+        throw new Error('Identifiant de dossier invalide');
+      }
+
+      const folder = await ProfileFolder.findById(id);
+      if (!folder) {
+        throw new Error('Dossier introuvable');
+      }
+
+      const isAdmin = this._isAdmin(user);
+      const isOwner = folder.user_id === user.id;
+      let sharedWithUser = false;
+      if (!isOwner && !isAdmin) {
+        sharedWithUser = await ProfileFolderShare.isSharedWithUser(folder.id, user.id);
+        if (!sharedWithUser) {
+          throw new Error('Accès refusé');
+        }
+      }
+
+      const rawProfiles = await Profile.findByFolderId(folder.id);
+      if (!rawProfiles.length) {
+        throw new Error('Aucun profil dans ce dossier');
+      }
+
+      let selectedProfiles = rawProfiles;
+      if (Array.isArray(profileIds) && profileIds.length > 0) {
+        const allowedIds = new Set(
+          profileIds
+            .map(value => Number(value))
+            .filter(value => Number.isInteger(value) && value > 0)
+        );
+        selectedProfiles = rawProfiles.filter(profile => allowedIds.has(profile.id));
+        if (!selectedProfiles.length) {
+          throw new Error('Aucun profil sélectionné dans ce dossier');
+        }
+      }
+
+      const profiles = await Promise.all(selectedProfiles.map(profile => this.withAttachments(profile)));
+      const { default: PDFDocument } = await import('pdfkit');
+      const doc = new PDFDocument({ margin: 50, compress: false, autoFirstPage: false });
+      const stream = new PassThrough();
+      const chunks = [];
+      doc.pipe(stream);
+
+      const exportDate = new Date();
+      const buffer = await new Promise((resolve, reject) => {
+        stream.on('data', chunk => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
+
+        (async () => {
+          try {
+            for (let index = 0; index < profiles.length; index += 1) {
+              const profile = profiles[index];
+              await renderProfilePDF(doc, profile, {
+                exportDate,
+                folderName: folder.name,
+                profileIndex: index + 1,
+                totalProfiles: profiles.length
+              });
+            }
+          } catch (error) {
+            reject(error);
+          } finally {
+            doc.end();
+          }
+        })();
+      });
+
+      return { buffer, folder, profileCount: profiles.length };
+    } catch (error) {
+      if (
+        error &&
+        error instanceof Error &&
+        [
+          'Dossier introuvable',
+          'Accès refusé',
+          'Aucun profil dans ce dossier',
+          'Aucun profil sélectionné dans ce dossier',
+          'Identifiant de dossier invalide'
+        ].includes(error.message)
+      ) {
+        throw error;
+      }
+      console.error('Erreur génération PDF dossier:', error);
+      throw new Error('Impossible de générer le PDF du dossier');
+    }
+  }
+
+  async generatePDF(profile) {
+    try {
+      const targetProfile = await this.withAttachments(profile);
+      const { default: PDFDocument } = await import('pdfkit');
+      const doc = new PDFDocument({ margin: 50, compress: false, autoFirstPage: false });
+      const stream = new PassThrough();
+      const chunks = [];
+      doc.pipe(stream);
+
+      return await new Promise((resolve, reject) => {
+        stream.on('data', chunk => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
+
+        (async () => {
+          try {
+            await renderProfilePDF(doc, targetProfile ?? profile, { exportDate: new Date() });
+          } catch (error) {
+            reject(error);
+            return;
+          } finally {
+            doc.end();
+          }
+        })();
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Impossible de générer le PDF du profil') {
+        throw error;
+      }
+      console.error('Erreur génération PDF profil:', error);
+      throw new Error('Impossible de générer le PDF du profil');
+    }
+  }
+}
+
+const renderProfilePDF = async (
+  doc,
+  profile,
+  {
+    exportDate: providedExportDate,
+    folderName,
+    profileIndex,
+    totalProfiles
+  } = {}
+) => {
+  try {
+    const palette = {
+      heading: '#0F172A',
+      text: '#1F2937',
+      muted: '#6B7280',
+      accent: '#1D4ED8',
+      divider: '#E5E7EB',
+      photoBackground: '#EFF6FF',
+      headerBackground: '#1D4ED8',
+      headerText: '#FFFFFF',
+      headerMuted: '#DBEAFE'
+    };
+
+    const formatDateTime = value => {
+      if (!value) return null;
+      const date = value instanceof Date ? value : new Date(value);
+      if (Number.isNaN(date.getTime())) return null;
+      try {
+        return new Intl.DateTimeFormat('fr-FR', {
+          dateStyle: 'long',
+          timeStyle: 'short'
+        }).format(date);
+      } catch (_) {
+        return date.toLocaleString('fr-FR');
+      }
+    };
+
+    const formatDate = value => {
+      if (!value) return null;
+      const date = value instanceof Date ? value : new Date(value);
+      if (Number.isNaN(date.getTime())) return null;
+      try {
+        return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(date);
+      } catch (_) {
+        return date.toLocaleDateString('fr-FR');
+      }
+    };
+
+    const formatFieldValue = value => {
+      if (value === null || value === undefined) {
+        return '';
+      }
+      if (value instanceof Date) {
+        return formatDateTime(value) || '';
+      }
+      if (typeof value === 'number' || typeof value === 'boolean') {
+        return String(value);
+      }
+      if (typeof value === 'string') {
+        const normalized = value.replace(/\r\n/g, '\n');
+        const lines = normalized.split('\n').map(line => line.trimEnd());
+        return lines.join('\n').trim();
+      }
+      if (Array.isArray(value)) {
+        return value
+          .map(item => formatFieldValue(item))
+          .filter(Boolean)
+          .join('\n');
+      }
+      if (typeof value === 'object') {
+        const entries = Object.entries(value)
+          .map(([key, val]) => {
+            const formatted = formatFieldValue(val);
+            if (!formatted) return null;
+            return key ? `${key}: ${formatted}` : formatted;
+          })
+          .filter(Boolean);
+        if (entries.length) {
+          return entries.join('\n');
+        }
+        try {
+          return JSON.stringify(value);
+        } catch (_) {
+          return '';
+        }
+      }
+      return String(value);
+    };
+
+    const loadPhotoBuffer = async () => {
+      if (!profile?.photo_path) return null;
+      try {
+        if (/^https?:\/\//.test(profile.photo_path)) {
+          const res = await fetch(profile.photo_path);
+          const arr = await res.arrayBuffer();
+          return Buffer.from(arr);
+        }
+
+        const normalizedPath = profile.photo_path
+          .split(/[\\/]+/)
+          .join(path.sep)
+          .replace(/^[/\\]+/, '');
+        const imgPath = path.resolve(__dirname, '../../', normalizedPath);
+        if (fs.existsSync(imgPath)) {
+          return fs.readFileSync(imgPath);
+        }
+      } catch (_) {
+        // ignore image errors
+      }
+      return null;
+    };
+
+    const photoBuffer = await loadPhotoBuffer();
+    const exportDate = formatDate(providedExportDate instanceof Date ? providedExportDate : new Date());
+    const defaultMargins = (() => {
+      const { margins, margin: marginOption } = doc.options || {};
+      if (margins && typeof margins === 'object') {
+        return {
+          top: margins.top ?? 0,
+          right: margins.right ?? 0,
+          bottom: margins.bottom ?? 0,
+          left: margins.left ?? 0
+        };
+      }
+      if (typeof marginOption === 'number') {
+        return { top: marginOption, right: marginOption, bottom: marginOption, left: marginOption };
+      }
+      return { top: 0, right: 0, bottom: 0, left: 0 };
+    })();
+
+    const currentPage = () => doc.page ?? { margins: defaultMargins, width: 0, height: 0 };
+    const marginLeft = () => currentPage().margins?.left ?? defaultMargins.left ?? 0;
+    const marginTop = () => currentPage().margins?.top ?? defaultMargins.top ?? 0;
+    const pageWidth = () => (currentPage().width && currentPage().width > 0 ? currentPage().width : doc.page?.width ?? 0);
+    const pageHeight = () => (currentPage().height && currentPage().height > 0 ? currentPage().height : doc.page?.height ?? 0);
+    const marginRight = () => currentPage().margins?.right ?? defaultMargins.right ?? 0;
+    const marginBottom = () => currentPage().margins?.bottom ?? defaultMargins.bottom ?? 0;
+    const contentWidth = () => {
+      const width = pageWidth();
+      if (!width) {
+        return 0;
+      }
+      return width - marginLeft() - marginRight();
+    };
+
+    const addSignature = () => {
+      if (!doc.page) {
+        return;
+      }
+      doc.save();
+      const signatureText = 'SORA';
+      doc.font('Helvetica-Bold').fontSize(12).fillColor(palette.accent);
+      const textWidth = doc.widthOfString(signatureText);
+      const signatureX = pageWidth() - marginRight() - textWidth;
+      const signatureY = pageHeight() - marginBottom() - 24;
+      doc.text(signatureText, signatureX, signatureY);
+      doc.restore();
+    };
+
+    const profileName = [profile?.last_name, profile?.first_name]
+      .map(value => (typeof value === 'string' ? value.trim() : ''))
+      .filter(Boolean)
+      .join(' ');
+    const sanitizedFolderName = typeof folderName === 'string' && folderName.trim().length ? folderName.trim() : null;
+    const totalCount = typeof totalProfiles === 'number' && totalProfiles > 0 ? totalProfiles : null;
+    const indexLabel =
+      totalCount && typeof profileIndex === 'number' && profileIndex > 0
+        ? `Profil ${profileIndex} / ${totalCount}`
+        : null;
+
+    const renderMainHeader = () => {
+      const width = contentWidth();
+      const startX = marginLeft();
+      const startY = marginTop();
+      const headerHeight = 96;
+
+      doc.save();
+      doc
+        .rect(startX, startY, width, headerHeight)
+        .fill(palette.headerBackground);
+      doc.restore();
+
+      const titleY = startY + 26;
+
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(26)
+        .fillColor(palette.headerText)
+        .text('FICHE DE PROFIL', startX, titleY, {
+          width,
+          align: 'center'
+        });
+
+      let nextLine = titleY + 36;
+      if (exportDate) {
+        doc
+          .font('Helvetica')
+          .fontSize(12)
+          .fillColor(palette.headerMuted)
+          .text(`Exporté le ${exportDate}`, startX, nextLine, {
+            width,
+            align: 'center'
+          });
+        nextLine += 18;
+      }
+
+      const supplementalLines = [profileName || null, sanitizedFolderName ? `Dossier : ${sanitizedFolderName}` : null, indexLabel]
+        .filter(Boolean);
+
+      supplementalLines.forEach(line => {
+        doc
+          .font('Helvetica')
+          .fontSize(11)
+          .fillColor(palette.headerMuted)
+          .text(line, startX, nextLine, {
+            width,
+            align: 'center'
+          });
+        nextLine += 16;
+      });
+
+      doc.y = startY + headerHeight + 24;
+    };
+
+    const renderContinuationHeader = () => {
+      doc.y = marginTop();
+    };
+
+    const renderPhoto = () => {
+      if (!photoBuffer) {
+        return;
+      }
+
+      const width = pageWidth();
+      const size = 150;
+      const x = (width - size) / 2;
+      const y = doc.y;
+
+      doc.save();
+      doc.image(photoBuffer, x, y, {
+        fit: [size, size],
+        align: 'center',
+        valign: 'center'
+      });
+      doc.restore();
+
+      doc.y = y + size + 24;
+    };
+
+    const baseTextFont = { name: 'Helvetica', size: 11 };
+    const applyBaseFont = () => {
+      doc.font(baseTextFont.name).fontSize(baseTextFont.size);
+    };
+
+    const measureLineHeight = (fontName, fontSize, multiplier = 1) => {
+      doc.font(fontName).fontSize(fontSize);
+      const height = doc.currentLineHeight(true) * multiplier;
+      applyBaseFont();
+      return height;
+    };
+
+    const measureTextHeight = (text, fontName, fontSize) => {
+      if (!text) {
+        return 0;
+      }
+      doc.font(fontName).fontSize(fontSize);
+      const height = doc.heightOfString(text, {
+        width: contentWidth(),
+        align: 'left'
+      });
+      applyBaseFont();
+      return height;
+    };
+
+    const estimateSectionHeight = (title, fields) => {
+      if (!fields.length) {
+        return 0;
+      }
+
+      const dividerHeight = 4;
+      let total = 0;
+
+      total += measureLineHeight(baseTextFont.name, baseTextFont.size, fields.length ? 0.8 : 0.4);
+      total += measureTextHeight(title, 'Helvetica-Bold', 14);
+      total += measureLineHeight('Helvetica-Bold', 14, 0.2);
+      total += dividerHeight;
+      total += measureLineHeight(baseTextFont.name, baseTextFont.size, 0.6);
+
+      fields.forEach((field, index) => {
+        const combined = `${field.label} : ${field.value}`;
+        total += measureTextHeight(combined, baseTextFont.name, baseTextFont.size);
+        if (index < fields.length - 1) {
+          total += measureLineHeight(baseTextFont.name, baseTextFont.size, 0.3);
+        }
+      });
+
+      return total;
+    };
+
+    const ensurePageCapacity = requiredHeight => {
+      if (!requiredHeight) {
+        return;
+      }
+
+      const available = pageHeight() - marginBottom() - doc.y;
+      if (available <= 0 || requiredHeight > available) {
+        doc.addPage();
+        applyBaseFont();
+      }
+    };
+
+    let pageNumber = 0;
+    let skipHeader = false;
+    const handlePageAdded = () => {
+      pageNumber += 1;
+      if (skipHeader) {
+        skipHeader = false;
+        return;
+      }
+      if (pageNumber === 1) {
+        renderMainHeader();
+        renderPhoto();
+      } else {
+        renderContinuationHeader();
+      }
+    };
+
+    if (typeof doc.on === 'function') {
+      doc.on('pageAdded', handlePageAdded);
+    }
+
+    try {
+      doc.addPage();
+      applyBaseFont();
+
+      const parseExtraSections = () => {
+        if (!profile?.extra_fields) {
+          return [];
+        }
+
+        try {
+          const extras = Array.isArray(profile.extra_fields)
+            ? profile.extra_fields
+            : JSON.parse(profile.extra_fields);
+
+          return extras
+            .map(category => {
+              const rawFields = Array.isArray(category?.fields) ? category.fields : [];
+              const filteredFields = rawFields
+                .map(field => ({
+                  label: field?.label || field?.key,
+                  value: field?.value
+                }))
+                .filter(entry => formatFieldValue(entry.value));
+
+              if (!filteredFields.length) {
+                return null;
+              }
+
+              const title =
+                category && typeof category.title === 'string' && category.title.trim()
+                  ? category.title.trim()
+                  : 'Informations supplémentaires';
+
+              return {
+                title,
+                fields: filteredFields
+              };
+            })
+            .filter(Boolean);
+        } catch (_) {
+          return [];
+        }
+      };
+
+      const attachments = Array.isArray(profile?.attachments) ? profile.attachments : [];
+      const attachmentSection = attachments.length
+        ? [{
+            label: 'Pièces jointes',
+            value: attachments
+              .map((file, index) => {
+                const displayName = String(
+                  file?.original_name || (file?.file_path ? path.basename(file.file_path) : `Pièce jointe ${index + 1}`)
+                ).trim();
+                const addedAt = formatDateTime(file?.created_at);
+                return addedAt ? `• ${displayName} (ajouté le ${addedAt})` : `• ${displayName}`;
+              })
+              .join('\n')
+          }]
+        : [];
+
+      const sections = [];
+      const extraSections = parseExtraSections();
+      sections.push(...extraSections);
+      if (attachmentSection.length) {
+        sections.push({ title: 'Documents', fields: attachmentSection });
+      }
+
+      const renderSection = section => {
+        if (!section || !Array.isArray(section.fields)) {
+          return;
+        }
+
+        const visibleFields = section.fields
+          .map(field => ({
+            label: field?.label || 'Information',
+            value: formatFieldValue(field?.value)
+          }))
+          .filter(field => field.value);
+
+        if (!visibleFields.length) {
+          return;
+        }
+
+        ensurePageCapacity(estimateSectionHeight(section.title, visibleFields));
+
+        const width = contentWidth();
+
+        applyBaseFont();
+        doc.moveDown(visibleFields.length ? 0.8 : 0.4);
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(14)
+          .fillColor(palette.accent)
+          .text(section.title, marginLeft(), doc.y, { width });
+
+        doc.moveDown(0.2);
+        doc
+          .lineWidth(1)
+          .strokeColor(palette.divider)
+          .moveTo(marginLeft(), doc.y)
+          .lineTo(marginLeft() + width, doc.y)
+          .stroke();
+        doc.moveDown(0.6);
+
+        visibleFields.forEach((field, index) => {
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(11)
+            .fillColor(palette.heading)
+            .text(`${field.label} : `, marginLeft(), doc.y, {
+              width,
+              continued: true
+            });
+          doc
+            .font('Helvetica')
+            .fontSize(11)
+            .fillColor(palette.text)
+            .text(field.value, {
+              width,
+              align: 'left'
+            });
+
+          if (index < visibleFields.length - 1) {
+            doc.moveDown(0.3);
+          }
+        });
+      };
+
+      sections.forEach(section => {
+        renderSection(section);
+      });
+
+      const ensureSpaceForSignature = () => {
+        const required = 60;
+        const bottomLimit = pageHeight() - marginBottom() - required;
+        if (doc.y > bottomLimit) {
+          skipHeader = true;
+          doc.addPage();
+        }
+      };
+
+      doc.moveDown(1.2);
+      ensureSpaceForSignature();
+      addSignature();
+    } finally {
+      if (typeof doc.off === 'function') {
+        doc.off('pageAdded', handlePageAdded);
+      } else if (typeof doc.removeListener === 'function') {
+        doc.removeListener('pageAdded', handlePageAdded);
+      }
+    }
+  } catch (error) {
+    console.error('Erreur génération PDF profil:', error);
+    throw new Error('Impossible de générer le PDF du profil');
+  }
+};
+
+export default ProfileService;
