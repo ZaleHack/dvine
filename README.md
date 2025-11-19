@@ -23,6 +23,10 @@ Le gestionnaire `server/config/database.js` crée automatiquement la base `autre
 npm install
 ```
 
+> ℹ️ **Installation impossible ?** Consultez [`docs/troubleshooting.md`](docs/troubleshooting.md) pour obtenir les étapes de
+> diagnostic lorsque `npm install` échoue avec `ECONNRESET` ou d'autres erreurs réseau fréquentes dans les environnements
+> restreints.
+
 Copiez ensuite vos paramètres sensibles (connexion MySQL, clés JWT, etc.) dans un fichier `.env` basé sur `.env.example`.
 
 ### Variables d'environnement de sécurité
