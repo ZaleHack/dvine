@@ -898,7 +898,7 @@ const renderProfilePDF = async (
         return;
       }
       doc.save();
-      const signatureText = 'SORA';
+      const signatureText = 'Dvine Intelligence';
       doc.font('Helvetica-Bold').fontSize(12).fillColor(palette.accent);
       const textWidth = doc.widthOfString(signatureText);
       const signatureX = pageWidth() - marginRight() - textWidth;
