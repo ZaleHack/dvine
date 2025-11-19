@@ -1,8 +1,0 @@
-{
-  "name": "mysql2",
-  "version": "0.0.0-stub",
-  "type": "module",
-  "exports": {
-    "./promise": "./promise.js"
-  }
-}
