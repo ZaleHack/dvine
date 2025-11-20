@@ -1745,6 +1745,36 @@ const App: React.FC = () => {
     setUploadHistoryPage(1);
   }, [uploadHistoryPerPage]);
 
+  const parseRowCount = useCallback((value: unknown) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  }, []);
+
+  const normalizeUploadRecord = useCallback(
+    (record: any) => {
+      const successRows = parseRowCount(record?.success_rows ?? record?.successRows);
+      const errorRows = parseRowCount(record?.error_rows ?? record?.errorRows);
+      const providedTotal = parseRowCount(record?.total_rows ?? record?.totalRows);
+      const total_rows = providedTotal || successRows + errorRows;
+
+      const created_at =
+        typeof record?.created_at === 'string'
+          ? record.created_at
+          : typeof record?.createdAt === 'string'
+            ? record.createdAt
+            : '';
+
+      return {
+        ...record,
+        created_at,
+        total_rows,
+        success_rows: successRows,
+        error_rows: errorRows
+      };
+    },
+    [parseRowCount]
+  );
+
   const uploadSummary = useMemo(() => {
     if (!uploadHistory.length) {
       return {
@@ -1759,19 +1789,18 @@ const App: React.FC = () => {
     }
 
     let totalRows = 0;
+    let successRows = 0;
     let errorRows = 0;
 
     uploadHistory.forEach((item) => {
-      const currentTotal =
-        typeof item.total_rows === 'number'
-          ? item.total_rows
-          : typeof item.success_rows === 'number'
-            ? item.success_rows
-            : 0;
+      const normalizedItem = normalizeUploadRecord(item);
+      const currentTotal = parseRowCount(normalizedItem.total_rows);
+      const currentErrors = parseRowCount(normalizedItem.error_rows);
+      const currentSuccess = parseRowCount(normalizedItem.success_rows || currentTotal - currentErrors);
+
       totalRows += currentTotal;
-      if (typeof item.error_rows === 'number') {
-        errorRows += item.error_rows;
-      }
+      errorRows += currentErrors;
+      successRows += currentSuccess;
     });
 
     const lastImport = uploadHistory[0];
@@ -1780,7 +1809,7 @@ const App: React.FC = () => {
     return {
       totalImports: uploadHistory.length,
       totalRows,
-      successRate: totalRows > 0 ? Math.round(((totalRows - errorRows) / totalRows) * 100) : null,
+      successRate: totalRows > 0 ? Math.round((successRows / totalRows) * 100) : null,
       lastImportRelative: lastImportDate
         ? formatDistanceToNow(lastImportDate, { addSuffix: true, locale: fr })
         : null,
@@ -1788,7 +1817,7 @@ const App: React.FC = () => {
       lastImportUser: lastImport?.username ?? null,
       lastImportMode: getUploadModeLabel(lastImport?.upload_mode)
     };
-  }, [uploadHistory]);
+  }, [normalizeUploadRecord, parseRowCount, uploadHistory]);
 
   // États CDR
   const [cdrIdentifiers, setCdrIdentifiers] = useState<string[]>([]);
@@ -3545,7 +3574,7 @@ const App: React.FC = () => {
         setUploadTable('');
         setUploadFile(null);
         lastQueryRef.current = null;
-        await fetchUploadHistory();
+        await fetchUploadHistory(true);
         await loadStatistics();
       } else {
         notifyError(data.error || 'Erreur lors du chargement');
@@ -3557,7 +3586,7 @@ const App: React.FC = () => {
     }
   };
 
-  const fetchUploadHistory = async () => {
+  const fetchUploadHistory = async (resetSearchCache = false) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/upload/history?limit=100', {
@@ -3565,7 +3594,19 @@ const App: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setUploadHistory(data.history);
+        const normalizedHistory = Array.isArray(data.history)
+          ? data.history
+              .map((record: any) => normalizeUploadRecord(record))
+              .sort((a: any, b: any) => {
+                const aDate = Date.parse(a?.created_at ?? '');
+                const bDate = Date.parse(b?.created_at ?? '');
+                return (Number.isFinite(bDate) ? bDate : 0) - (Number.isFinite(aDate) ? aDate : 0);
+              })
+          : [];
+        setUploadHistory(normalizedHistory);
+        if (resetSearchCache) {
+          lastQueryRef.current = null;
+        }
       }
     } catch (error) {
       console.error('Erreur chargement historique upload:', error);
@@ -3589,7 +3630,7 @@ const App: React.FC = () => {
           const data = await res.json();
           if (res.ok) {
             lastQueryRef.current = null;
-            await fetchUploadHistory();
+            await fetchUploadHistory(true);
             await loadStatistics();
           } else {
             notifyError(data.error || 'Erreur lors de la suppression');
@@ -8542,14 +8583,19 @@ const App: React.FC = () => {
                       <div className="flex flex-col gap-6 pt-6">
                         <div className="space-y-4">
                           {paginatedUploadHistory.map((item, index) => {
-                            const createdAt = item.created_at ? parseISO(item.created_at) : null;
+                            const normalizedItem = normalizeUploadRecord(item);
+                            const createdAt = normalizedItem.created_at ? parseISO(normalizedItem.created_at) : null;
                             const createdLabel = createdAt ? format(createdAt, 'dd/MM/yyyy HH:mm', { locale: fr }) : null;
-                            const createdRelative = createdAt ? formatDistanceToNow(createdAt, { addSuffix: true, locale: fr }) : null;
-                            const totalRows = typeof item.total_rows === 'number' ? item.total_rows : (typeof item.success_rows === 'number' ? item.success_rows : 0);
-                            const successRows = typeof item.success_rows === 'number' ? item.success_rows : null;
-                          const errorRows = typeof item.error_rows === 'number' ? item.error_rows : 0;
-                          const hasErrors = (errorRows ?? 0) > 0 || Boolean(item.errors);
-                          const uploadModeLabel = getUploadModeLabel(item.upload_mode);
+                            const createdRelative = createdAt
+                              ? formatDistanceToNow(createdAt, { addSuffix: true, locale: fr })
+                              : null;
+                            const normalizedTotal = parseRowCount(normalizedItem.total_rows);
+                            const normalizedErrors = parseRowCount(normalizedItem.error_rows);
+                            const normalizedSuccess = parseRowCount(
+                              normalizedItem.success_rows || normalizedTotal - normalizedErrors
+                            );
+                            const hasErrors = (normalizedErrors ?? 0) > 0 || Boolean(normalizedItem.errors);
+                            const uploadModeLabel = getUploadModeLabel(normalizedItem.upload_mode);
 
                           return (
                             <div
@@ -8570,7 +8616,7 @@ const App: React.FC = () => {
                                 </div>
                                 <div className="flex flex-col items-end gap-1 text-right">
                                   <span className="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400 dark:text-slate-500">Enregistrements</span>
-                                  <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{totalRows.toLocaleString('fr-FR')}</span>
+                                  <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{normalizedTotal.toLocaleString('fr-FR')}</span>
                                   {createdLabel && (
                                     <span className="text-xs text-slate-400 dark:text-slate-500">Importé le {createdLabel}</span>
                                   )}
@@ -8582,7 +8628,7 @@ const App: React.FC = () => {
                               <div className="relative z-10 mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                                 <div className="rounded-xl border border-emerald-200/60 bg-emerald-500/5 px-4 py-3 text-sm shadow-sm dark:border-emerald-500/30 dark:bg-emerald-500/10">
                                   <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-200">Réussis</p>
-                                  <p className="mt-1 text-base font-semibold text-emerald-600 dark:text-emerald-200">{(successRows ?? totalRows).toLocaleString('fr-FR')}</p>
+                                  <p className="mt-1 text-base font-semibold text-emerald-600 dark:text-emerald-200">{(normalizedSuccess || normalizedTotal).toLocaleString('fr-FR')}</p>
                                 </div>
                                 <div
                                   className={`rounded-xl border px-4 py-3 text-sm shadow-sm ${
@@ -8592,7 +8638,7 @@ const App: React.FC = () => {
                                   }`}
                                 >
                                   <p className="text-[10px] font-semibold uppercase tracking-[0.3em]">Erreurs</p>
-                                  <p className="mt-1 text-base font-semibold">{errorRows.toLocaleString('fr-FR')}</p>
+                                  <p className="mt-1 text-base font-semibold">{normalizedErrors.toLocaleString('fr-FR')}</p>
                                 </div>
                                 <div className="rounded-xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm shadow-sm dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-200">
                                   <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Mode</p>
