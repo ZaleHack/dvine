@@ -71,7 +71,7 @@ class UploadService {
           success_rows: 0,
           error_rows: 0,
           upload_mode: mode,
-          errors: ''
+          errors: JSON.stringify([])
         });
       }
 
@@ -93,7 +93,7 @@ class UploadService {
           [
             successRows,
             errorRows,
-            errors.slice(0, 10).join('\n'),
+            JSON.stringify(errors.slice(0, 10)),
             uploadId
           ]
         );
@@ -209,7 +209,7 @@ class UploadService {
           success_rows: 0,
           error_rows: 0,
           upload_mode: 'sql',
-          errors: ''
+          errors: JSON.stringify([])
         });
       }
 
@@ -253,6 +253,18 @@ class UploadService {
 
   async logUpload(logData) {
     try {
+      let errors = logData.errors;
+
+      if (typeof errors !== 'string') {
+        errors = JSON.stringify(errors ?? []);
+      } else {
+        try {
+          JSON.parse(errors);
+        } catch {
+          errors = JSON.stringify([errors]);
+        }
+      }
+
       const result = await database.query(`
         INSERT INTO upload_history (
           user_id, table_name, file_name, total_rows, success_rows,
@@ -266,7 +278,7 @@ class UploadService {
         logData.success_rows,
         logData.error_rows,
         logData.upload_mode,
-        logData.errors
+        errors
       ]);
       return result.insertId;
     } catch (error) {
