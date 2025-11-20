@@ -5,10 +5,6 @@ export type AppPage =
   | 'login'
   | 'dashboard'
   | 'search'
-  | 'annuaire'
-  | 'ong'
-  | 'entreprises'
-  | 'vehicules'
   | 'cdr'
   | 'cdr-case'
   | 'fraud-detection'
@@ -23,10 +19,6 @@ export const pageToPath: Record<AppPage, string> = {
   login: '/login',
   dashboard: '/',
   search: '/recherche',
-  annuaire: '/annuaire',
-  ong: '/ong',
-  entreprises: '/entreprises',
-  vehicules: '/vehicules',
   cdr: '/cdr',
   'cdr-case': '/cdr/dossier',
   'fraud-detection': '/fraude',

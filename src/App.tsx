@@ -14,8 +14,6 @@ import {
   Trash2,
   Key,
   Download,
-  Sun,
-  Moon,
   Shield,
   UserCheck,
   Clock,
@@ -29,7 +27,6 @@ import {
   Phone,
   PhoneIncoming,
   Building2,
-  Globe,
   Car,
   Ban,
   UserCircle,
@@ -304,53 +301,6 @@ type RequestMetric = {
 const DASHBOARD_CARD_STORAGE_KEY = 'sora.dashboard.cardOrder';
 const DEFAULT_CARD_ORDER = ['total-searches', 'data', 'profiles', 'requests', 'operations'];
 
-interface GendarmerieEntry {
-  id: number;
-  libelle: string;
-  telephone: string;
-  souscategorie?: string;
-  secteur?: string;
-  created_at?: string;
-}
-
-interface EntrepriseEntry {
-  ninea_ninet: string;
-  cuci: string;
-  raison_social: string;
-  ensemble_sigle: string;
-  numrc: string;
-  syscoa1: string;
-  syscoa2: string;
-  syscoa3: string;
-  naemas: string;
-  naemas_rev1: string;
-  citi_rev4: string;
-  adresse: string;
-  telephone: string;
-  telephone1: string;
-  numero_telecopie: string;
-  email: string;
-  bp: string;
-  region: string;
-  departement: string;
-  ville: string;
-  commune: string;
-  quartier: string;
-  personne_contact: string;
-  adresse_personne_contact: string;
-  qualite_personne_contact: string;
-  premiere_annee_exercice: string;
-  forme_juridique: string;
-  regime_fiscal: string;
-  pays_du_siege_de_lentreprise: string;
-  nombre_etablissement: string;
-  controle: string;
-  date_reception: string;
-  libelle_activite_principale: string;
-  observations: string;
-  systeme: string;
-}
-
 interface ProfileData {
   id: number;
   first_name?: string | null;
@@ -436,57 +386,6 @@ interface SessionLog {
   login_at: string;
   logout_at: string | null;
   duration_seconds: number;
-}
-
-interface OngEntry {
-  id: number;
-  organization_name: string;
-  type: string;
-  name: string;
-  title: string;
-  email_address: string;
-  telephone: string;
-  select_area_of_Interest: string;
-  select_sectors_of_interest: string;
-  created_at: string;
-}
-
-interface VehiculeEntry {
-  id: number;
-  Numero_Immatriculation: string;
-  Code_Type: string;
-  Numero_Serie: string;
-  Date_Immatriculation: string;
-  Serie_Immatriculation: string;
-  Categorie: string;
-  Marque: string;
-  Appelation_Com: string;
-  Genre: string;
-  Carrosserie: string;
-  Etat_Initial: string;
-  Immat_Etrangere: string;
-  Date_Etrangere: string;
-  Date_Mise_Circulation: string;
-  Date_Premiere_Immat: string;
-  Energie: string;
-  Puissance_Adm: string;
-  Cylindre: string;
-  Places_Assises: string;
-  PTR: string;
-  PTAC_Code: string;
-  Poids_Vide: string;
-  CU: string;
-  Prenoms: string;
-  Nom: string;
-  Date_Naissance: string;
-  Exact: string;
-  Lieu_Naissance: string;
-  Adresse_Vehicule: string;
-  Code_Localite: string;
-  Tel_Fixe: string;
-  Tel_Portable: string;
-  PrecImmat: string;
-  Date_PrecImmat: string;
 }
 
 interface CdrContact {
@@ -1166,14 +1065,6 @@ const App: React.FC = () => {
   const mainContentRef = useRef<HTMLDivElement | null>(null);
   const inactivityTimerRef = useRef<number | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
-    (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
-  );
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     if (!isAuthenticated && currentPage !== 'login') {
@@ -1891,35 +1782,6 @@ const App: React.FC = () => {
       lastImportMode: getUploadModeLabel(lastImport?.upload_mode)
     };
   }, [uploadHistory]);
-
-  // États annuaire gendarmerie
-  const [gendarmerieData, setGendarmerieData] = useState<GendarmerieEntry[]>([]);
-  const [gendarmerieSearch, setGendarmerieSearch] = useState('');
-  const [gendarmeriePage, setGendarmeriePage] = useState(1);
-  const [gendarmerieLoading, setGendarmerieLoading] = useState(false);
-  const [gendarmeriePerPage, setGendarmeriePerPage] = useState(10);
-
-  // États ONG
-  const [ongData, setOngData] = useState<OngEntry[]>([]);
-  const [ongSearch, setOngSearch] = useState('');
-  const [ongPage, setOngPage] = useState(1);
-  const [ongLoading, setOngLoading] = useState(false);
-  const [ongPerPage, setOngPerPage] = useState(10);
-
-  // États entreprises
-  const [entreprisesData, setEntreprisesData] = useState<EntrepriseEntry[]>([]);
-  const [entreprisesSearch, setEntreprisesSearch] = useState('');
-  const [entreprisesPage, setEntreprisesPage] = useState(1);
-  const [entreprisesLoading, setEntreprisesLoading] = useState(false);
-  const [entreprisesPerPage, setEntreprisesPerPage] = useState(10);
-  const [entreprisesTotal, setEntreprisesTotal] = useState(0);
-
-  const [vehiculesData, setVehiculesData] = useState<VehiculeEntry[]>([]);
-  const [vehiculesSearch, setVehiculesSearch] = useState('');
-  const [vehiculesPage, setVehiculesPage] = useState(1);
-  const [vehiculesLoading, setVehiculesLoading] = useState(false);
-  const [vehiculesPerPage, setVehiculesPerPage] = useState(10);
-  const [vehiculesTotal, setVehiculesTotal] = useState(0);
 
   // États CDR
   const [cdrIdentifiers, setCdrIdentifiers] = useState<string[]>([]);
@@ -3754,98 +3616,6 @@ useEffect(() => {
     });
   };
 
-  const fetchAnnuaire = async () => {
-    setGendarmerieLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/annuaire-gendarmerie', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const entries = data.entries || data.contacts || data;
-        setGendarmerieData(entries);
-      }
-    } catch (error) {
-      console.error('Erreur chargement annuaire:', error);
-    } finally {
-      setGendarmerieLoading(false);
-    }
-  };
-
-  const fetchOng = async () => {
-    setOngLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/ong', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const entries = data.entries || data;
-        setOngData(entries);
-      }
-    } catch (error) {
-      console.error('Erreur chargement ONG:', error);
-    } finally {
-      setOngLoading(false);
-    }
-  };
-
-  const fetchEntreprises = async () => {
-    setEntreprisesLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams({
-        page: entreprisesPage.toString(),
-        limit: entreprisesPerPage.toString()
-      });
-      if (entreprisesSearch.trim()) {
-        params.append('search', entreprisesSearch.trim());
-      }
-      const response = await fetch(`/api/entreprises?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const entries = data.entries || [];
-        setEntreprisesData(entries);
-        setEntreprisesTotal(data.total || entries.length);
-      }
-    } catch (error) {
-      console.error('Erreur chargement entreprises:', error);
-    } finally {
-      setEntreprisesLoading(false);
-    }
-  };
-
-  const fetchVehicules = async () => {
-    setVehiculesLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams({
-        page: vehiculesPage.toString(),
-        limit: vehiculesPerPage.toString()
-      });
-      if (vehiculesSearch.trim()) {
-        params.append('search', vehiculesSearch.trim());
-      }
-      const response = await fetch(`/api/vehicules?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const entries = data.entries || [];
-        setVehiculesData(entries);
-        setVehiculesTotal(data.total || entries.length);
-      }
-    } catch (error) {
-      console.error('Erreur chargement véhicules:', error);
-    } finally {
-      setVehiculesLoading(false);
-    }
-  };
-
   const fetchCdrData = async (identifiersOverride?: string[]) => {
     const ids = dedupeCdrIdentifiers(identifiersOverride ?? cdrIdentifiers).filter(
       (identifier) => Boolean(identifier)
@@ -4641,18 +4411,6 @@ useEffect(() => {
     if (currentPage === 'upload' && isAdmin) {
       fetchUploadHistory();
     }
-    if (currentPage === 'annuaire' && currentUser) {
-      fetchAnnuaire();
-    }
-    if (currentPage === 'ong' && currentUser) {
-      fetchOng();
-    }
-    if (currentPage === 'entreprises' && currentUser) {
-      fetchEntreprises();
-    }
-    if (currentPage === 'vehicules' && currentUser) {
-      fetchVehicules();
-    }
     if (currentPage === 'cdr' && currentUser) {
       fetchCases();
     }
@@ -4662,12 +4420,6 @@ useEffect(() => {
   }, [
     currentPage,
     currentUser,
-    entreprisesPage,
-    entreprisesSearch,
-    entreprisesPerPage,
-    vehiculesPage,
-    vehiculesSearch,
-    vehiculesPerPage,
     isAdmin
   ]);
 
@@ -4874,122 +4626,61 @@ useEffect(() => {
     numericSearch.length >= 9 &&
     !hasPendingRequestForSearch;
 
-  const filteredGendarmerie =
-    gendarmerieSearch.trim() === ''
-      ? gendarmerieData
-      : (() => {
-          const results: GendarmerieEntry[] = [];
-          const addedTitles = new Set<number>();
-          const searchLower = gendarmerieSearch.toLowerCase();
-          gendarmerieData.forEach((entry, index) => {
-            const matches =
-              entry.libelle.toLowerCase().includes(searchLower) ||
-              (entry.telephone || '').toLowerCase().includes(searchLower) ||
-              (entry.souscategorie || '').toLowerCase().includes(searchLower) ||
-              (entry.secteur || '').toLowerCase().includes(searchLower) ||
-              entry.id.toString().includes(searchLower);
+  const menuSections = useMemo(
+    () => {
+      const sections: {
+        title: string;
+        description?: string;
+        items: { page: AppPage; label: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }[];
+      }[] = [
+        {
+          title: 'Navigation',
+          description: 'Accès rapide aux tableaux clés',
+          items: [
+            { page: 'dashboard', label: 'Tableau de bord', icon: Activity },
+            { page: 'search', label: 'Recherche', icon: Search }
+          ]
+        },
+        {
+          title: 'Analyses',
+          description: 'Outils de terrain et d’investigation',
+          items: [
+            { page: 'cdr', label: 'Géolocalisation', icon: Clock },
+            { page: 'fraud-detection', label: 'Détection de fraude', icon: AlertTriangle }
+          ]
+        },
+        {
+          title: 'Opérations',
+          description: 'Suivi des demandes et des profils',
+          items: [
+            { page: 'requests', label: 'Demandes', icon: ClipboardList },
+            { page: 'profiles', label: 'Fiches de profil', icon: FileText }
+          ]
+        }
+      ];
 
-            if (matches) {
-              if (entry.telephone && entry.telephone.trim() !== '') {
-                const prev = gendarmerieData[index - 1];
-                if (
-                  prev &&
-                  (!prev.telephone || prev.telephone.trim() === '') &&
-                  !addedTitles.has(prev.id)
-                ) {
-                  results.push(prev);
-                  addedTitles.add(prev.id);
-                }
-              }
-              results.push(entry);
-            }
-          });
-          return results;
-        })();
+      if (isAdmin) {
+        sections.push({
+          title: 'Administration',
+          description: 'Gouvernance et données partagées',
+          items: [
+            { page: 'blacklist', label: 'White List', icon: Ban },
+            { page: 'logs', label: 'Journaux', icon: List },
+            { page: 'users', label: 'Utilisateurs', icon: Users },
+            { page: 'upload', label: 'Imports', icon: UploadCloud }
+          ]
+        });
+      }
 
-  const gendarmerieTotalPages = Math.max(
-    1,
-    Math.ceil(filteredGendarmerie.length / gendarmeriePerPage)
+      return sections;
+    },
+    [isAdmin]
   );
-  const paginatedGendarmerie = filteredGendarmerie.slice(
-    (gendarmeriePage - 1) * gendarmeriePerPage,
-    gendarmeriePage * gendarmeriePerPage
-  );
-
-  useEffect(() => {
-    setGendarmeriePage(page => Math.min(page, gendarmerieTotalPages));
-  }, [gendarmerieTotalPages]);
-
-  const filteredOng =
-    ongSearch.trim() === ''
-      ? ongData
-      : ongData.filter(entry =>
-          Object.values(entry).some(val =>
-            String(val || '')
-              .toLowerCase()
-              .includes(ongSearch.toLowerCase())
-          )
-        );
-
-  const ongTotalPages = Math.max(
-    1,
-    Math.ceil(filteredOng.length / ongPerPage)
-  );
-  const paginatedOng = filteredOng.slice(
-    (ongPage - 1) * ongPerPage,
-    ongPage * ongPerPage
-  );
-
-  useEffect(() => {
-    setOngPage(page => Math.min(page, ongTotalPages));
-  }, [ongTotalPages]);
-
-  const entreprisesTotalPages = Math.max(
-    1,
-    Math.ceil(entreprisesTotal / entreprisesPerPage)
-  );
-  const paginatedEntreprises = entreprisesData;
-
-  useEffect(() => {
-    setEntreprisesPage(page => Math.min(page, entreprisesTotalPages));
-  }, [entreprisesTotalPages]);
-
-  const vehiculesTotalPages = Math.max(
-    1,
-    Math.ceil(vehiculesTotal / vehiculesPerPage)
-  );
-  const paginatedVehicules = vehiculesData;
-
-  useEffect(() => {
-    setVehiculesPage(page => Math.min(page, vehiculesTotalPages));
-  }, [vehiculesTotalPages]);
-
-  useEffect(() => {
-    setGendarmeriePage(1);
-  }, [gendarmerieSearch]);
-
-  useEffect(() => {
-    setOngPage(1);
-  }, [ongSearch]);
-
-  useEffect(() => {
-    setEntreprisesPage(1);
-  }, [entreprisesSearch]);
-
-  useEffect(() => {
-    setVehiculesPage(1);
-  }, [vehiculesSearch]);
 
   // Page de connexion
   if (!isAuthenticated) {
     return (
-      <div
-        className={`min-h-screen flex items-center justify-center p-4 ${
-          theme === 'dark'
-            ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100'
-            : 'bg-gradient-to-br from-rose-50 via-white to-red-50'
-        }`}
-      >
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-white via-rose-50 to-red-100 text-red-900">
         <div className="max-w-md w-full">
           <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-red-600 to-rose-700 px-8 py-6">
@@ -5463,32 +5154,32 @@ useEffect(() => {
     return combinedSection;
   };
 
-  return (
-    <>
-      <div
-      className="min-h-screen flex bg-slate-100 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100"
-    >
-      {!sidebarOpen && (
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(true)}
-          className="group fixed top-6 left-6 z-[1100] flex h-12 w-12 items-center justify-center rounded-xl border border-white/70 bg-white/90 text-slate-700 shadow-lg shadow-rose-500/20 backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-xl dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-200"
-          title="Déployer le menu"
-          aria-label="Déployer le menu"
+    return (
+      <>
+        <div
+          className="min-h-screen flex bg-gradient-to-br from-white via-rose-50 to-red-100 text-red-900"
         >
-          <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 opacity-0 transition-opacity group-hover:opacity-100" />
-          <ChevronRight className="relative h-5 w-5" />
-        </button>
-      )}
+        {!sidebarOpen && (
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="group fixed top-6 left-6 z-[1100] flex h-12 w-12 items-center justify-center rounded-xl border border-red-200 bg-white/95 text-red-700 shadow-lg shadow-red-200 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-red-400 hover:text-red-900 hover:shadow-xl"
+            title="Déployer le menu"
+            aria-label="Déployer le menu"
+          >
+            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-600 to-rose-500 opacity-0 transition-opacity group-hover:opacity-100" />
+            <ChevronRight className="relative h-5 w-5" />
+          </button>
+        )}
       {/* Sidebar */}
       <div
         className={`${
           sidebarOpen ? 'w-72' : 'w-20'
-        } relative overflow-hidden bg-white/80 dark:bg-gray-900/60 border-r border-white/60 dark:border-gray-800/70 backdrop-blur-xl shadow-[0_20px_50px_rgba(225,29,72,0.12)] transition-all duration-300 flex flex-col`}
+        } relative overflow-hidden bg-white/95 border-r border-red-100 backdrop-blur-xl shadow-[0_20px_50px_rgba(225,29,72,0.12)] transition-all duration-300 flex flex-col`}
       >
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/60 via-white/20 to-transparent dark:from-gray-900/60 dark:via-gray-900/30" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-rose-50/80 via-white/70 to-transparent" />
         {/* Header */}
-        <div className="relative p-6 border-b border-white/60 dark:border-gray-800/70">
+        <div className="relative p-6 border-b border-red-100/70">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center gap-0'}`}>
               <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30">
@@ -5499,32 +5190,17 @@ useEffect(() => {
                   <h1 className="text-xl font-extrabold bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 bg-clip-text text-transparent tracking-tight">
                     Dvine Intelligence
                   </h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Analyse proactive &amp; opérations unifiées</p>
+                  <p className="text-xs font-semibold text-red-600">Analyse proactive &amp; opérations unifiées</p>
                 </div>
               )}
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/60 bg-white/70 text-gray-600 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-200"
-                aria-label="Toggle theme"
-                title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
-              >
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 opacity-0 transition-opacity group-hover:opacity-100 dark:from-rose-500 dark:to-orange-500" />
-                <span className="relative">
-                  {theme === 'dark' ? (
-                    <Sun className="h-5 w-5" />
-                  ) : (
-                    <Moon className="h-5 w-5" />
-                  )}
-                </span>
-              </button>
-              <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/60 bg-white/70 text-gray-600 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-200"
+                className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-white text-red-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-red-400 hover:text-red-800 hover:shadow-lg"
                 title={sidebarOpen ? 'Réduire le menu' : 'Déployer le menu'}
               >
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-600 to-rose-500 opacity-0 transition-opacity group-hover:opacity-100" />
                 <span className="relative">
                   {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                 </span>
@@ -5535,201 +5211,46 @@ useEffect(() => {
 
         {/* Navigation */}
         <nav className="relative flex-1 overflow-y-auto p-4 pb-48">
-          <div className="space-y-2">
-            <button
-              onClick={() => navigateToPage('dashboard')}
-              title="Dashboard"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'dashboard'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <Activity className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Dashboard</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('search')}
-              title="Recherche"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'search'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <Search className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Recherche</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('annuaire')}
-              title="Annuaire Gendarmerie"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'annuaire'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <Phone className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Annuaire Gendarmerie</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('ong')}
-              title="ONG"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'ong'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <Globe className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">ONG</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('entreprises')}
-              title="Entreprises"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'entreprises'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <Building2 className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Entreprises</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('vehicules')}
-              title="Véhicules"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'vehicules'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <Car className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Véhicules</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('cdr')}
-              title="Géolocalisation"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'cdr'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <Clock className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Géolocalisation</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('fraud-detection')}
-              title="Détection de Fraude"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'fraud-detection'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <AlertTriangle className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Détection de Fraude</span>}
-            </button>
-
-            <button
-              onClick={() => navigateToPage('requests')}
-              title="Demandes"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'requests'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <ClipboardList className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Demandes</span>}
-            </button>
-
-            <button
-              onClick={() => {
-                navigateToPage('profiles');
-                setShowProfileForm(false);
-              }}
-              title="Fiches de profil"
-              className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                currentPage === 'profiles'
-                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                  : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-              } ${!sidebarOpen && 'justify-center px-0'}`}
-            >
-              <FileText className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              {sidebarOpen && <span className="ml-3">Fiches de profil</span>}
-            </button>
-
-            {isAdmin && (
-              <button
-                onClick={() => navigateToPage('blacklist')}
-                title="White List"
-                className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                  currentPage === 'blacklist'
-                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                    : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-                } ${!sidebarOpen && 'justify-center px-0'}`}
+          <div className="space-y-4">
+            {menuSections.map((section) => (
+              <div
+                key={section.title}
+                className={`rounded-2xl border border-red-100 bg-white/90 shadow-lg shadow-red-100/50 backdrop-blur transition-all ${sidebarOpen ? 'p-4' : 'p-3'}`}
               >
-                <Ban className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                {sidebarOpen && <span className="ml-3">White List</span>}
-              </button>
-            )}
-
-            {isAdmin && (
-              <button
-                onClick={() => navigateToPage('logs')}
-                title="Logs"
-                className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                  currentPage === 'logs'
-                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                    : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-                } ${!sidebarOpen && 'justify-center px-0'}`}
-              >
-                <List className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                {sidebarOpen && <span className="ml-3">Logs</span>}
-              </button>
-            )}
-
-            {isAdmin && (
-              <button
-                onClick={() => navigateToPage('users')}
-                title="Utilisateurs"
-                className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                  currentPage === 'users'
-                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                    : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-                } ${!sidebarOpen && 'justify-center px-0'}`}
-              >
-                <Users className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                {sidebarOpen && <span className="ml-3">Utilisateurs</span>}
-              </button>
-            )}
-
-            {isAdmin && (
-              <button
-                onClick={() => navigateToPage('upload')}
-                title="Charger des données"
-                className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                  currentPage === 'upload'
-                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
-                    : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
-                } ${!sidebarOpen && 'justify-center px-0'}`}
-              >
-                <Upload className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                {sidebarOpen && <span className="ml-3">Charger des données</span>}
-              </button>
-            )}
+                {sidebarOpen && (
+                  <div className="mb-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-red-500">
+                      {section.title}
+                    </p>
+                    {section.description && (
+                      <p className="mt-1 text-xs text-red-600/80">{section.description}</p>
+                    )}
+                  </div>
+                )}
+                <div className="grid gap-2">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentPage === item.page;
+                    return (
+                      <button
+                        key={item.page}
+                        onClick={() => navigateToPage(item.page)}
+                        title={item.label}
+                        className={`group relative flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'} gap-3 rounded-xl border ${isActive ? 'border-red-500 bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-lg shadow-red-200' : 'border-red-100 bg-white text-red-800 shadow-sm hover:-translate-y-0.5 hover:border-red-300 hover:shadow-md'} px-3 py-3 text-sm font-semibold transition-all`}
+                      >
+                        <span
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-red-50 text-red-600 group-hover:bg-red-100'}`}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        {sidebarOpen && <span className="flex-1 text-left">{item.label}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
-
         </nav>
 
         {/* User info */}
@@ -5786,7 +5307,7 @@ useEffect(() => {
       </div>
 
       {/* Main content */}
-        <div ref={mainContentRef} className="flex-1 overflow-auto scroll-smooth bg-white/70 dark:bg-slate-900/50">
+        <div ref={mainContentRef} className="flex-1 overflow-auto scroll-smooth bg-white/80">
           <div className="p-8">
               <div className="flex justify-end mb-4 relative">
                 <button
@@ -6236,435 +5757,6 @@ useEffect(() => {
                     )}
                 </div>
               )}
-            </div>
-          )}
-
-          {currentPage === 'annuaire' && (
-            <div className="space-y-6">
-              <PageHeader icon={<Phone className="h-6 w-6" />} title="Annuaire Gendarmerie" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={gendarmerieSearch}
-                onChange={(e) => setGendarmerieSearch(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-              />
-              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
-                {gendarmerieLoading ? (
-                  <div className="loading-bar-container my-4">
-                    <div className="loading-bar"></div>
-                  </div>
-                ) : (
-                  <>
-                    <table className="min-w-full text-left text-sm text-slate-700 dark:text-slate-200">
-                      <thead className="bg-slate-100/80 dark:bg-slate-800/80">
-                        <tr className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">
-                          <th className="px-6 py-3">ID</th>
-                          <th className="px-6 py-3">Libellé</th>
-                          <th className="px-6 py-3">Téléphone</th>
-                          <th className="px-6 py-3">SousCategorie</th>
-                          <th className="px-6 py-3">Secteur</th>
-                          <th className="px-6 py-3">Créé le</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200/70 dark:divide-slate-700/60">
-                        {paginatedGendarmerie.map((entry) => {
-                          const isTitle = !entry.telephone || entry.telephone.trim() === '';
-                          return isTitle ? (
-                            <tr key={entry.id} className="bg-slate-100/80 dark:bg-slate-800/70">
-                              <td colSpan={6} className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">
-                                {entry.libelle}
-                              </td>
-                            </tr>
-                          ) : (
-                            <tr
-                              key={entry.id}
-                              className="odd:bg-white even:bg-slate-50/70 dark:odd:bg-slate-900/60 dark:even:bg-slate-800/60"
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap">{entry.id}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{entry.libelle}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{entry.telephone}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{entry.souscategorie}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{entry.secteur}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                    <div className="border-t border-slate-200/80 px-6 py-4 dark:border-slate-800/60">
-                      <div className="flex flex-col gap-3">
-                        <span className="text-sm text-slate-600 dark:text-slate-300">
-                          Page {gendarmeriePage} sur {gendarmerieTotalPages}
-                        </span>
-                        <PaginationControls
-                          currentPage={gendarmeriePage}
-                          totalPages={gendarmerieTotalPages}
-                          onPageChange={setGendarmeriePage}
-                          onLoadMore={() =>
-                            setGendarmeriePage((page) =>
-                              Math.min(page + 1, gendarmerieTotalPages)
-                            )
-                          }
-                          canLoadMore={gendarmeriePage < gendarmerieTotalPages}
-                          pageSize={gendarmeriePerPage}
-                          pageSizeOptions={PAGE_SIZE_OPTIONS}
-                          onPageSizeChange={(size) => {
-                            setGendarmeriePerPage(size);
-                            setGendarmeriePage(1);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {currentPage === 'ong' && (
-            <div className="space-y-6">
-              <PageHeader icon={<Users className="h-6 w-6" />} title="ONG" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={ongSearch}
-                onChange={(e) => {
-                  setOngSearch(e.target.value);
-                  setOngPage(1);
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-              />
-              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
-                {ongLoading ? (
-                  <div className="loading-bar-container my-4">
-                    <div className="loading-bar"></div>
-                  </div>
-                ) : (
-                  <>
-                    <table className="min-w-full text-left text-sm text-slate-700 dark:text-slate-200">
-                      <thead className="bg-slate-100/80 dark:bg-slate-800/80">
-                        <tr className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">
-                          <th className="px-6 py-3">ID</th>
-                          <th className="px-6 py-3">organization_name</th>
-                          <th className="px-6 py-3">type</th>
-                          <th className="px-6 py-3">name</th>
-                          <th className="px-6 py-3">title</th>
-                          <th className="px-6 py-3">email_address</th>
-                          <th className="px-6 py-3">telephone</th>
-                          <th className="px-6 py-3">select_area_of_Interest</th>
-                          <th className="px-6 py-3">select_sectors_of_interest</th>
-                          <th className="px-6 py-3">created_at</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200/70 dark:divide-slate-700/60">
-                        {paginatedOng.map(entry => (
-                          <tr key={entry.id} className="odd:bg-white even:bg-slate-50/70 dark:odd:bg-slate-900/60 dark:even:bg-slate-800/60">
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.id}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.organization_name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.type}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.title}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.email_address}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.telephone}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.select_area_of_Interest}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.select_sectors_of_interest}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.created_at}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="border-t border-slate-200/80 px-6 py-4 dark:border-slate-800/60">
-                      <div className="flex flex-col gap-3">
-                        <span className="text-sm text-slate-600 dark:text-slate-300">
-                          Page {ongPage} sur {ongTotalPages}
-                        </span>
-                        <PaginationControls
-                          currentPage={ongPage}
-                          totalPages={ongTotalPages}
-                          onPageChange={setOngPage}
-                          onLoadMore={() =>
-                            setOngPage(page => Math.min(page + 1, ongTotalPages))
-                          }
-                          canLoadMore={ongPage < ongTotalPages}
-                          pageSize={ongPerPage}
-                          pageSizeOptions={PAGE_SIZE_OPTIONS}
-                          onPageSizeChange={(size) => {
-                            setOngPerPage(size);
-                            setOngPage(1);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {currentPage === 'entreprises' && (
-            <div className="space-y-6">
-              <PageHeader icon={<Building2 className="h-6 w-6" />} title="Entreprises" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={entreprisesSearch}
-                onChange={(e) => {
-                  setEntreprisesSearch(e.target.value);
-                  setEntreprisesPage(1);
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-              />
-              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
-                {entreprisesLoading ? (
-                  <div className="loading-bar-container my-4">
-                    <div className="loading-bar"></div>
-                  </div>
-                ) : (
-                  <>
-                    <table className="min-w-full text-left text-sm text-slate-700 dark:text-slate-200">
-                      <thead className="bg-slate-100/80 dark:bg-slate-800/80">
-                        <tr className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">
-                          <th className="px-6 py-3 whitespace-nowrap">ninea_ninet</th>
-                          <th className="px-6 py-3 whitespace-nowrap">cuci</th>
-                          <th className="px-6 py-3 whitespace-nowrap">raison_social</th>
-                          <th className="px-6 py-3 whitespace-nowrap">ensemble_sigle</th>
-                          <th className="px-6 py-3 whitespace-nowrap">numrc</th>
-                          <th className="px-6 py-3 whitespace-nowrap">syscoa1</th>
-                          <th className="px-6 py-3 whitespace-nowrap">syscoa2</th>
-                          <th className="px-6 py-3 whitespace-nowrap">syscoa3</th>
-                          <th className="px-6 py-3 whitespace-nowrap">naemas</th>
-                          <th className="px-6 py-3 whitespace-nowrap">naemas_rev1</th>
-                          <th className="px-6 py-3 whitespace-nowrap">citi_rev4</th>
-                          <th className="px-6 py-3 whitespace-nowrap">adresse</th>
-                          <th className="px-6 py-3 whitespace-nowrap">telephone</th>
-                          <th className="px-6 py-3 whitespace-nowrap">telephone1</th>
-                          <th className="px-6 py-3 whitespace-nowrap">numero_telecopie</th>
-                          <th className="px-6 py-3 whitespace-nowrap">email</th>
-                          <th className="px-6 py-3 whitespace-nowrap">bp</th>
-                          <th className="px-6 py-3 whitespace-nowrap">region</th>
-                          <th className="px-6 py-3 whitespace-nowrap">departement</th>
-                          <th className="px-6 py-3 whitespace-nowrap">ville</th>
-                          <th className="px-6 py-3 whitespace-nowrap">commune</th>
-                          <th className="px-6 py-3 whitespace-nowrap">quartier</th>
-                          <th className="px-6 py-3 whitespace-nowrap">personne_contact</th>
-                          <th className="px-6 py-3 whitespace-nowrap">adresse_personne_contact</th>
-                          <th className="px-6 py-3 whitespace-nowrap">qualite_personne_contact</th>
-                          <th className="px-6 py-3 whitespace-nowrap">premiere_annee_exercice</th>
-                          <th className="px-6 py-3 whitespace-nowrap">forme_juridique</th>
-                          <th className="px-6 py-3 whitespace-nowrap">regime_fiscal</th>
-                          <th className="px-6 py-3 whitespace-nowrap">pays_du_siege_de_lentreprise</th>
-                          <th className="px-6 py-3 whitespace-nowrap">nombre_etablissement</th>
-                          <th className="px-6 py-3 whitespace-nowrap">controle</th>
-                          <th className="px-6 py-3 whitespace-nowrap">date_reception</th>
-                          <th className="px-6 py-3 whitespace-nowrap">libelle_activite_principale</th>
-                          <th className="px-6 py-3 whitespace-nowrap">observations</th>
-                          <th className="px-6 py-3 whitespace-nowrap">systeme</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200/70 dark:divide-slate-700/60">
-                        {paginatedEntreprises.map((entry, index) => (
-                          <tr key={index} className="odd:bg-white even:bg-slate-50/70 dark:odd:bg-slate-900/60 dark:even:bg-slate-800/60">
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.ninea_ninet}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.cuci}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.raison_social}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.ensemble_sigle}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.numrc}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.syscoa1}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.syscoa2}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.syscoa3}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.naemas}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.naemas_rev1}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.citi_rev4}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.adresse}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.telephone}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.telephone1}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.numero_telecopie}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.email}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.bp}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.region}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.departement}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.ville}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.commune}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.quartier}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.personne_contact}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.adresse_personne_contact}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.qualite_personne_contact}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.premiere_annee_exercice}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.forme_juridique}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.regime_fiscal}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.pays_du_siege_de_lentreprise}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.nombre_etablissement}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.controle}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.date_reception}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.libelle_activite_principale}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.observations}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.systeme}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="border-t border-slate-200/80 px-6 py-4 dark:border-slate-800/60">
-                      <div className="flex flex-col gap-3">
-                        <span className="text-sm text-slate-600 dark:text-slate-300">
-                          Page {entreprisesPage} sur {entreprisesTotalPages}
-                        </span>
-                        <PaginationControls
-                          currentPage={entreprisesPage}
-                          totalPages={entreprisesTotalPages}
-                          onPageChange={setEntreprisesPage}
-                          onLoadMore={() =>
-                            setEntreprisesPage((page) =>
-                              Math.min(page + 1, entreprisesTotalPages)
-                            )
-                          }
-                          canLoadMore={entreprisesPage < entreprisesTotalPages}
-                          pageSize={entreprisesPerPage}
-                          pageSizeOptions={PAGE_SIZE_OPTIONS}
-                          onPageSizeChange={(size) => {
-                            setEntreprisesPerPage(size);
-                            setEntreprisesPage(1);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {currentPage === 'vehicules' && (
-            <div className="space-y-6">
-              <PageHeader icon={<Car className="h-6 w-6" />} title="Véhicules" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={vehiculesSearch}
-                onChange={(e) => {
-                  setVehiculesSearch(e.target.value);
-                  setVehiculesPage(1);
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-              />
-              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
-                {vehiculesLoading ? (
-                  <div className="loading-bar-container my-4">
-                    <div className="loading-bar"></div>
-                  </div>
-                ) : (
-                  <>
-                    <table className="min-w-full text-left text-sm text-slate-700 dark:text-slate-200">
-                      <thead className="bg-slate-100/80 dark:bg-slate-800/80">
-                        <tr className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">
-                          <th className="px-6 py-3 whitespace-nowrap">ID</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Numero_Immatriculation</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Code_Type</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Numero_Serie</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Date_Immatriculation</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Serie_Immatriculation</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Categorie</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Marque</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Appelation_Com</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Genre</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Carrosserie</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Etat_Initial</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Immat_Etrangere</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Date_Etrangere</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Date_Mise_Circulation</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Date_Premiere_Immat</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Energie</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Puissance_Adm</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Cylindre</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Places_Assises</th>
-                          <th className="px-6 py-3 whitespace-nowrap">PTR</th>
-                          <th className="px-6 py-3 whitespace-nowrap">PTAC_Code</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Poids_Vide</th>
-                          <th className="px-6 py-3 whitespace-nowrap">CU</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Prenoms</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Nom</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Date_Naissance</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Exact</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Lieu_Naissance</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Adresse_Vehicule</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Code_Localite</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Tel_Fixe</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Tel_Portable</th>
-                          <th className="px-6 py-3 whitespace-nowrap">PrecImmat</th>
-                          <th className="px-6 py-3 whitespace-nowrap">Date_PrecImmat</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200/70 dark:divide-slate-700/60">
-                        {paginatedVehicules.map((entry) => (
-                          <tr key={entry.id} className="odd:bg-white even:bg-slate-50/70 dark:odd:bg-slate-900/60 dark:even:bg-slate-800/60">
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.id}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Numero_Immatriculation}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Code_Type}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Numero_Serie}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Date_Immatriculation}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Serie_Immatriculation}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Categorie}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Marque}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Appelation_Com}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Genre}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Carrosserie}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Etat_Initial}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Immat_Etrangere}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Date_Etrangere}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Date_Mise_Circulation}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Date_Premiere_Immat}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Energie}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Puissance_Adm}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Cylindre}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Places_Assises}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.PTR}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.PTAC_Code}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Poids_Vide}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.CU}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Prenoms}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Nom}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Date_Naissance}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Exact}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Lieu_Naissance}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Adresse_Vehicule}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Code_Localite}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Tel_Fixe}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Tel_Portable}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.PrecImmat}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{entry.Date_PrecImmat}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="border-t border-slate-200/80 px-6 py-4 dark:border-slate-800/60">
-                      <div className="flex flex-col gap-3">
-                        <span className="text-sm text-slate-600 dark:text-slate-300">
-                          Page {vehiculesPage} sur {vehiculesTotalPages}
-                        </span>
-                        <PaginationControls
-                          currentPage={vehiculesPage}
-                          totalPages={vehiculesTotalPages}
-                          onPageChange={setVehiculesPage}
-                          onLoadMore={() =>
-                            setVehiculesPage((page) =>
-                              Math.min(page + 1, vehiculesTotalPages)
-                            )
-                          }
-                          canLoadMore={vehiculesPage < vehiculesTotalPages}
-                          pageSize={vehiculesPerPage}
-                          pageSizeOptions={PAGE_SIZE_OPTIONS}
-                          onPageSizeChange={(size) => {
-                            setVehiculesPerPage(size);
-                            setVehiculesPage(1);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-            </div>
             </div>
           )}
 
