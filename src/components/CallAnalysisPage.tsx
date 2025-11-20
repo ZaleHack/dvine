@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { PhoneIncoming, RefreshCw, Activity, Clock, BarChart3, Sparkles, Phone } from 'lucide-react';
+import { PhoneIncoming, RefreshCw, Activity, Clock, BarChart3, Sparkles, Phone, FileDown } from 'lucide-react';
 import PageHeader from './PageHeader';
 import { useNotifications } from './NotificationProvider';
 
@@ -197,6 +197,7 @@ const CallAnalysisPage: React.FC = () => {
   const [endTime, setEndTime] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [result, setResult] = useState<CallSearchResponse | null>(null);
   const [globalStats, setGlobalStats] = useState<CallGlobalStats | null>(null);
@@ -231,6 +232,16 @@ const CallAnalysisPage: React.FC = () => {
     fetchGlobalStats();
   }, [fetchGlobalStats]);
 
+  const buildSearchParams = useCallback(() => {
+    const params = new URLSearchParams();
+    params.set('number', number.trim());
+    if (startDate) params.set('startDate', startDate);
+    if (endDate) params.set('endDate', endDate);
+    if (startTime) params.set('startTime', startTime);
+    if (endTime) params.set('endTime', endTime);
+    return params;
+  }, [number, startDate, endDate, startTime, endTime]);
+
   const handleSearch = useCallback(
     async (event?: React.FormEvent) => {
       event?.preventDefault();
@@ -249,12 +260,7 @@ const CallAnalysisPage: React.FC = () => {
           headers.Authorization = `Bearer ${token}`;
         }
 
-        const params = new URLSearchParams();
-        params.set('number', number.trim());
-        if (startDate) params.set('startDate', startDate);
-        if (endDate) params.set('endDate', endDate);
-        if (startTime) params.set('startTime', startTime);
-        if (endTime) params.set('endTime', endTime);
+        const params = buildSearchParams();
 
         const response = await fetch(`/api/call-analysis/search?${params.toString()}`, {
           credentials: 'include',
@@ -278,8 +284,49 @@ const CallAnalysisPage: React.FC = () => {
         setSearchLoading(false);
       }
     },
-    [number, startDate, endDate, startTime, endTime, notifyError, notifyInfo]
+    [number, startDate, endDate, startTime, endTime, notifyError, notifyInfo, buildSearchParams]
   );
+
+  const handleExportPdf = useCallback(async () => {
+    if (!result) return;
+    try {
+      setExportLoading(true);
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const params = buildSearchParams();
+      const response = await fetch(`/api/call-analysis/export?${params.toString()}`, {
+        credentials: 'include',
+        headers
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message = payload.error || "Impossible d'exporter le rapport";
+        throw new Error(message);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const sanitizedNumber = number.trim().replace(/[^0-9+]/g, '') || 'export';
+      link.download = `analyse-appels-${sanitizedNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erreur export analyse des appels:', error);
+      const message = error instanceof Error ? error.message : "Impossible d'exporter le rapport";
+      notifyError(message);
+    } finally {
+      setExportLoading(false);
+    }
+  }, [buildSearchParams, number, notifyError, result]);
 
   const totalCalls = (result?.summary?.asCaller || 0) + (result?.summary?.asCallee || 0);
   const inboundRatio = totalCalls === 0 ? 0 : Math.round(((result?.summary?.asCallee || 0) / totalCalls) * 100);
@@ -451,16 +498,31 @@ const CallAnalysisPage: React.FC = () => {
               <h3 className="text-xl font-bold text-slate-900">Chronologie filtrée</h3>
               <p className="text-sm text-slate-500">{result.total} enregistrements trouvés</p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <div className="rounded-full bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600">
-                {result.summary.asCaller} appels sortants
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+              <div className="flex flex-wrap gap-3">
+                <div className="rounded-full bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600">
+                  {result.summary.asCaller} appels sortants
+                </div>
+                <div className="rounded-full bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-600">
+                  {result.summary.asCallee} appels entrants
+                </div>
+                <div className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600">
+                  {formatDuration(result.summary.totalDuration)} cumulés
+                </div>
               </div>
-              <div className="rounded-full bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-600">
-                {result.summary.asCallee} appels entrants
-              </div>
-              <div className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600">
-                {formatDuration(result.summary.totalDuration)} cumulés
-              </div>
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={exportLoading}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-rose-300/50 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-400"
+              >
+                {exportLoading ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileDown className="h-4 w-4" />
+                )}
+                Exporter en PDF
+              </button>
             </div>
           </div>
 
