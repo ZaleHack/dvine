@@ -763,12 +763,12 @@ const renderProfilePDF = async (
       heading: '#0F172A',
       text: '#1F2937',
       muted: '#6B7280',
-      accent: '#1D4ED8',
+      accent: '#DC2626',
       divider: '#E5E7EB',
-      photoBackground: '#EFF6FF',
-      headerBackground: '#1D4ED8',
+      photoBackground: '#FEF2F2',
+      headerBackground: '#B91C1C',
       headerText: '#FFFFFF',
-      headerMuted: '#DBEAFE'
+      headerMuted: '#FECACA'
     };
 
     const formatDateTime = value => {
@@ -898,7 +898,7 @@ const renderProfilePDF = async (
         return;
       }
       doc.save();
-      const signatureText = 'SORA';
+      const signatureText = 'Dvine intelligence';
       doc.font('Helvetica-Bold').fontSize(12).fillColor(palette.accent);
       const textWidth = doc.widthOfString(signatureText);
       const signatureX = pageWidth() - marginRight() - textWidth;
