@@ -4803,9 +4803,17 @@ const App: React.FC = () => {
                 <LinkDiagram data={linkDiagram} onClose={() => setLinkDiagram(null)} />
               )}
               </div>
-            )}
+            </div>
+          </section>
+        );
 
-          {SHOW_REQUESTS_SECTION && currentPage === 'requests' && (
+      return combinedSection;
+    };
+
+    return (
+      <>
+
+        {SHOW_REQUESTS_SECTION && currentPage === 'requests' && (
             <div className="space-y-8">
               <PageHeader icon={<ClipboardList className="h-6 w-6" />} title="Liste des demandes" />
 
