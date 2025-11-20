@@ -3715,13 +3715,6 @@ const App: React.FC = () => {
     }
   };
 
-    setGlobalFraudIdentifier('');
-    setGlobalFraudStart('');
-    setGlobalFraudEnd('');
-    setGlobalFraudResult(null);
-    setGlobalFraudError('');
-  };
-
   const handleCdrSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!selectedCase) return;
