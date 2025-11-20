@@ -55,6 +55,67 @@ interface CallGlobalStats {
   recentVolume: { day: string; count: number; duration: number }[];
 }
 
+const releaseCauseDescriptions: Record<string, string> = {
+  '1': 'Numéro non attribué',
+  '2': 'Pas de route vers le réseau de transit spécifié',
+  '3': 'Pas de route vers la destination',
+  '4': 'Tonalité spéciale d’information',
+  '5': 'Préfixe de faisceau mal composé',
+  '6': 'Canal inacceptable',
+  '7': 'Appel attribué et livré sur un canal établi',
+  '8': 'Préemption',
+  '9': 'Préemption – circuit réservé pour réutilisation',
+  '16': 'Dégagement normal',
+  '17': 'Utilisateur occupé',
+  '18': 'Aucune réponse de l’utilisateur (sonnerie)',
+  '19': 'Aucune réponse après alerte',
+  '20': 'Utilisateur ou numéro absent',
+  '21': 'Appel rejeté',
+  '22': 'Numéro changé',
+  '23': 'Redirection vers un autre numéro',
+  '27': 'Destination hors service',
+  '28': 'Adresse incomplète',
+  '29': 'Facilité refusée',
+  '30': 'Réponse à une requête de statut',
+  '31': 'Dégagement normal non spécifié',
+  '34': 'Aucun circuit ou canal disponible',
+  '38': 'Réseau hors service',
+  '41': 'Défaillance temporaire',
+  '42': 'Congestion de l’équipement de commutation',
+  '44': 'Circuit ou canal demandé indisponible',
+  '47': 'Ressource indisponible non spécifiée',
+  '50': 'Facilité demandée non souscrite',
+  '55': 'Appels entrants interdits au sein du GCE',
+  '57': 'Capacité porteuse non autorisée',
+  '58': 'Capacité porteuse momentanément indisponible',
+  '63': 'Service ou option indisponible non spécifiée',
+  '65': 'Capacité porteuse non implémentée',
+  '66': 'Type de canal non implémenté',
+  '69': 'Facilité demandée non implémentée',
+  '70': 'Seule l’information numérique restreinte est disponible',
+  '79': 'Service ou option non implémenté non spécifié',
+  '81': 'Valeur de référence d’appel invalide',
+  '88': 'Destination incompatible',
+  '90': 'Groupe fermé d’utilisateurs inexistant',
+  '91': 'Sélection de réseau de transit invalide',
+  '95': 'Message invalide non spécifié',
+  '96': "Élément d’information obligatoire manquant",
+  '97': 'Type de message inexistant ou non implémenté',
+  '98': 'Message incompatible avec l’état de l’appel',
+  '99': 'Élément ou paramètre non implémenté',
+  '100': "Contenu d’élément d’information invalide",
+  '101': 'Message incompatible avec l’état de l’appel',
+  '102': 'Récupération sur expiration de minuterie',
+  '111': 'Erreur de protocole non spécifiée',
+  '127': 'Interopérabilité – cause non spécifiée'
+};
+
+const formatReleaseCause = (value?: string | null) => {
+  const key = (value ?? '').toString().trim();
+  if (!key) return 'Non renseigné';
+  return releaseCauseDescriptions[key] || `Code ${key}`;
+};
+
 const formatDuration = (seconds?: number) => {
   const safeSeconds = Math.max(0, Math.round(Number(seconds || 0)));
   const minutes = Math.floor(safeSeconds / 60);
@@ -83,6 +144,12 @@ const formatDate = (value?: string | null) => {
     month: 'short'
   }).format(date);
 };
+
+const normalizeReleaseCauseBreakdown = (entries: BreakdownEntry[] = []) =>
+  entries.map((entry) => ({ ...entry, label: formatReleaseCause(entry.label) }));
+
+const normalizeReleaseCauseInCalls = (calls: CallRecord[]) =>
+  calls.map((call) => ({ ...call, release_cause: formatReleaseCause(call.release_cause) }));
 
 const ProgressPill = ({ value, max, label }: { value: number; max: number; label: string }) => {
   const percentage = max === 0 ? 0 : Math.round((value / max) * 100);
@@ -219,7 +286,11 @@ const CallAnalysisPage: React.FC = () => {
         throw new Error('Impossible de charger les statistiques');
       }
       const data: CallGlobalStats = await response.json();
-      setGlobalStats(data);
+      const normalizedData: CallGlobalStats = {
+        ...data,
+        releaseCauses: normalizeReleaseCauseBreakdown(data.releaseCauses)
+      };
+      setGlobalStats(normalizedData);
     } catch (error) {
       console.error(error);
       notifyError("Erreur lors du chargement des statistiques d'appels");
@@ -274,7 +345,15 @@ const CallAnalysisPage: React.FC = () => {
         }
 
         const data: CallSearchResponse = await response.json();
-        setResult(data);
+        const normalizedResult: CallSearchResponse = {
+          ...data,
+          calls: normalizeReleaseCauseInCalls(data.calls),
+          summary: {
+            ...data.summary,
+            releaseCauses: normalizeReleaseCauseBreakdown(data.summary?.releaseCauses || [])
+          }
+        };
+        setResult(normalizedResult);
       } catch (error) {
         console.error(error);
         const message = error instanceof Error ? error.message : "Erreur lors de la recherche";
