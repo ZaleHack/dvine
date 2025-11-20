@@ -1035,38 +1035,6 @@ class DatabaseManager {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
-      // Table unifiée pour les CDR (voix, SMS, mobile money)
-      await query(`
-        CREATE TABLE IF NOT EXISTS di_autres.cdr_unified_records (
-          id BIGINT AUTO_INCREMENT PRIMARY KEY,
-          calling_id VARCHAR(64) DEFAULT NULL,
-          called_id VARCHAR(64) DEFAULT NULL,
-          duration INT DEFAULT NULL,
-          start_time DATETIME DEFAULT NULL,
-          end_time DATETIME DEFAULT NULL,
-          org_pcip VARCHAR(128) DEFAULT NULL,
-          dst_pcip VARCHAR(128) DEFAULT NULL,
-          release_cause VARCHAR(255) DEFAULT NULL,
-          client VARCHAR(255) DEFAULT NULL,
-          provider VARCHAR(255) DEFAULT NULL,
-          operator VARCHAR(128) DEFAULT NULL,
-          direction VARCHAR(64) DEFAULT NULL,
-          type_flux VARCHAR(64) DEFAULT NULL,
-          transaction_type VARCHAR(128) DEFAULT NULL,
-          transaction_status VARCHAR(128) DEFAULT NULL,
-          amount DECIMAL(18,2) DEFAULT NULL,
-          currency VARCHAR(32) DEFAULT NULL,
-          source_file VARCHAR(255) DEFAULT NULL,
-          raw_payload JSON NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          INDEX idx_calling_id (calling_id),
-          INDEX idx_called_id (called_id),
-          INDEX idx_start_time (start_time),
-          INDEX idx_operator (operator),
-          INDEX idx_type_flux (type_flux)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-      `);
-
       await query(`
         CREATE TABLE IF NOT EXISTS di_autres.notifications (
           id INT AUTO_INCREMENT PRIMARY KEY,
