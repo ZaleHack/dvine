@@ -176,8 +176,7 @@ class StatsService {
         const raw = fs.readFileSync(this.catalogPath, 'utf-8');
         const json = JSON.parse(raw);
         for (const [key, value] of Object.entries(json)) {
-          const [db, ...tableParts] = key.split('_');
-          const tableName = `${db}.${tableParts.join('_')}`;
+          const tableName = this.normalizeCatalogKey(key, value);
           catalog[tableName] = value;
         }
       }
@@ -185,6 +184,28 @@ class StatsService {
       console.error('❌ Erreur chargement catalogue:', error);
     }
     return catalog;
+  }
+
+  normalizeCatalogKey(key, value) {
+    if (key.includes('.')) {
+      return key;
+    }
+
+    const database = typeof value?.database === 'string' ? value.database : null;
+    if (database) {
+      const sanitizedDb = database.replace(/\./g, '_');
+      const prefix = `${sanitizedDb}_`;
+      if (key.startsWith(prefix)) {
+        return `${database}.${key.slice(prefix.length)}`;
+      }
+      return `${database}.${key}`;
+    }
+
+    const [db, ...tableParts] = key.split('_');
+    if (!db || tableParts.length === 0) {
+      return key;
+    }
+    return `${db}.${tableParts.join('_')}`;
   }
 
   /**
