@@ -229,13 +229,91 @@ class CallAnalysisService {
       return `${minutes}m ${remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds}s`;
     };
 
-    const addKeyValue = (label, value) => {
+    const addDivider = () => {
       doc
+        .moveDown(0.5)
+        .strokeColor('#E2E8F0')
+        .lineWidth(1)
+        .moveTo(doc.page.margins.left, doc.y)
+        .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+        .stroke()
+        .moveDown(0.8);
+    };
+
+    const drawHeader = (title, subtitle) => {
+      const y = doc.y;
+      const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+
+      doc
+        .save()
+        .roundedRect(doc.page.margins.left, y, width, 64, 10)
+        .fill('#0F172A')
+        .fillColor('#E5E7EB')
         .fontSize(10)
-        .fillColor('#0F172A')
-        .text(`${label}: `, { continued: true })
-        .fillColor('#374151')
-        .text(value);
+        .text('Rapport Dvine', doc.page.margins.left + 16, y + 14)
+        .fillColor('#FFFFFF')
+        .fontSize(18)
+        .text(title, doc.page.margins.left + 16, y + 28);
+
+      if (subtitle) {
+        doc
+          .fillColor('#E5E7EB')
+          .fontSize(10)
+          .text(subtitle, doc.page.margins.left + 16, y + 48);
+      }
+
+      doc.restore();
+      doc.moveDown(4);
+    };
+
+    const renderStatCards = (entries) => {
+      const availableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+      const gutter = 12;
+      const columns = 2;
+      const cardWidth = (availableWidth - gutter * (columns - 1)) / columns;
+
+      for (let i = 0; i < entries.length; i += columns) {
+        const rowEntries = entries.slice(i, i + columns);
+        const startY = doc.y;
+
+        rowEntries.forEach((entry, colIndex) => {
+          const x = doc.page.margins.left + colIndex * (cardWidth + gutter);
+          doc
+            .save()
+            .roundedRect(x, startY, cardWidth, 66, 8)
+            .fill('#F8FAFC')
+            .fillColor('#475569')
+            .fontSize(9)
+            .text(entry.label, x + 12, startY + 12)
+            .fontSize(16)
+            .fillColor('#0F172A')
+            .text(entry.value, x + 12, startY + 30)
+            .restore();
+        });
+
+        doc.y = startY + 78;
+      }
+    };
+
+    const renderPills = (items) => {
+      items.forEach((item) => {
+        const startY = doc.y;
+        doc
+          .save()
+          .roundedRect(doc.page.margins.left, startY, doc.page.width - doc.page.margins.left - doc.page.margins.right, 40, 8)
+          .fill('#F1F5F9');
+
+        doc
+          .fillColor('#0F172A')
+          .fontSize(11)
+          .text(item.title, doc.page.margins.left + 12, startY + 10)
+          .fillColor('#475569')
+          .fontSize(9)
+          .text(item.subtitle, doc.page.margins.left + 12, startY + 26);
+
+        doc.restore();
+        doc.y = startY + 48;
+      });
     };
 
     const buffer = await new Promise((resolve, reject) => {
@@ -244,63 +322,54 @@ class CallAnalysisService {
       doc.on('error', reject);
 
       try {
-        doc
-          .fontSize(18)
-          .fillColor('#0F172A')
-          .text('Analyse des appels', { align: 'left' })
-          .moveDown(0.25);
+        drawHeader('Analyse des appels', `Généré le ${formatDateTime(new Date())}`);
 
-        doc.fontSize(10).fillColor('#6B7280').text(`Généré le ${formatDateTime(new Date())}`);
-        doc.moveDown();
+        doc.fontSize(12).fillColor('#0F172A').text('Synthèse de la recherche');
+        addDivider();
 
-        doc
-          .fontSize(12)
-          .fillColor('#0F172A')
-          .text('Synthèse de la recherche', { underline: false })
-          .moveDown(0.35);
+        renderStatCards([
+          { label: 'Numéro analysé', value: result.number || 'Non précisé' },
+          { label: 'Résultats inclus', value: `${result.calls.length} / ${result.limit}` },
+          { label: 'Appels entrants', value: `${result.summary.asCallee}` },
+          { label: 'Appels sortants', value: `${result.summary.asCaller}` },
+          { label: 'Durée cumulée', value: formatDurationValue(result.summary.totalDuration) },
+          { label: 'Durée moyenne', value: formatDurationValue(result.summary.averageDuration) },
+          { label: 'Durée max', value: formatDurationValue(result.summary.maxDuration) },
+          {
+            label: 'Période filtrée',
+            value: `${params.startDate || 'Non défini'} ${params.startTime || ''} → ${params.endDate || 'Non défini'} ${
+              params.endTime || ''
+            }`.trim()
+          }
+        ]);
 
-        addKeyValue('Numéro analysé', result.number || 'Non précisé');
-        addKeyValue('Résultats inclus', `${result.calls.length} / ${result.limit}`);
-        addKeyValue('Appels entrants', `${result.summary.asCallee}`);
-        addKeyValue('Appels sortants', `${result.summary.asCaller}`);
-        addKeyValue('Durée cumulée', formatDurationValue(result.summary.totalDuration));
-        addKeyValue('Durée moyenne', formatDurationValue(result.summary.averageDuration));
-        addKeyValue('Durée max', formatDurationValue(result.summary.maxDuration));
-
-        const periodLabel = `${params.startDate || 'Non défini'} ${params.startTime || ''} → ${params.endDate || 'Non défini'} ${
-          params.endTime || ''
-        }`;
-        addKeyValue('Période filtrée', periodLabel.trim());
-
-        doc.moveDown();
+        doc.moveDown(0.5);
 
         if (result.summary.providerBreakdown?.length) {
           doc.fontSize(12).fillColor('#0F172A').text('Top opérateurs');
-          doc.moveDown(0.25);
-          result.summary.providerBreakdown.slice(0, 5).forEach((entry) => {
-            addKeyValue(entry.label || 'Non renseigné', `${entry.count} appels`);
-          });
-          doc.moveDown();
+          addDivider();
+          renderPills(
+            result.summary.providerBreakdown.slice(0, 5).map((entry) => ({
+              title: entry.label || 'Non renseigné',
+              subtitle: `${entry.count} appels` || '—'
+            }))
+          );
         }
 
+        doc.moveDown(0.5);
         doc.fontSize(12).fillColor('#0F172A').text('Chronologie des appels');
-        doc.moveDown(0.35);
+        addDivider();
 
-        result.calls.forEach((call) => {
-          doc
-            .fontSize(10)
-            .fillColor('#111827')
-            .text(
-              `${formatDateTime(call.start_time)} • ${call.calling_id} → ${call.called_id} (${formatDurationValue(call.duration)})`
-            );
-          doc
-            .fontSize(9)
-            .fillColor('#6B7280')
-            .text(`Origine: ${call.org_pcip || 'N/A'} | Destination: ${call.dst_pcip || 'N/A'} | Cause: ${
+        renderPills(
+          result.calls.map((call) => ({
+            title: `${formatDateTime(call.start_time)} • ${call.calling_id} → ${call.called_id} (${formatDurationValue(
+              call.duration
+            )})`,
+            subtitle: `Origine: ${call.org_pcip || 'N/A'} | Destination: ${call.dst_pcip || 'N/A'} | Cause: ${
               call.release_cause || '—'
-            }`)
-            .moveDown(0.5);
-        });
+            }`
+          }))
+        );
 
         doc.moveDown(1);
         doc
