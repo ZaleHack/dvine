@@ -28,7 +28,6 @@ import blacklistRoutes from './routes/blacklist.js';
 import logsRoutes from './routes/logs.js';
 import divisionsRoutes from './routes/divisions.js';
 import notificationsRoutes from './routes/notifications.js';
-import fraudRoutes from './routes/fraud.js';
 import callAnalysisRoutes from './routes/call-analysis.js';
 import transactionRoutes from './routes/transactions.js';
 import { authenticate } from './middleware/auth.js';
@@ -177,7 +176,6 @@ app.use('/api/blacklist', blacklistRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/divisions', divisionsRoutes);
 app.use('/api/notifications', notificationsRoutes);
-app.use('/api/fraud-detection', fraudRoutes);
 app.use('/api/call-analysis', callAnalysisRoutes);
 app.use('/api/transactions', transactionRoutes);
 
