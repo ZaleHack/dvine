@@ -21,6 +21,8 @@ import {
   Timer,
   TrendingUp,
   BarChart3,
+  Sun,
+  Moon,
   FileText,
   Upload,
   UploadCloud,
@@ -995,6 +997,14 @@ const App: React.FC = () => {
   const [logoutReason, setLogoutReason] = useState<'inactivity' | null>(null);
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      return storedTheme === 'dark';
+    }
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+  });
   const mainContentRef = useRef<HTMLDivElement | null>(null);
   const inactivityTimerRef = useRef<number | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -1010,6 +1020,17 @@ const App: React.FC = () => {
       navigateToPage('dashboard', { replace: true });
     }
   }, [currentPage, navigateToPage]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -1041,6 +1062,10 @@ const App: React.FC = () => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setIsDarkMode((prev) => !prev);
   }, []);
 
   // États de recherche
@@ -4759,7 +4784,7 @@ const App: React.FC = () => {
     return (
       <>
         <div
-          className="min-h-screen flex bg-gradient-to-br from-white via-rose-50 to-red-100 text-red-900"
+          className="min-h-screen flex bg-gradient-to-br from-white via-rose-50 to-red-100 text-red-900 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100"
         >
         {!sidebarOpen && (
           <button
@@ -4777,11 +4802,11 @@ const App: React.FC = () => {
       <div
         className={`${
           sidebarOpen ? 'w-72' : 'w-20'
-        } relative overflow-hidden bg-white/95 border-r border-red-100 backdrop-blur-xl shadow-[0_20px_50px_rgba(225,29,72,0.12)] transition-all duration-300 flex flex-col`}
+        } relative overflow-hidden bg-white/95 border-r border-red-100 backdrop-blur-xl shadow-[0_20px_50px_rgba(225,29,72,0.12)] transition-all duration-300 flex flex-col dark:bg-slate-950/80 dark:border-slate-800/70 dark:shadow-black/40`}
       >
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-rose-50/80 via-white/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-rose-50/80 via-white/70 to-transparent dark:from-slate-900/60 dark:via-slate-950/50" />
         {/* Header */}
-        <div className="relative p-6 border-b border-red-100/70">
+        <div className="relative p-6 border-b border-red-100/70 dark:border-slate-800/70 dark:bg-slate-950/70">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center gap-0'}`}>
               <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30">
@@ -4909,9 +4934,18 @@ const App: React.FC = () => {
       </div>
 
       {/* Main content */}
-        <div ref={mainContentRef} className="flex-1 overflow-auto scroll-smooth bg-white/80">
+        <div ref={mainContentRef} className="flex-1 overflow-auto scroll-smooth bg-white/80 dark:bg-slate-950/70">
           <div className="p-8">
-              <div className="flex justify-end mb-4 relative">
+              <div className="flex items-center justify-end gap-3 mb-4 relative">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:text-white"
+                  title={isDarkMode ? 'Basculer en mode clair' : 'Basculer en mode sombre'}
+                >
+                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  <span className="hidden sm:inline">{isDarkMode ? 'Mode clair' : 'Mode sombre'}</span>
+                </button>
                 <button
                   onClick={handleNotificationClick}
                   className="relative p-2 rounded-full bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 text-gray-600 hover:text-rose-600 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:text-white"

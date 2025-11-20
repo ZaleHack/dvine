@@ -113,7 +113,7 @@ const releaseCauseDescriptions: Record<string, string> = {
 const formatReleaseCause = (value?: string | null) => {
   const key = (value ?? '').toString().trim();
   if (!key) return 'Non renseigné';
-  return releaseCauseDescriptions[key] || `Code ${key}`;
+  return releaseCauseDescriptions[key] || key;
 };
 
 const formatDuration = (seconds?: number) => {
@@ -667,8 +667,8 @@ const CallAnalysisPage: React.FC = () => {
                         <span className="font-mono text-sm font-semibold text-slate-800">{call.dst_pcip || 'N/A'}</span>
                       </div>
                     </div>
-                    <div className="col-span-2 text-right text-xs font-semibold text-slate-600">
-                      Cause {call.release_cause || '—'}
+                    <div className="col-span-2 text-right text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      {call.release_cause || '—'}
                     </div>
                   </div>
                 ))}
