@@ -646,6 +646,13 @@ class DatabaseManager {
         after: 'success_rows'
       });
 
+      await ensureColumnDefinition('di_autres.upload_history', 'errors', {
+        type: 'JSON',
+        nullable: true,
+        default: null,
+        after: 'upload_mode'
+      });
+
       // Table de journalisation des actions utilisateur
       await query(`
         CREATE TABLE IF NOT EXISTS di_autres.user_logs (
