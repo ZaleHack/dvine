@@ -65,11 +65,11 @@ class DatabaseManager {
 
       // Create database if it doesn't exist
       const tmp = await mysql.createConnection(baseConfig);
-      await tmp.query('CREATE DATABASE IF NOT EXISTS autres CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+      await tmp.query('CREATE DATABASE IF NOT EXISTS di_autres CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
       await tmp.end();
 
-      // Create pool using the "autres" database
-      this.pool = mysql.createPool({ ...baseConfig, database: 'autres' });
+      // Create pool using the "di_autres" database
+      this.pool = mysql.createPool({ ...baseConfig, database: 'di_autres' });
 
       // Test de connexion
       const connection = await this.pool.getConnection();
@@ -317,8 +317,8 @@ class DatabaseManager {
 
       const cleanOrphanedDivisionReferences = async () => {
         await this.pool.execute(`
-          UPDATE autres.users u
-          LEFT JOIN autres.divisions d ON d.id = u.division_id
+          UPDATE di_autres.users u
+          LEFT JOIN di_autres.divisions d ON d.id = u.division_id
           SET u.division_id = NULL
           WHERE u.division_id IS NOT NULL AND d.id IS NULL
         `);
@@ -326,8 +326,8 @@ class DatabaseManager {
 
       const cleanOrphanedProfileFolderReferences = async () => {
         await this.pool.execute(`
-          UPDATE autres.profiles p
-          LEFT JOIN autres.profile_folders f ON f.id = p.folder_id
+          UPDATE di_autres.profiles p
+          LEFT JOIN di_autres.profile_folders f ON f.id = p.folder_id
           SET p.folder_id = NULL
           WHERE p.folder_id IS NOT NULL AND f.id IS NULL
         `);
@@ -355,7 +355,7 @@ class DatabaseManager {
         const divisionColumn = await queryOne(`
           SELECT COLUMN_TYPE, IS_NULLABLE
           FROM information_schema.COLUMNS
-          WHERE TABLE_SCHEMA = 'autres'
+          WHERE TABLE_SCHEMA = 'di_autres'
             AND TABLE_NAME = 'users'
             AND COLUMN_NAME = 'division_id'
         `);
@@ -370,7 +370,7 @@ class DatabaseManager {
           JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
             ON rc.CONSTRAINT_SCHEMA = kcu.CONSTRAINT_SCHEMA
            AND rc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
-          WHERE kcu.TABLE_SCHEMA = 'autres'
+          WHERE kcu.TABLE_SCHEMA = 'di_autres'
             AND kcu.TABLE_NAME = 'users'
             AND kcu.COLUMN_NAME = 'division_id'
             AND kcu.REFERENCED_TABLE_NAME = 'divisions'
@@ -383,7 +383,7 @@ class DatabaseManager {
         // Drop unexpected constraints to avoid conflicts when recreating
         for (const fk of foreignKeys) {
           if (fk.CONSTRAINT_NAME !== expectedConstraintName || fk.DELETE_RULE !== 'SET NULL') {
-            await dropForeignKeyIfExists('autres.users', fk.CONSTRAINT_NAME);
+            await dropForeignKeyIfExists('di_autres.users', fk.CONSTRAINT_NAME);
           }
         }
 
@@ -393,14 +393,14 @@ class DatabaseManager {
 
         if (requiresNullableColumn || currentColumnType !== normalizeColumnType(divisionIdColumnType)) {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             MODIFY COLUMN division_id ${divisionIdColumnType} NULL DEFAULT NULL
           `);
         }
 
         try {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             ADD INDEX idx_division_id (division_id)
           `);
         } catch (error) {
@@ -415,9 +415,9 @@ class DatabaseManager {
           const tryAddConstraint = async (retry = false) => {
             try {
               await this.pool.execute(`
-                ALTER TABLE autres.users
+                ALTER TABLE di_autres.users
                 ADD CONSTRAINT \`${expectedConstraintName}\` FOREIGN KEY (division_id)
-                  REFERENCES autres.divisions(id) ON DELETE SET NULL
+                  REFERENCES di_autres.divisions(id) ON DELETE SET NULL
               `);
             } catch (error) {
               if ((error.code === 'ER_DUP_KEYNAME' || error.code === 'ER_CANT_CREATE_TABLE') && !retry) {
@@ -425,7 +425,7 @@ class DatabaseManager {
               }
               if (error.code === 'ER_ERROR_ON_RENAME' && !retry) {
                 await cleanOrphanedDivisionReferences();
-                await dropForeignKeyIfExists('autres.users', expectedConstraintName);
+                await dropForeignKeyIfExists('di_autres.users', expectedConstraintName);
                 return tryAddConstraint(true);
               }
               if (
@@ -445,7 +445,7 @@ class DatabaseManager {
 
       // Créer les tables de division et des utilisateurs
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.divisions (
+        CREATE TABLE IF NOT EXISTS di_autres.divisions (
           id INT AUTO_INCREMENT PRIMARY KEY,
           name VARCHAR(255) NOT NULL UNIQUE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -455,12 +455,12 @@ class DatabaseManager {
       const divisionIdColumnInfo = await queryOne(`
         SELECT COLUMN_TYPE
         FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = 'autres' AND TABLE_NAME = 'divisions' AND COLUMN_NAME = 'id'
+        WHERE TABLE_SCHEMA = 'di_autres' AND TABLE_NAME = 'divisions' AND COLUMN_NAME = 'id'
       `);
       const divisionIdColumnType = normalizeColumnType(divisionIdColumnInfo?.COLUMN_TYPE);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.users (
+        CREATE TABLE IF NOT EXISTS di_autres.users (
           id INT AUTO_INCREMENT PRIMARY KEY,
           login VARCHAR(255) UNIQUE NOT NULL,
           mdp VARCHAR(255) NOT NULL,
@@ -472,19 +472,19 @@ class DatabaseManager {
           otp_secret VARCHAR(255) DEFAULT NULL,
           otp_enabled TINYINT(1) DEFAULT 0,
           INDEX idx_division_id (division_id),
-          CONSTRAINT fk_users_division FOREIGN KEY (division_id) REFERENCES autres.divisions(id) ON DELETE SET NULL
+          CONSTRAINT fk_users_division FOREIGN KEY (division_id) REFERENCES di_autres.divisions(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       const hasActive = await queryOne(`
         SELECT 1 FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = 'autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'active'
+        WHERE TABLE_SCHEMA = 'di_autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'active'
       `);
 
       if (!hasActive) {
         try {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             ADD COLUMN active TINYINT(1) DEFAULT 1 AFTER admin
           `);
         } catch (error) {
@@ -496,13 +496,13 @@ class DatabaseManager {
 
       const hasDivision = await queryOne(`
         SELECT 1 FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = 'autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'division_id'
+        WHERE TABLE_SCHEMA = 'di_autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'division_id'
       `);
 
       if (!hasDivision) {
         try {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             ADD COLUMN division_id ${divisionIdColumnType} NULL AFTER active
           `);
         } catch (error) {
@@ -515,13 +515,13 @@ class DatabaseManager {
 
       const hasCreatedAt = await queryOne(`
         SELECT 1 FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = 'autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'created_at'
+        WHERE TABLE_SCHEMA = 'di_autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'created_at'
       `);
 
       if (!hasCreatedAt) {
         try {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER division_id
           `);
         } catch (error) {
@@ -533,13 +533,13 @@ class DatabaseManager {
 
       const hasUpdatedAt = await queryOne(`
         SELECT 1 FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = 'autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'updated_at'
+        WHERE TABLE_SCHEMA = 'di_autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'updated_at'
       `);
 
       if (!hasUpdatedAt) {
         try {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at
           `);
         } catch (error) {
@@ -551,13 +551,13 @@ class DatabaseManager {
 
       const hasOtpSecret = await queryOne(`
         SELECT 1 FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = 'autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'otp_secret'
+        WHERE TABLE_SCHEMA = 'di_autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'otp_secret'
       `);
 
       if (!hasOtpSecret) {
         try {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             ADD COLUMN otp_secret VARCHAR(255) DEFAULT NULL AFTER updated_at
           `);
         } catch (error) {
@@ -569,13 +569,13 @@ class DatabaseManager {
 
       const hasOtpEnabled = await queryOne(`
         SELECT 1 FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = 'autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'otp_enabled'
+        WHERE TABLE_SCHEMA = 'di_autres' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'otp_enabled'
       `);
 
       if (!hasOtpEnabled) {
         try {
           await this.pool.execute(`
-            ALTER TABLE autres.users
+            ALTER TABLE di_autres.users
             ADD COLUMN otp_enabled TINYINT(1) DEFAULT 0 AFTER otp_secret
           `);
         } catch (error) {
@@ -585,40 +585,11 @@ class DatabaseManager {
         }
       }
 
-      const defaultDivisions = [
-        'Division Cybersecurité',
-        'Division Analyse',
-        'Division Digitale',
-        'Division Recherche Opération',
-        'Division Protection'
-      ];
-
-      for (const name of defaultDivisions) {
-        await query(
-          `INSERT INTO autres.divisions (name)
-           SELECT ? FROM DUAL WHERE NOT EXISTS (
-             SELECT 1 FROM autres.divisions WHERE name = ?
-           )`,
-          [name, name]
-        );
-      }
-
-      const fallbackDivision = await queryOne(
-        `SELECT id FROM autres.divisions ORDER BY id ASC LIMIT 1`
-      );
-
-      if (fallbackDivision?.id) {
-        await this.pool.execute(
-          `UPDATE autres.users SET division_id = ? WHERE division_id IS NULL AND admin = 0`,
-          [fallbackDivision.id]
-        );
-      }
-
       await ensureDivisionForeignKey(divisionIdColumnType);
 
       // Créer la table search_logs
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.search_logs (
+        CREATE TABLE IF NOT EXISTS di_autres.search_logs (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT,
           username VARCHAR(255),
@@ -637,12 +608,12 @@ class DatabaseManager {
       `);
 
       await this.pool.execute(`
-        UPDATE autres.search_logs
+        UPDATE di_autres.search_logs
         SET extra_searches = 0
         WHERE extra_searches IS NULL OR extra_searches = ''
       `);
 
-      await ensureColumnDefinition('autres.search_logs', 'extra_searches', {
+      await ensureColumnDefinition('di_autres.search_logs', 'extra_searches', {
         type: 'INT',
         nullable: false,
         default: 0,
@@ -651,7 +622,7 @@ class DatabaseManager {
 
       // Table de journalisation des actions utilisateur
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.user_logs (
+        CREATE TABLE IF NOT EXISTS di_autres.user_logs (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT,
           action VARCHAR(50) NOT NULL,
@@ -660,12 +631,12 @@ class DatabaseManager {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX idx_user_id (user_id),
           INDEX idx_created_at (created_at),
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE SET NULL
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.annuaire_gendarmerie (
+        CREATE TABLE IF NOT EXISTS di_autres.annuaire_gendarmerie (
           id INT AUTO_INCREMENT PRIMARY KEY,
           libelle VARCHAR(255) NOT NULL,
           telephone VARCHAR(50) NOT NULL,
@@ -676,7 +647,7 @@ class DatabaseManager {
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.uvs (
+        CREATE TABLE IF NOT EXISTS di_autres.uvs (
           id INT AUTO_INCREMENT PRIMARY KEY,
           date DATE DEFAULT NULL,
           matricule VARCHAR(100) DEFAULT NULL,
@@ -696,7 +667,7 @@ class DatabaseManager {
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.collections (
+        CREATE TABLE IF NOT EXISTS di_autres.collections (
           id INT AUTO_INCREMENT PRIMARY KEY,
           nom VARCHAR(255) NOT NULL,
           prenom VARCHAR(255) NOT NULL,
@@ -709,18 +680,18 @@ class DatabaseManager {
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.profile_folders (
+        CREATE TABLE IF NOT EXISTS di_autres.profile_folders (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           name VARCHAR(255) NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           INDEX idx_profile_folder_user (user_id),
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
-      const profileFolderIdInfo = await getColumnInfo('autres.profile_folders', 'id');
+      const profileFolderIdInfo = await getColumnInfo('di_autres.profile_folders', 'id');
       const profileFolderIdColumnType = normalizeColumnType(profileFolderIdInfo?.COLUMN_TYPE) || 'INT';
       const profileFolderIdCharacterSet = profileFolderIdInfo?.CHARACTER_SET_NAME || null;
       const profileFolderIdCollation = profileFolderIdInfo?.COLLATION_NAME || null;
@@ -739,7 +710,7 @@ class DatabaseManager {
       };
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.profile_folder_shares (
+        CREATE TABLE IF NOT EXISTS di_autres.profile_folder_shares (
           id INT AUTO_INCREMENT PRIMARY KEY,
           folder_id ${buildFolderIdColumn()} NOT NULL,
           user_id INT NOT NULL,
@@ -747,13 +718,13 @@ class DatabaseManager {
           UNIQUE KEY uniq_profile_folder_user (folder_id, user_id),
           INDEX idx_profile_folder_share_folder (folder_id),
           INDEX idx_profile_folder_share_user (user_id),
-          FOREIGN KEY (folder_id) REFERENCES autres.profile_folders(id) ON DELETE CASCADE,
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (folder_id) REFERENCES di_autres.profile_folders(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.profiles (
+        CREATE TABLE IF NOT EXISTS di_autres.profiles (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           folder_id ${buildFolderIdColumn()} DEFAULT NULL,
@@ -768,19 +739,19 @@ class DatabaseManager {
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           INDEX idx_user_id (user_id),
           INDEX idx_folder_id (folder_id),
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE,
-          FOREIGN KEY (folder_id) REFERENCES autres.profile_folders(id) ON DELETE SET NULL
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE,
+          FOREIGN KEY (folder_id) REFERENCES di_autres.profile_folders(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
-      const commentInfo = await getColumnInfo('autres.profiles', 'comment');
+      const commentInfo = await getColumnInfo('di_autres.profiles', 'comment');
       if (commentInfo) {
         await this.pool.execute(
-          `UPDATE autres.profiles SET comment = '' WHERE comment IS NULL OR LOWER(TRIM(comment)) = 'null'`
+          `UPDATE di_autres.profiles SET comment = '' WHERE comment IS NULL OR LOWER(TRIM(comment)) = 'null'`
         );
       }
       await ensureColumnDefinition(
-        'autres.profiles',
+        'di_autres.profiles',
         'comment',
         {
           type: 'TEXT',
@@ -790,11 +761,11 @@ class DatabaseManager {
         commentInfo
       );
 
-      const extraFieldsInfo = await getColumnInfo('autres.profiles', 'extra_fields');
+      const extraFieldsInfo = await getColumnInfo('di_autres.profiles', 'extra_fields');
       if (extraFieldsInfo) {
         await this.pool.execute(
           `
-            UPDATE autres.profiles
+            UPDATE di_autres.profiles
             SET extra_fields = '[]'
             WHERE extra_fields IS NULL
               OR TRIM(extra_fields) = ''
@@ -803,7 +774,7 @@ class DatabaseManager {
         );
       }
       await ensureColumnDefinition(
-        'autres.profiles',
+        'di_autres.profiles',
         'extra_fields',
         {
           type: 'TEXT',
@@ -813,14 +784,14 @@ class DatabaseManager {
         extraFieldsInfo
       );
 
-      await ensureInnoDbEngine('autres.profile_folders');
-      await ensureInnoDbEngine('autres.profiles');
+      await ensureInnoDbEngine('di_autres.profile_folders');
+      await ensureInnoDbEngine('di_autres.profiles');
 
-      await ensureUniqueIndex('autres.profile_folders', 'id', 'uniq_profile_folders_id');
+      await ensureUniqueIndex('di_autres.profile_folders', 'id', 'uniq_profile_folders_id');
 
-      const folderColumnInfo = await getColumnInfo('autres.profiles', 'folder_id');
+      const folderColumnInfo = await getColumnInfo('di_autres.profiles', 'folder_id');
       await ensureColumnDefinition(
-        'autres.profiles',
+        'di_autres.profiles',
         'folder_id',
         {
           type: profileFolderIdColumnType,
@@ -839,7 +810,7 @@ class DatabaseManager {
         JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
           ON rc.CONSTRAINT_SCHEMA = kcu.CONSTRAINT_SCHEMA
          AND rc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
-        WHERE kcu.TABLE_SCHEMA = 'autres'
+        WHERE kcu.TABLE_SCHEMA = 'di_autres'
           AND kcu.TABLE_NAME = 'profiles'
           AND kcu.COLUMN_NAME = 'folder_id'
           AND kcu.REFERENCED_TABLE_NAME = 'profile_folders'
@@ -851,12 +822,12 @@ class DatabaseManager {
 
       for (const fk of folderForeignKeys) {
         if (fk.CONSTRAINT_NAME !== expectedFolderConstraint || fk.DELETE_RULE !== 'SET NULL') {
-          await dropForeignKeyIfExists('autres.profiles', fk.CONSTRAINT_NAME);
+          await dropForeignKeyIfExists('di_autres.profiles', fk.CONSTRAINT_NAME);
         }
       }
 
       try {
-        await this.pool.execute('ALTER TABLE autres.profiles ADD INDEX idx_profiles_folder_id (folder_id)');
+        await this.pool.execute('ALTER TABLE di_autres.profiles ADD INDEX idx_profiles_folder_id (folder_id)');
       } catch (error) {
         if (error.code !== 'ER_DUP_KEYNAME') {
           throw error;
@@ -869,15 +840,15 @@ class DatabaseManager {
         const tryAddProfileFolderConstraint = async (retry = false) => {
           try {
             await this.pool.execute(`
-              ALTER TABLE autres.profiles
+              ALTER TABLE di_autres.profiles
               ADD CONSTRAINT \`${expectedFolderConstraint}\`
-              FOREIGN KEY (folder_id) REFERENCES autres.profile_folders(id)
+              FOREIGN KEY (folder_id) REFERENCES di_autres.profile_folders(id)
               ON DELETE SET NULL
             `);
           } catch (error) {
             if (error.code === 'ER_ERROR_ON_RENAME' && !retry) {
               await cleanOrphanedProfileFolderReferences();
-              await dropForeignKeyIfExists('autres.profiles', expectedFolderConstraint);
+              await dropForeignKeyIfExists('di_autres.profiles', expectedFolderConstraint);
               return tryAddProfileFolderConstraint(true);
             }
             if (
@@ -897,19 +868,19 @@ class DatabaseManager {
       }
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.profile_attachments (
+        CREATE TABLE IF NOT EXISTS di_autres.profile_attachments (
           id INT AUTO_INCREMENT PRIMARY KEY,
           profile_id INT NOT NULL,
           file_path VARCHAR(255) NOT NULL,
           original_name VARCHAR(255) DEFAULT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX idx_profile_id (profile_id),
-          FOREIGN KEY (profile_id) REFERENCES autres.profiles(id) ON DELETE CASCADE
+          FOREIGN KEY (profile_id) REFERENCES di_autres.profiles(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.profile_shares (
+        CREATE TABLE IF NOT EXISTS di_autres.profile_shares (
           id INT AUTO_INCREMENT PRIMARY KEY,
           profile_id INT NOT NULL,
           user_id INT NOT NULL,
@@ -917,13 +888,13 @@ class DatabaseManager {
           UNIQUE KEY unique_profile_user (profile_id, user_id),
           INDEX idx_profile_share_profile (profile_id),
           INDEX idx_profile_share_user (user_id),
-          FOREIGN KEY (profile_id) REFERENCES autres.profiles(id) ON DELETE CASCADE,
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (profile_id) REFERENCES di_autres.profiles(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.identified_numbers (
+        CREATE TABLE IF NOT EXISTS di_autres.identified_numbers (
           id INT AUTO_INCREMENT PRIMARY KEY,
           phone VARCHAR(50) NOT NULL UNIQUE,
           data JSON DEFAULT NULL,
@@ -933,7 +904,7 @@ class DatabaseManager {
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.identification_requests (
+        CREATE TABLE IF NOT EXISTS di_autres.identification_requests (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           phone VARCHAR(50) NOT NULL,
@@ -941,12 +912,12 @@ class DatabaseManager {
           profile_id INT DEFAULT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX idx_user_id (user_id),
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.blacklist (
+        CREATE TABLE IF NOT EXISTS di_autres.blacklist (
           id INT AUTO_INCREMENT PRIMARY KEY,
           number VARCHAR(50) NOT NULL UNIQUE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -955,18 +926,18 @@ class DatabaseManager {
 
       // Table des dossiers CDR
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.cdr_cases (
+        CREATE TABLE IF NOT EXISTS di_autres.cdr_cases (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           name VARCHAR(255) NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX idx_user_id (user_id),
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.cdr_case_shares (
+        CREATE TABLE IF NOT EXISTS di_autres.cdr_case_shares (
           id INT AUTO_INCREMENT PRIMARY KEY,
           case_id INT NOT NULL,
           user_id INT NOT NULL,
@@ -974,14 +945,14 @@ class DatabaseManager {
           UNIQUE KEY uniq_case_user (case_id, user_id),
           INDEX idx_share_case (case_id),
           INDEX idx_share_user (user_id),
-          FOREIGN KEY (case_id) REFERENCES autres.cdr_cases(id) ON DELETE CASCADE,
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (case_id) REFERENCES di_autres.cdr_cases(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       // Table des fichiers importés par dossier
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.cdr_case_files (
+        CREATE TABLE IF NOT EXISTS di_autres.cdr_case_files (
           id INT AUTO_INCREMENT PRIMARY KEY,
           case_id INT NOT NULL,
           filename VARCHAR(255) NOT NULL,
@@ -989,13 +960,13 @@ class DatabaseManager {
           line_count INT DEFAULT 0,
           uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX idx_case_id (case_id),
-          FOREIGN KEY (case_id) REFERENCES autres.cdr_cases(id) ON DELETE CASCADE
+          FOREIGN KEY (case_id) REFERENCES di_autres.cdr_cases(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       // Table des enregistrements CDR reliés à un dossier optionnel
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.cdr_records (
+        CREATE TABLE IF NOT EXISTS di_autres.cdr_records (
           id INT AUTO_INCREMENT PRIMARY KEY,
           case_id INT DEFAULT NULL,
           file_id INT DEFAULT NULL,
@@ -1026,13 +997,13 @@ class DatabaseManager {
           INDEX idx_numero_appele (numero_intl_appele),
           INDEX idx_imei_appelant (imei_appelant),
           INDEX idx_imei_appele (imei_appele),
-          FOREIGN KEY (case_id) REFERENCES autres.cdr_cases(id) ON DELETE CASCADE,
-          FOREIGN KEY (file_id) REFERENCES autres.cdr_case_files(id) ON DELETE CASCADE
+          FOREIGN KEY (case_id) REFERENCES di_autres.cdr_cases(id) ON DELETE CASCADE,
+          FOREIGN KEY (file_id) REFERENCES di_autres.cdr_case_files(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.notifications (
+        CREATE TABLE IF NOT EXISTS di_autres.notifications (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           type VARCHAR(50) NOT NULL,
@@ -1041,12 +1012,12 @@ class DatabaseManager {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX idx_notification_user (user_id),
           INDEX idx_notification_read (user_id, read_at),
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
       await query(`
-        CREATE TABLE IF NOT EXISTS autres.user_sessions (
+        CREATE TABLE IF NOT EXISTS di_autres.user_sessions (
           id INT AUTO_INCREMENT PRIMARY KEY,
           user_id INT NOT NULL,
           login_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1054,7 +1025,7 @@ class DatabaseManager {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX idx_session_user (user_id),
           INDEX idx_session_login (login_at),
-          FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 

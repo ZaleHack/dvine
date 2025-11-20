@@ -32,20 +32,20 @@ const UNAVAILABLE_TABLE_TTL_MS = resolveUnavailableTableTtl();
 
 const EXCLUDED_SEARCH_TABLES = new Set(
   [
-    'autres.blacklist',
-    'autres.divisions',
-    'autres.profiles',
-    'autres.profile_attachments',
-    'autres.profile_shares',
-    'autres.structuresanctions',
-    'autres.structuresanction',
-    'autres.search_logs',
-    'autres.search_sync_events',
-    'autres.upload_history',
-    'autres.users',
-    'autres.users_log',
-    'autres.user_logs',
-    'autres.user_sessions',
+    'di_autres.blacklist',
+    'di_autres.divisions',
+    'di_autres.profiles',
+    'di_autres.profile_attachments',
+    'di_autres.profile_shares',
+    'di_autres.structuresanctions',
+    'di_autres.structuresanction',
+    'di_autres.search_logs',
+    'di_autres.search_sync_events',
+    'di_autres.upload_history',
+    'di_autres.users',
+    'di_autres.users_log',
+    'di_autres.user_logs',
+    'di_autres.user_sessions',
     'blacklist',
     'divisions',
     'profiles',
@@ -1200,7 +1200,7 @@ class SearchService {
           // Les termes obligatoires sont ajoutés directement
           conditions.push(`(${termConditions.join(' OR ')})`);
         } else {
-          // Les autres termes sont groupés selon l'opérateur
+          // Les di_autres termes sont groupés selon l'opérateur
           currentGroup.push(`(${termConditions.join(' OR ')})`);
         }
       }

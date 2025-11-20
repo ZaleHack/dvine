@@ -10,7 +10,7 @@ async function initDatabase() {
     
     // Vérifier si l'utilisateur admin existe
     const existingAdmin = await database.queryOne(
-      'SELECT * FROM autres.users WHERE login = ?', 
+      'SELECT * FROM di_autres.users WHERE login = ?', 
       ['admin']
     );
     
@@ -23,7 +23,7 @@ async function initDatabase() {
     const hashedPassword = await bcrypt.hash('admin123', 12);
     
     await database.query(
-      'INSERT INTO autres.users (login, mdp, admin, active) VALUES (?, ?, ?, ?)',
+      'INSERT INTO di_autres.users (login, mdp, admin, active) VALUES (?, ?, ?, ?)',
       ['admin', hashedPassword, 1, 1]
     );
     
@@ -33,7 +33,7 @@ async function initDatabase() {
     
     // Vérifier la création
     const newAdmin = await database.queryOne(
-      'SELECT login, admin FROM autres.users WHERE login = ?', 
+      'SELECT login, admin FROM di_autres.users WHERE login = ?', 
       ['admin']
     );
     

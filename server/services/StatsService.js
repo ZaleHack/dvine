@@ -11,7 +11,7 @@ import {
 } from '../config/realtime-table.js';
 
 const EXCLUDED_DATA_TABLES = new Set(
-  ['autres.cdr_temps_reel', 'cdr_temps_reel'].map((name) => name.toLowerCase())
+  ['di_autres.cdr_temps_reel', 'cdr_temps_reel'].map((name) => name.toLowerCase())
 );
 
 const realtimeDataExclusions = getRealtimeCdrTableIdentifiers();
@@ -211,26 +211,26 @@ class StatsService {
         dataStats
       ] = await Promise.all([
         database.queryOne(
-          `SELECT COUNT(*) as count FROM autres.search_logs${userId ? ' WHERE user_id = ?' : ''}`,
+          `SELECT COUNT(*) as count FROM di_autres.search_logs${userId ? ' WHERE user_id = ?' : ''}`,
           userId ? [userId] : []
         ),
         database.queryOne(
-          `SELECT AVG(execution_time_ms) as avg_time FROM autres.search_logs WHERE execution_time_ms > 0${userId ? ' AND user_id = ?' : ''}`,
+          `SELECT AVG(execution_time_ms) as avg_time FROM di_autres.search_logs WHERE execution_time_ms > 0${userId ? ' AND user_id = ?' : ''}`,
           userId ? [userId] : []
         ),
         database.queryOne(
-          `SELECT COUNT(*) as count FROM autres.search_logs WHERE search_date >= DATE(NOW())${userId ? ' AND user_id = ?' : ''}`,
+          `SELECT COUNT(*) as count FROM di_autres.search_logs WHERE search_date >= DATE(NOW())${userId ? ' AND user_id = ?' : ''}`,
           userId ? [userId] : []
         ),
         userId
           ? Promise.resolve({ count: 1 })
-          : database.queryOne('SELECT COUNT(*) as count FROM autres.users'),
+          : database.queryOne('SELECT COUNT(*) as count FROM di_autres.users'),
         database.query(
-          `SELECT search_term, COUNT(*) as search_count FROM autres.search_logs WHERE search_term IS NOT NULL AND search_term != ''${userId ? ' AND user_id = ?' : ''} AND search_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY search_term ORDER BY search_count DESC LIMIT 10`,
+          `SELECT search_term, COUNT(*) as search_count FROM di_autres.search_logs WHERE search_term IS NOT NULL AND search_term != ''${userId ? ' AND user_id = ?' : ''} AND search_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY search_term ORDER BY search_count DESC LIMIT 10`,
           userId ? [userId] : []
         ),
         database.query(
-          `SELECT COALESCE(search_type, 'unknown') as search_type, COUNT(*) as search_count FROM autres.search_logs${userId ? ' WHERE user_id = ?' : ''} GROUP BY search_type ORDER BY search_count DESC`,
+          `SELECT COALESCE(search_type, 'unknown') as search_type, COUNT(*) as search_count FROM di_autres.search_logs${userId ? ' WHERE user_id = ?' : ''} GROUP BY search_type ORDER BY search_count DESC`,
           userId ? [userId] : []
         ),
         database.queryOne(
@@ -238,7 +238,7 @@ class StatsService {
             COUNT(*) AS total,
             SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS today,
             SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS recent
-          FROM autres.profiles${userId ? ' WHERE user_id = ?' : ''}`,
+          FROM di_autres.profiles${userId ? ' WHERE user_id = ?' : ''}`,
           userId ? [userId] : []
         ),
         database.queryOne(
@@ -248,7 +248,7 @@ class StatsService {
             SUM(CASE WHEN status = 'identified' THEN 1 ELSE 0 END) AS identified,
             SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS today,
             SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS recent
-          FROM autres.identification_requests${userId ? ' WHERE user_id = ?' : ''}`,
+          FROM di_autres.identification_requests${userId ? ' WHERE user_id = ?' : ''}`,
           userId ? [userId] : []
         ),
         database.queryOne(
@@ -260,12 +260,12 @@ class StatsService {
                 SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS recent
               FROM (
                 SELECT c.id, c.created_at
-                FROM autres.cdr_cases c
+                FROM di_autres.cdr_cases c
                 WHERE c.user_id = ?
                 UNION
                 SELECT c.id, c.created_at
-                FROM autres.cdr_cases c
-                INNER JOIN autres.cdr_case_shares s ON s.case_id = c.id
+                FROM di_autres.cdr_cases c
+                INNER JOIN di_autres.cdr_case_shares s ON s.case_id = c.id
                 WHERE s.user_id = ?
               ) AS accessible_cases
             `
@@ -274,7 +274,7 @@ class StatsService {
                 COUNT(*) AS total,
                 SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS today,
                 SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) AS recent
-              FROM autres.cdr_cases
+              FROM di_autres.cdr_cases
             `,
           userId ? [userId, userId] : []
         ),
@@ -407,7 +407,7 @@ class StatsService {
           COUNT(*) as searches,
           COUNT(DISTINCT user_id) as unique_users,
           AVG(execution_time_ms) as avg_time
-        FROM autres.search_logs
+        FROM di_autres.search_logs
         WHERE search_date >= DATE_SUB(NOW(), INTERVAL ? DAY)`;
 
       const params = [days];
@@ -452,8 +452,8 @@ class StatsService {
           COUNT(sl.id) as total_searches,
           AVG(sl.results_count) as avg_results,
           MAX(sl.search_date) as last_search
-        FROM autres.users u
-        LEFT JOIN autres.search_logs sl ON u.id = sl.user_id
+        FROM di_autres.users u
+        LEFT JOIN di_autres.search_logs sl ON u.id = sl.user_id
         GROUP BY u.id, u.login, u.admin
         ORDER BY total_searches DESC
       `);
@@ -479,7 +479,7 @@ class StatsService {
     try {
       const regions = await database.query(`
         SELECT region, COUNT(*) as count
-        FROM autres.entreprises
+        FROM di_autres.entreprises
         WHERE region IS NOT NULL AND region != ''
         GROUP BY region
         ORDER BY count DESC
@@ -510,8 +510,8 @@ class StatsService {
       let sql = `
         SELECT
           sl.*, u.login as username
-        FROM autres.search_logs sl
-        LEFT JOIN autres.users u ON sl.user_id = u.id`;
+        FROM di_autres.search_logs sl
+        LEFT JOIN di_autres.users u ON sl.user_id = u.id`;
 
       const params = [];
       const conditions = [];

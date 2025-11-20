@@ -5,17 +5,7 @@ const fs = require('fs');
 class DatabaseManager {
   constructor() {
     const dataDir = path.join(__dirname, '../../data');
-    const newDbPath = path.join(dataDir, 'sora.db');
-    const oldDbPath = path.join(dataDir, 'vegeta.db');
-
-    // Preserve existing data by migrating the old database file if needed
-    if (fs.existsSync(oldDbPath) && !fs.existsSync(newDbPath)) {
-      try {
-        fs.renameSync(oldDbPath, newDbPath);
-      } catch (err) {
-        console.error('❌ Erreur lors de la migration de la base de données:', err);
-      }
-    }
+    const newDbPath = path.join(dataDir, 'di_sora.db');
 
     this.dbPath = newDbPath;
     this.db = null;
@@ -250,8 +240,8 @@ class DatabaseManager {
         cni TEXT
       )`,
 
-      // Base autres - Vehicules
-      `CREATE TABLE IF NOT EXISTS autres_vehicules (
+      // Base di_autres - Vehicules
+      `CREATE TABLE IF NOT EXISTS di_autres_vehicules (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         numero_immatriculation TEXT,
         code_type TEXT,
@@ -289,8 +279,8 @@ class DatabaseManager {
         Date_PrecImmat TEXT
       )`,
 
-      // Base autres - entreprises
-      `CREATE TABLE IF NOT EXISTS autres_entreprises (
+      // Base di_autres - entreprises
+      `CREATE TABLE IF NOT EXISTS di_autres_entreprises (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ninea_ninet TEXT,
         cuci TEXT,
@@ -329,8 +319,8 @@ class DatabaseManager {
         systeme TEXT
       )`,
 
-      // Base autres - annuaire gendarmerie
-      `CREATE TABLE IF NOT EXISTS autres_annuaire_gendarmerie (
+      // Base di_autres - annuaire gendarmerie
+      `CREATE TABLE IF NOT EXISTS di_autres_annuaire_gendarmerie (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         libelle TEXT,
         telephone TEXT,
@@ -339,8 +329,8 @@ class DatabaseManager {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // Base autres - uvs
-      `CREATE TABLE IF NOT EXISTS autres_uvs (
+      // Base di_autres - uvs
+      `CREATE TABLE IF NOT EXISTS di_autres_uvs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT,
         matricule TEXT,
@@ -358,8 +348,8 @@ class DatabaseManager {
         login TEXT
       )`,
 
-      // Base autres - collections
-      `CREATE TABLE IF NOT EXISTS autres_collections (
+      // Base di_autres - collections
+      `CREATE TABLE IF NOT EXISTS di_autres_collections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nom TEXT,
         prenom TEXT,
@@ -370,8 +360,8 @@ class DatabaseManager {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,
 
-      // Autres tables de la base "autres"
-      `CREATE TABLE IF NOT EXISTS autres_affaire_etrangere (
+      // Autres tables de la base "di_autres"
+      `CREATE TABLE IF NOT EXISTS di_autres_affaire_etrangere (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         prenom TEXT,
         nom TEXT,
@@ -382,7 +372,7 @@ class DatabaseManager {
         lib_org_niv1 TEXT
       )`,
 
-      `CREATE TABLE IF NOT EXISTS autres_agent_non_fonctionnaire (
+      `CREATE TABLE IF NOT EXISTS di_autres_agent_non_fonctionnaire (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         prenom TEXT,
         nom TEXT,
@@ -395,7 +385,7 @@ class DatabaseManager {
         lib_org_niv1 TEXT
       )`,
 
-      `CREATE TABLE IF NOT EXISTS autres_fpublique (
+      `CREATE TABLE IF NOT EXISTS di_autres_fpublique (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         cni TEXT,
         login TEXT,
@@ -404,7 +394,7 @@ class DatabaseManager {
         email TEXT
       )`,
 
-      `CREATE TABLE IF NOT EXISTS autres_demdikk (
+      `CREATE TABLE IF NOT EXISTS di_autres_demdikk (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         prenom TEXT,
         nom TEXT,

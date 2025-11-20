@@ -3,7 +3,7 @@ import database from '../config/database.js';
 class IdentifiedNumber {
   static async upsert(phone, data) {
     await database.query(
-      `INSERT INTO autres.identified_numbers (phone, data)
+      `INSERT INTO di_autres.identified_numbers (phone, data)
        VALUES (?, ?)
        ON DUPLICATE KEY UPDATE data = VALUES(data), updated_at = CURRENT_TIMESTAMP`,
       [phone, JSON.stringify(data)]
@@ -12,7 +12,7 @@ class IdentifiedNumber {
 
   static async findByPhone(phone) {
     const row = await database.queryOne(
-      `SELECT * FROM autres.identified_numbers WHERE phone = ?`,
+      `SELECT * FROM di_autres.identified_numbers WHERE phone = ?`,
       [phone]
     );
     if (!row) return null;

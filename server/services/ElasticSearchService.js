@@ -464,8 +464,8 @@ class ElasticSearchService {
       comment_preview: commentPreview,
       extra_fields: Array.isArray(normalized.extra_fields) ? normalized.extra_fields : [],
       table: 'profiles',
-      table_name: 'autres.profiles',
-      database_name: 'autres',
+      table_name: 'di_autres.profiles',
+      database_name: 'di_autres',
       preview: previewEntries,
       search_tokens: searchTokens,
       primary_key: 'id',
@@ -869,7 +869,7 @@ class ElasticSearchService {
   normalizeHit(hit) {
     const source = hit?._source || {};
     const preview = this.buildPreviewFromSource(source);
-    const tableName = source.table_name || 'autres.profiles';
+    const tableName = source.table_name || 'di_autres.profiles';
     const tableDisplay = source.table || tableName;
     const primaryKeyName = source.primary_key || 'id';
     const primaryValue = source.primary_value ?? source.id ?? hit?._id;

@@ -5,7 +5,7 @@ class ProfileFolderShare {
   static async getUserIds(folderId) {
     if (!folderId) return [];
     const rows = await database.query(
-      'SELECT user_id FROM autres.profile_folder_shares WHERE folder_id = ?',
+      'SELECT user_id FROM di_autres.profile_folder_shares WHERE folder_id = ?',
       [folderId]
     );
     return rows.map(row => row.user_id);
@@ -22,7 +22,7 @@ class ProfileFolderShare {
     }
     const placeholders = uniqueIds.map(() => '?').join(',');
     const rows = await database.query(
-      `SELECT folder_id, user_id FROM autres.profile_folder_shares WHERE folder_id IN (${placeholders})`,
+      `SELECT folder_id, user_id FROM di_autres.profile_folder_shares WHERE folder_id IN (${placeholders})`,
       uniqueIds
     );
     for (const row of rows) {
@@ -56,14 +56,14 @@ class ProfileFolderShare {
     if (toRemove.length > 0) {
       const placeholders = toRemove.map(() => '?').join(',');
       await database.query(
-        `DELETE FROM autres.profile_folder_shares WHERE folder_id = ? AND user_id IN (${placeholders})`,
+        `DELETE FROM di_autres.profile_folder_shares WHERE folder_id = ? AND user_id IN (${placeholders})`,
         [validFolderId, ...toRemove]
       );
     }
 
     for (const userId of toAdd) {
       await database.query(
-        `INSERT INTO autres.profile_folder_shares (folder_id, user_id) VALUES (?, ?)
+        `INSERT INTO di_autres.profile_folder_shares (folder_id, user_id) VALUES (?, ?)
          ON DUPLICATE KEY UPDATE created_at = VALUES(created_at)` ,
         [validFolderId, userId]
       );
@@ -75,7 +75,7 @@ class ProfileFolderShare {
   static async isSharedWithUser(folderId, userId) {
     if (!folderId || !userId) return false;
     const row = await database.queryOne(
-      'SELECT 1 FROM autres.profile_folder_shares WHERE folder_id = ? AND user_id = ? LIMIT 1',
+      'SELECT 1 FROM di_autres.profile_folder_shares WHERE folder_id = ? AND user_id = ? LIMIT 1',
       [folderId, userId]
     );
     return Boolean(row);

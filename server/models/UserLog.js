@@ -7,13 +7,13 @@ class UserLog {
 
     try {
       await database.query(
-        `INSERT INTO autres.user_logs (user_id, action, details, duration_ms) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO di_autres.user_logs (user_id, action, details, duration_ms) VALUES (?, ?, ?, ?)`,
         [safeUserId, action, details, duration_ms]
       );
     } catch (error) {
       const handled = await handleMissingUserForeignKey(error, async () => {
         await database.query(
-          `INSERT INTO autres.user_logs (user_id, action, details, duration_ms) VALUES (?, ?, ?, ?)`,
+          `INSERT INTO di_autres.user_logs (user_id, action, details, duration_ms) VALUES (?, ?, ?, ?)`,
           [null, action, details, duration_ms]
         );
       });
@@ -44,8 +44,8 @@ class UserLog {
 
     const logs = await database.query(
       `SELECT l.*, u.login AS username
-       FROM autres.user_logs l
-       LEFT JOIN autres.users u ON l.user_id = u.id
+       FROM di_autres.user_logs l
+       LEFT JOIN di_autres.users u ON l.user_id = u.id
        ${where}
        ORDER BY l.created_at DESC
        LIMIT ${safeLimit} OFFSET ${offset}`,
@@ -54,8 +54,8 @@ class UserLog {
 
     const totalRow = await database.queryOne(
       `SELECT COUNT(*) as count
-       FROM autres.user_logs l
-       LEFT JOIN autres.users u ON l.user_id = u.id
+       FROM di_autres.user_logs l
+       LEFT JOIN di_autres.users u ON l.user_id = u.id
        ${where}`,
       params
     );
@@ -65,13 +65,13 @@ class UserLog {
 
   static async getLastAction(user_id, action) {
     return database.queryOne(
-      `SELECT * FROM autres.user_logs WHERE user_id = ? AND action = ? ORDER BY created_at DESC LIMIT 1`,
+      `SELECT * FROM di_autres.user_logs WHERE user_id = ? AND action = ? ORDER BY created_at DESC LIMIT 1`,
       [user_id, action]
     );
   }
 
   static async clearAll() {
-    await database.query(`DELETE FROM autres.user_logs`);
+    await database.query(`DELETE FROM di_autres.user_logs`);
   }
 }
 

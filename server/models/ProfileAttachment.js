@@ -8,7 +8,7 @@ class ProfileAttachment {
     const values = attachments.map(att => [profileId, att.file_path, att.original_name || null]);
     const placeholders = values.map(() => '(?, ?, ?)').join(', ');
     await database.query(
-      `INSERT INTO autres.profile_attachments (profile_id, file_path, original_name) VALUES ${placeholders}`,
+      `INSERT INTO di_autres.profile_attachments (profile_id, file_path, original_name) VALUES ${placeholders}`,
       values.flat()
     );
     return this.findByProfileId(profileId);
@@ -16,7 +16,7 @@ class ProfileAttachment {
 
   static async findByProfileId(profileId) {
     const rows = await database.query(
-      'SELECT * FROM autres.profile_attachments WHERE profile_id = ? ORDER BY created_at DESC',
+      'SELECT * FROM di_autres.profile_attachments WHERE profile_id = ? ORDER BY created_at DESC',
       [profileId]
     );
     return rows.map(row => ({ ...row, file_path: row.file_path ? row.file_path.replace(/\\/g, '/') : row.file_path }));
@@ -28,7 +28,7 @@ class ProfileAttachment {
     }
     const placeholders = profileIds.map(() => '?').join(', ');
     const rows = await database.query(
-      `SELECT * FROM autres.profile_attachments WHERE profile_id IN (${placeholders}) ORDER BY created_at DESC`,
+      `SELECT * FROM di_autres.profile_attachments WHERE profile_id IN (${placeholders}) ORDER BY created_at DESC`,
       profileIds
     );
     return rows.reduce((acc, row) => {
@@ -47,7 +47,7 @@ class ProfileAttachment {
     }
     const placeholders = ids.map(() => '?').join(', ');
     await database.query(
-      `DELETE FROM autres.profile_attachments WHERE profile_id = ? AND id IN (${placeholders})`,
+      `DELETE FROM di_autres.profile_attachments WHERE profile_id = ? AND id IN (${placeholders})`,
       [profileId, ...ids]
     );
   }

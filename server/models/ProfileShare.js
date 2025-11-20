@@ -5,7 +5,7 @@ class ProfileShare {
   static async getUserIds(profileId) {
     if (!profileId) return [];
     const rows = await database.query(
-      `SELECT user_id FROM autres.profile_shares WHERE profile_id = ?`,
+      `SELECT user_id FROM di_autres.profile_shares WHERE profile_id = ?`,
       [profileId]
     );
     return rows.map((row) => row.user_id);
@@ -18,7 +18,7 @@ class ProfileShare {
     }
     const placeholders = profileIds.map(() => '?').join(',');
     const rows = await database.query(
-      `SELECT profile_id, user_id FROM autres.profile_shares WHERE profile_id IN (${placeholders})`,
+      `SELECT profile_id, user_id FROM di_autres.profile_shares WHERE profile_id IN (${placeholders})`,
       profileIds
     );
     for (const row of rows) {
@@ -52,14 +52,14 @@ class ProfileShare {
     if (toRemove.length > 0) {
       const placeholders = toRemove.map(() => '?').join(',');
       await database.query(
-        `DELETE FROM autres.profile_shares WHERE profile_id = ? AND user_id IN (${placeholders})`,
+        `DELETE FROM di_autres.profile_shares WHERE profile_id = ? AND user_id IN (${placeholders})`,
         [validProfileId, ...toRemove]
       );
     }
 
     for (const userId of toAdd) {
       await database.query(
-        `INSERT INTO autres.profile_shares (profile_id, user_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE created_at = VALUES(created_at)`,
+        `INSERT INTO di_autres.profile_shares (profile_id, user_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE created_at = VALUES(created_at)`,
         [validProfileId, userId]
       );
     }
@@ -70,7 +70,7 @@ class ProfileShare {
   static async isSharedWithUser(profileId, userId) {
     if (!profileId || !userId) return false;
     const row = await database.queryOne(
-      `SELECT 1 FROM autres.profile_shares WHERE profile_id = ? AND user_id = ? LIMIT 1`,
+      `SELECT 1 FROM di_autres.profile_shares WHERE profile_id = ? AND user_id = ? LIMIT 1`,
       [profileId, userId]
     );
     return Boolean(row);

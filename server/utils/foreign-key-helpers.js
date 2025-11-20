@@ -5,7 +5,7 @@ export const ensureUserExists = async (userId) => {
     return null;
   }
   const existing = await database.queryOne(
-    'SELECT id FROM autres.users WHERE id = ? LIMIT 1',
+    'SELECT id FROM di_autres.users WHERE id = ? LIMIT 1',
     [userId]
   );
   return existing ? existing.id : null;
@@ -16,7 +16,7 @@ export const ensureCaseExists = async (caseId) => {
     return null;
   }
   const existing = await database.queryOne(
-    'SELECT id FROM autres.cdr_cases WHERE id = ? LIMIT 1',
+    'SELECT id FROM di_autres.cdr_cases WHERE id = ? LIMIT 1',
     [caseId]
   );
   return existing ? existing.id : null;
@@ -27,7 +27,7 @@ export const ensureProfileExists = async (profileId) => {
     return null;
   }
   const existing = await database.queryOne(
-    'SELECT id FROM autres.profiles WHERE id = ? LIMIT 1',
+    'SELECT id FROM di_autres.profiles WHERE id = ? LIMIT 1',
     [profileId]
   );
   return existing ? existing.id : null;
@@ -38,7 +38,7 @@ export const ensureProfileFolderExists = async (folderId) => {
     return null;
   }
   const existing = await database.queryOne(
-    'SELECT id FROM autres.profile_folders WHERE id = ? LIMIT 1',
+    'SELECT id FROM di_autres.profile_folders WHERE id = ? LIMIT 1',
     [folderId]
   );
   return existing ? existing.id : null;
@@ -50,7 +50,7 @@ export const filterExistingUserIds = async (userIds = []) => {
   }
   const placeholders = userIds.map(() => '?').join(',');
   const rows = await database.query(
-    `SELECT id FROM autres.users WHERE id IN (${placeholders})`,
+    `SELECT id FROM di_autres.users WHERE id IN (${placeholders})`,
     userIds
   );
   const validIds = new Set(rows.map((row) => row.id));

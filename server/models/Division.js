@@ -3,13 +3,13 @@ import database from '../config/database.js';
 class Division {
   static async findAll() {
     return await database.query(
-      `SELECT id, name, created_at FROM autres.divisions ORDER BY name`
+      `SELECT id, name, created_at FROM di_autres.divisions ORDER BY name`
     );
   }
 
   static async findById(id) {
     return await database.queryOne(
-      `SELECT id, name, created_at FROM autres.divisions WHERE id = ?`,
+      `SELECT id, name, created_at FROM di_autres.divisions WHERE id = ?`,
       [id]
     );
   }
@@ -20,7 +20,7 @@ class Division {
       throw new Error('Division name is required');
     }
     const result = await database.query(
-      `INSERT INTO autres.divisions (name) VALUES (?)`,
+      `INSERT INTO di_autres.divisions (name) VALUES (?)`,
       [trimmed]
     );
     return {
@@ -37,13 +37,13 @@ class Division {
 
     return await database.transaction(async ({ query, queryOne }) => {
       const fallbackDivision = await queryOne(
-        'SELECT id FROM autres.divisions WHERE id != ? ORDER BY id ASC LIMIT 1',
+        'SELECT id FROM di_autres.divisions WHERE id != ? ORDER BY id ASC LIMIT 1',
         [divisionId]
       );
 
       const { count: userCount = 0 } =
         (await queryOne(
-          'SELECT COUNT(*) AS count FROM autres.users WHERE division_id = ?',
+          'SELECT COUNT(*) AS count FROM di_autres.users WHERE division_id = ?',
           [divisionId]
         )) ?? {};
 
@@ -59,7 +59,7 @@ class Division {
 
       if (fallbackDivision?.id) {
         const detachResult = await query(
-          'UPDATE autres.users SET division_id = ? WHERE division_id = ?',
+          'UPDATE di_autres.users SET division_id = ? WHERE division_id = ?',
           [fallbackDivision.id, divisionId]
         );
         detachedUsers = detachResult.affectedRows ?? 0;
@@ -67,20 +67,20 @@ class Division {
 
       const { count: remainingUsers = 0 } =
         (await queryOne(
-          'SELECT COUNT(*) AS count FROM autres.users WHERE division_id = ?',
+          'SELECT COUNT(*) AS count FROM di_autres.users WHERE division_id = ?',
           [divisionId]
         )) ?? {};
 
       if (remainingUsers > 0) {
         const nullifyResult = await query(
-          'UPDATE autres.users SET division_id = NULL WHERE division_id = ?',
+          'UPDATE di_autres.users SET division_id = NULL WHERE division_id = ?',
           [divisionId]
         );
         detachedUsers += nullifyResult.affectedRows ?? 0;
       }
 
       const result = await query(
-        'DELETE FROM autres.divisions WHERE id = ?',
+        'DELETE FROM di_autres.divisions WHERE id = ?',
         [divisionId]
       );
 
@@ -98,7 +98,7 @@ class Division {
     const condition = includeInactive ? '' : 'AND u.active = 1';
     return await database.query(
       `SELECT u.id, u.login, u.admin, u.active, u.created_at
-       FROM autres.users u
+       FROM di_autres.users u
        WHERE u.division_id = ? ${condition}
        ORDER BY u.login`,
       [divisionId]

@@ -1,7 +1,7 @@
 import database from '../config/database.js';
 import { ensureCaseExists, ensureUserExists } from '../utils/foreign-key-helpers.js';
 
-const CASES_TABLE = 'autres.cdr_cases';
+const CASES_TABLE = 'di_autres.cdr_cases';
 
 class Case {
   static async create(name, userId) {
@@ -10,7 +10,7 @@ class Case {
       throw new Error('Utilisateur introuvable');
     }
     const result = await database.query(
-      'INSERT INTO autres.cdr_cases (name, user_id, created_at) VALUES (?, ?, NOW())',
+      'INSERT INTO di_autres.cdr_cases (name, user_id, created_at) VALUES (?, ?, NOW())',
       [name, safeUserId]
     );
     return { id: result.insertId, name, user_id: safeUserId };
@@ -19,9 +19,9 @@ class Case {
   static async findById(id) {
     const row = await database.queryOne(
       `SELECT c.*, u.login AS user_login, u.division_id, d.name AS division_name
-       FROM autres.cdr_cases c
-       JOIN autres.users u ON c.user_id = u.id
-       LEFT JOIN autres.divisions d ON u.division_id = d.id
+       FROM di_autres.cdr_cases c
+       JOIN di_autres.users u ON c.user_id = u.id
+       LEFT JOIN di_autres.divisions d ON u.division_id = d.id
        WHERE c.id = ?`,
       [id]
     );
@@ -30,7 +30,7 @@ class Case {
 
   static async findAllByUser(userId) {
     return await database.query(
-      'SELECT * FROM autres.cdr_cases WHERE user_id = ? ORDER BY created_at DESC',
+      'SELECT * FROM di_autres.cdr_cases WHERE user_id = ? ORDER BY created_at DESC',
       [userId]
     );
   }
@@ -38,9 +38,9 @@ class Case {
   static async findAll() {
     return await database.query(
       `SELECT c.*, u.login AS user_login, u.division_id, d.name AS division_name
-       FROM autres.cdr_cases c
-       JOIN autres.users u ON c.user_id = u.id
-       LEFT JOIN autres.divisions d ON u.division_id = d.id
+       FROM di_autres.cdr_cases c
+       JOIN di_autres.users u ON c.user_id = u.id
+       LEFT JOIN di_autres.divisions d ON u.division_id = d.id
        ORDER BY c.created_at DESC`
     );
   }
@@ -49,10 +49,10 @@ class Case {
     return await database.query(
       `SELECT DISTINCT c.*, u.login AS user_login, u.division_id, d.name AS division_name,
               CASE WHEN c.user_id = ? THEN 1 ELSE 0 END AS is_owner
-         FROM autres.cdr_cases c
-         JOIN autres.users u ON c.user_id = u.id
-         LEFT JOIN autres.divisions d ON u.division_id = d.id
-         LEFT JOIN autres.cdr_case_shares s ON c.id = s.case_id AND s.user_id = ?
+         FROM di_autres.cdr_cases c
+         JOIN di_autres.users u ON c.user_id = u.id
+         LEFT JOIN di_autres.divisions d ON u.division_id = d.id
+         LEFT JOIN di_autres.cdr_case_shares s ON c.id = s.case_id AND s.user_id = ?
          WHERE c.user_id = ? OR s.user_id = ?
          ORDER BY c.created_at DESC`,
       [userId, userId, userId, userId]
@@ -63,10 +63,10 @@ class Case {
     const row = await database.queryOne(
       `SELECT c.*, u.login AS user_login, u.division_id, d.name AS division_name,
               CASE WHEN c.user_id = ? THEN 1 ELSE 0 END AS is_owner
-         FROM autres.cdr_cases c
-         JOIN autres.users u ON c.user_id = u.id
-         LEFT JOIN autres.divisions d ON u.division_id = d.id
-         LEFT JOIN autres.cdr_case_shares s ON c.id = s.case_id AND s.user_id = ?
+         FROM di_autres.cdr_cases c
+         JOIN di_autres.users u ON c.user_id = u.id
+         LEFT JOIN di_autres.divisions d ON u.division_id = d.id
+         LEFT JOIN di_autres.cdr_case_shares s ON c.id = s.case_id AND s.user_id = ?
          WHERE c.id = ? AND (c.user_id = ? OR s.user_id = ?)
          LIMIT 1`,
       [userId, userId, caseId, userId, userId]
@@ -76,18 +76,18 @@ class Case {
 
   static async getShareUserIds(caseId) {
     const rows = await database.query(
-      `SELECT user_id FROM autres.cdr_case_shares WHERE case_id = ?`,
+      `SELECT user_id FROM di_autres.cdr_case_shares WHERE case_id = ?`,
       [caseId]
     );
     return rows.map((row) => row.user_id);
   }
 
   static async delete(id) {
-    await database.query('DELETE FROM autres.cdr_cases WHERE id = ?', [id]);
+    await database.query('DELETE FROM di_autres.cdr_cases WHERE id = ?', [id]);
   }
 
   static async updateName(id, name) {
-    await database.query('UPDATE autres.cdr_cases SET name = ? WHERE id = ?', [name, id]);
+    await database.query('UPDATE di_autres.cdr_cases SET name = ? WHERE id = ?', [name, id]);
   }
 
   static async addFile(caseId, filename, cdrNumber, lineCount = 0) {
@@ -96,7 +96,7 @@ class Case {
       throw new Error('Opération introuvable');
     }
     const result = await database.query(
-      'INSERT INTO autres.cdr_case_files (case_id, filename, cdr_number, line_count, uploaded_at) VALUES (?, ?, ?, ?, NOW())',
+      'INSERT INTO di_autres.cdr_case_files (case_id, filename, cdr_number, line_count, uploaded_at) VALUES (?, ?, ?, ?, NOW())',
       [existingCaseId, filename, cdrNumber, lineCount]
     );
     return { id: result.insertId };
@@ -104,21 +104,21 @@ class Case {
 
   static async updateFileLineCount(fileId, lineCount) {
     await database.query(
-      'UPDATE autres.cdr_case_files SET line_count = ? WHERE id = ?',
+      'UPDATE di_autres.cdr_case_files SET line_count = ? WHERE id = ?',
       [lineCount, fileId]
     );
   }
 
   static async listFiles(caseId) {
     return await database.query(
-      'SELECT id, filename, uploaded_at, line_count, cdr_number FROM autres.cdr_case_files WHERE case_id = ? ORDER BY uploaded_at DESC',
+      'SELECT id, filename, uploaded_at, line_count, cdr_number FROM di_autres.cdr_case_files WHERE case_id = ? ORDER BY uploaded_at DESC',
       [caseId]
     );
   }
 
   static async deleteFile(caseId, fileId) {
     await database.query(
-      'DELETE FROM autres.cdr_case_files WHERE case_id = ? AND id = ?',
+      'DELETE FROM di_autres.cdr_case_files WHERE case_id = ? AND id = ?',
       [caseId, fileId]
     );
   }

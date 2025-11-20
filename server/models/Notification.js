@@ -32,7 +32,7 @@ class Notification {
     }
     try {
       const result = await database.query(
-        `INSERT INTO autres.notifications (user_id, type, data) VALUES (?, ?, ?)`,
+        `INSERT INTO di_autres.notifications (user_id, type, data) VALUES (?, ?, ?)`,
         [safeUserId, type, serializeData(data)]
       );
       return { id: result.insertId, user_id: safeUserId, type, data };
@@ -53,7 +53,7 @@ class Notification {
     const safeLimit = sanitizeLimit(limit, { defaultValue: 20, min: 1, max: 100 });
     const rows = await database.query(
       `SELECT id, user_id, type, data, read_at, created_at
-       FROM autres.notifications
+       FROM di_autres.notifications
        WHERE user_id = ?
        ORDER BY created_at DESC
        LIMIT ${safeLimit}`,
@@ -65,7 +65,7 @@ class Notification {
   static async markAsRead(id, userId) {
     if (!id || !userId) return false;
     await database.query(
-      `UPDATE autres.notifications SET read_at = NOW() WHERE id = ? AND user_id = ? AND read_at IS NULL`,
+      `UPDATE di_autres.notifications SET read_at = NOW() WHERE id = ? AND user_id = ? AND read_at IS NULL`,
       [id, userId]
     );
     return true;
@@ -77,7 +77,7 @@ class Notification {
     }
     const placeholders = ids.map(() => '?').join(',');
     await database.query(
-      `UPDATE autres.notifications
+      `UPDATE di_autres.notifications
          SET read_at = NOW()
        WHERE user_id = ? AND id IN (${placeholders}) AND read_at IS NULL`,
       [userId, ...ids]
