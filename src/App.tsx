@@ -2958,7 +2958,7 @@ const App: React.FC = () => {
         title: 'Recherches totales',
         value: numberFormatter.format(statsData?.total_searches ?? 0),
         icon: Search,
-        gradient: 'from-rose-500 via-rose-600 to-indigo-600',
+        gradient: 'from-rose-400 via-fuchsia-500 to-purple-500',
         badge: {
           label: `${numberFormatter.format(statsData?.today_searches ?? 0)} aujourd'hui`,
           tone: 'bg-white/20 text-white'
@@ -2970,7 +2970,7 @@ const App: React.FC = () => {
         title: 'Données disponibles',
         value: numberFormatter.format(dataStats?.sources ?? 0),
         icon: Database,
-        gradient: 'from-emerald-500 via-teal-500 to-cyan-600',
+        gradient: 'from-sky-400 via-cyan-400 to-emerald-500',
         badge: {
           label: `${numberFormatter.format(dataStats?.total_records ?? 0)} enregistrements`,
           tone: 'bg-white/20 text-white'
@@ -2982,7 +2982,7 @@ const App: React.FC = () => {
         title: 'Transactions financières',
         value: `${numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA`,
         icon: Banknote,
-        gradient: 'from-teal-500 via-emerald-500 to-green-600',
+        gradient: 'from-emerald-400 via-teal-500 to-green-500',
         badge: {
           label: `${numberFormatter.format(financialStats?.totalTransactions ?? 0)} opérations`,
           tone: 'bg-white/20 text-white'
@@ -2994,7 +2994,7 @@ const App: React.FC = () => {
         title: 'Données d’appels',
         value: numberFormatter.format(callStats?.total ?? 0),
         icon: Phone,
-        gradient: 'from-sky-500 via-blue-500 to-indigo-600',
+        gradient: 'from-indigo-400 via-blue-500 to-sky-500',
         badge: {
           label: `${formatSessionDuration(callStats?.averageDuration ?? 0)} en moyenne`,
           tone: 'bg-white/20 text-white'
@@ -3006,7 +3006,7 @@ const App: React.FC = () => {
         title: 'Profils créés',
         value: numberFormatter.format(profiles?.total ?? 0),
         icon: UserCircle,
-        gradient: 'from-rose-500 via-pink-500 to-fuchsia-600',
+        gradient: 'from-amber-400 via-orange-400 to-rose-500',
         badge: {
           label: `${numberFormatter.format(profiles?.today ?? 0)} aujourd'hui`,
           tone: 'bg-white/20 text-white'
@@ -3018,7 +3018,7 @@ const App: React.FC = () => {
         title: 'Géolocalisation',
         value: numberFormatter.format(operations?.total ?? 0),
         icon: Activity,
-        gradient: 'from-amber-500 via-orange-500 to-red-500',
+        gradient: 'from-violet-400 via-indigo-500 to-blue-500',
         badge: {
           label: `${numberFormatter.format(operations?.today ?? 0)} nouvelles`,
           tone: 'bg-white/20 text-white'
@@ -3033,7 +3033,7 @@ const App: React.FC = () => {
         title: "Demandes d'identification",
         value: numberFormatter.format(requests?.total ?? 0),
         icon: ClipboardList,
-        gradient: 'from-indigo-500 via-indigo-600 to-purple-600',
+        gradient: 'from-blue-400 via-indigo-500 to-violet-500',
         badge: {
           label: `${numberFormatter.format(requests?.pending ?? 0)} en attente`,
           tone: 'bg-white/20 text-white'
@@ -7150,10 +7150,10 @@ const App: React.FC = () => {
                             onDragOver={handleCardDragOver}
                             onDrop={handleCardDrop(card.id)}
                             onDragEnd={handleCardDragEnd}
-                            className={`relative overflow-hidden rounded-3xl p-6 shadow-xl transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-white/70 scale-[1.02]' : 'hover:-translate-y-1'}`}
-                          >
-                            <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-95`}></div>
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.25),transparent)]"></div>
+                          className={`relative overflow-hidden rounded-3xl p-6 shadow-xl transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-white/70 scale-[1.02]' : 'hover:-translate-y-1'}`}
+                        >
+                          <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-90`}></div>
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.25),transparent)]"></div>
                             <div className="relative z-10 flex flex-col h-full text-white">
                               <div className="flex items-start justify-between gap-4">
                                 <div>
