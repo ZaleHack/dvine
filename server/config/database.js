@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import tablesCatalog from './tables-catalog.js';
 
 dotenv.config();
 
@@ -1029,9 +1030,89 @@ class DatabaseManager {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
+      await this.ensureCatalogTables(query);
+
       console.log('✅ Tables système créées avec succès');
     } catch (error) {
       console.error('❌ Erreur création tables système:', error);
+    }
+  }
+
+  async ensureCatalogTables(query) {
+    const resolveColumnType = (columnName, config) => {
+      const filterType = config.filters?.[columnName];
+
+      if (filterType === 'number') {
+        return 'BIGINT';
+      }
+
+      if (filterType === 'date') {
+        return 'DATE';
+      }
+
+      return 'TEXT';
+    };
+
+    const buildColumns = (config, primaryKey) => {
+      const columnSet = new Set();
+      const addColumns = (list) => {
+        if (!Array.isArray(list)) {
+          return;
+        }
+
+        for (const column of list) {
+          if (typeof column === 'string' && column.trim().length > 0) {
+            columnSet.add(column);
+          }
+        }
+      };
+
+      addColumns(config.searchable);
+      addColumns(config.linkedFields);
+      addColumns(config.preview);
+      addColumns(Object.keys(config.filters || {}));
+
+      columnSet.delete(primaryKey);
+
+      return Array.from(columnSet);
+    };
+
+    for (const [rawName, config] of Object.entries(tablesCatalog || {})) {
+      const [schemaFromKey, ...tableParts] = rawName.split('.');
+      const tableFromKey = tableParts.join('.');
+      const schema = config.database || schemaFromKey || 'di_autres';
+      const table = config.table || tableFromKey;
+
+      if (!schema || !table) {
+        continue;
+      }
+
+      const qualifiedName = `${schema}.${table}`;
+      const primaryKey = config.primaryKey || 'id';
+      const columns = buildColumns(config, primaryKey);
+
+      await query(
+        `CREATE DATABASE IF NOT EXISTS \`${schema}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+      );
+
+      const columnDefinitions = [
+        primaryKey === 'id'
+          ? '`id` INT AUTO_INCREMENT PRIMARY KEY'
+          : `\`${primaryKey}\` VARCHAR(255) PRIMARY KEY`
+      ];
+
+      for (const column of columns) {
+        const type = resolveColumnType(column, config);
+        columnDefinitions.push(`\`${column}\` ${type}`);
+      }
+
+      const createTableSql = `
+        CREATE TABLE IF NOT EXISTS ${qualifiedName} (
+          ${columnDefinitions.join(',\n          ')}
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+      `;
+
+      await query(createTableSql);
     }
   }
 
