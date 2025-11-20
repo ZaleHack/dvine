@@ -7433,7 +7433,6 @@ const App: React.FC = () => {
           onClose={closeConfirmDialog}
         />
       )}
-    </div>
 
     </>
   );
