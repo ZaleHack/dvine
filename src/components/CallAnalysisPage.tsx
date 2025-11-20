@@ -512,10 +512,19 @@ const CallAnalysisPage: React.FC = () => {
                       <p className="font-semibold text-indigo-600">{call.called_id}</p>
                       <p className="text-xs text-slate-500">{call.provider || 'Provider inconnu'}</p>
                     </div>
-                    <div className="col-span-1 text-right font-semibold text-slate-700">{formatDuration(call.duration)}</div>
-                    <div className="col-span-2 text-xs text-slate-600">
-                      <div className="font-semibold">Origine {call.org_pcip || 'N/A'}</div>
-                      <div className="text-slate-500">Destination {call.dst_pcip || 'N/A'}</div>
+                    <div className="col-span-1 text-right font-semibold text-slate-700">
+                      <div>{formatDuration(call.duration)}</div>
+                      <div className="text-[11px] font-medium text-slate-400">Troncs</div>
+                    </div>
+                    <div className="col-span-2 space-y-2 text-xs text-slate-600">
+                      <div className="flex items-center justify-between rounded-lg bg-slate-50 px-2 py-1">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">Origine</span>
+                        <span className="font-mono text-sm font-semibold text-slate-800">{call.org_pcip || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-lg bg-slate-50 px-2 py-1">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">Destination</span>
+                        <span className="font-mono text-sm font-semibold text-slate-800">{call.dst_pcip || 'N/A'}</span>
+                      </div>
                     </div>
                     <div className="col-span-2 text-right text-xs font-semibold text-slate-600">
                       Cause {call.release_cause || '—'}
