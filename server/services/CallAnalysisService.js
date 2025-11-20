@@ -3,6 +3,67 @@ import { PassThrough } from 'stream';
 
 const TABLE_NAME = '`di_autres`.`cdr_mtn__airtel_in_out`';
 
+const RELEASE_CAUSE_MAP = {
+  '1': 'Numéro non attribué',
+  '2': 'Pas de route vers le réseau de transit spécifié',
+  '3': 'Pas de route vers la destination',
+  '4': 'Tonalité spéciale d’information',
+  '5': 'Préfixe de faisceau mal composé',
+  '6': 'Canal inacceptable',
+  '7': 'Appel attribué et livré sur un canal établi',
+  '8': 'Préemption',
+  '9': 'Préemption – circuit réservé pour réutilisation',
+  '16': 'Dégagement normal',
+  '17': 'Utilisateur occupé',
+  '18': 'Aucune réponse de l’utilisateur (sonnerie)',
+  '19': 'Aucune réponse après alerte',
+  '20': 'Utilisateur ou numéro absent',
+  '21': 'Appel rejeté',
+  '22': 'Numéro changé',
+  '23': 'Redirection vers un autre numéro',
+  '27': 'Destination hors service',
+  '28': 'Adresse incomplète',
+  '29': 'Facilité refusée',
+  '30': 'Réponse à une requête de statut',
+  '31': 'Dégagement normal non spécifié',
+  '34': 'Aucun circuit ou canal disponible',
+  '38': 'Réseau hors service',
+  '41': 'Défaillance temporaire',
+  '42': 'Congestion de l’équipement de commutation',
+  '44': 'Circuit ou canal demandé indisponible',
+  '47': 'Ressource indisponible non spécifiée',
+  '50': 'Facilité demandée non souscrite',
+  '55': 'Appels entrants interdits au sein du GCE',
+  '57': 'Capacité porteuse non autorisée',
+  '58': 'Capacité porteuse momentanément indisponible',
+  '63': 'Service ou option indisponible non spécifiée',
+  '65': 'Capacité porteuse non implémentée',
+  '66': 'Type de canal non implémenté',
+  '69': 'Facilité demandée non implémentée',
+  '70': 'Seule l’information numérique restreinte est disponible',
+  '79': 'Service ou option non implémenté non spécifié',
+  '81': 'Valeur de référence d’appel invalide',
+  '88': 'Destination incompatible',
+  '90': 'Groupe fermé d’utilisateurs inexistant',
+  '91': 'Sélection de réseau de transit invalide',
+  '95': 'Message invalide non spécifié',
+  '96': "Élément d’information obligatoire manquant",
+  '97': 'Type de message inexistant ou non implémenté',
+  '98': 'Message incompatible avec l’état de l’appel',
+  '99': 'Élément ou paramètre non implémenté',
+  '100': "Contenu d’élément d’information invalide",
+  '101': 'Message incompatible avec l’état de l’appel',
+  '102': 'Récupération sur expiration de minuterie',
+  '111': 'Erreur de protocole non spécifiée',
+  '127': 'Interopérabilité – cause non spécifiée'
+};
+
+const describeReleaseCause = (value) => {
+  const code = (value ?? '').toString().trim();
+  if (!code) return 'Non renseigné';
+  return RELEASE_CAUSE_MAP[code] || `Code ${code}`;
+};
+
 const sanitizeNumber = (value = '') => {
   if (!value) return '';
   return String(value).replace(/[^0-9+]/g, '').replace(/^\+/, '');
@@ -78,20 +139,25 @@ class CallAnalysisService {
       [...queryParams, limit]
     );
 
+    const processedCalls = calls.map((call) => ({
+      ...call,
+      release_cause: describeReleaseCause(call.release_cause)
+    }));
+
     const totalRow = await database.queryOne(
       `SELECT COUNT(*) as total FROM ${TABLE_NAME} ${whereClause}`,
       queryParams
     );
 
-    const callerHits = calls.filter((call) => String(call.calling_id).includes(number));
-    const calleeHits = calls.filter((call) => String(call.called_id).includes(number));
-    const totalDuration = calls.reduce((acc, call) => acc + Number(call.duration || 0), 0);
-    const averageDuration = calls.length ? totalDuration / calls.length : 0;
-    const maxDuration = calls.reduce((max, call) => Math.max(max, Number(call.duration || 0)), 0);
+    const callerHits = processedCalls.filter((call) => String(call.calling_id).includes(number));
+    const calleeHits = processedCalls.filter((call) => String(call.called_id).includes(number));
+    const totalDuration = processedCalls.reduce((acc, call) => acc + Number(call.duration || 0), 0);
+    const averageDuration = processedCalls.length ? totalDuration / processedCalls.length : 0;
+    const maxDuration = processedCalls.reduce((max, call) => Math.max(max, Number(call.duration || 0)), 0);
 
     const aggregateCounts = (field) => {
       const map = new Map();
-      for (const call of calls) {
+      for (const call of processedCalls) {
         const key = (call[field] || 'Non renseigné').toString();
         map.set(key, (map.get(key) || 0) + 1);
       }
@@ -105,7 +171,7 @@ class CallAnalysisService {
       number,
       total: totalRow?.total || calls.length,
       limit,
-      calls,
+      calls: processedCalls,
       summary: {
         totalDuration,
         averageDuration,
@@ -151,7 +217,7 @@ class CallAnalysisService {
       `
     );
 
-    const releaseCauses = await database.query(
+    const rawReleaseCauses = await database.query(
       `
         SELECT release_cause as label, COUNT(*) as count, AVG(duration) as averageDuration
         FROM ${TABLE_NAME}
@@ -160,6 +226,11 @@ class CallAnalysisService {
         LIMIT 8
       `
     );
+
+    const releaseCauses = rawReleaseCauses.map((entry) => ({
+      ...entry,
+      label: describeReleaseCause(entry.label)
+    }));
 
     const hourlyDistribution = await database.query(
       `
