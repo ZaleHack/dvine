@@ -75,6 +75,7 @@ import LinkDiagram from './components/LinkDiagram';
 import DvineLogo from './components/DvineLogo';
 import ConfirmDialog, { ConfirmDialogOptions } from './components/ConfirmDialog';
 import { useNotifications } from './components/NotificationProvider';
+import CallAnalysisPage from './components/CallAnalysisPage';
 import { normalizePreview, NormalizedPreviewEntry, BaseSearchHit } from './utils/search';
 
 const VisibleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -4674,6 +4675,7 @@ const App: React.FC = () => {
           description: 'Outils de terrain et d’investigation',
           items: [
             { page: 'cdr', label: 'Géolocalisation', icon: Clock },
+            { page: 'call-analysis', label: 'Analyse des appels', icon: PhoneIncoming },
             { page: 'fraud-detection', label: 'Détection de fraude', icon: AlertTriangle }
           ]
         },
@@ -6023,6 +6025,8 @@ const App: React.FC = () => {
               </section>
             </div>
           )}
+
+          {currentPage === 'call-analysis' && <CallAnalysisPage />}
 
           {currentPage === 'fraud-detection' && (
             <div className="space-y-8">
