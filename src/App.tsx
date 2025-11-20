@@ -76,6 +76,7 @@ import DvineLogo from './components/DvineLogo';
 import ConfirmDialog, { ConfirmDialogOptions } from './components/ConfirmDialog';
 import { useNotifications } from './components/NotificationProvider';
 import { normalizePreview, NormalizedPreviewEntry, BaseSearchHit } from './utils/search';
+import UnifiedCdrPanel from './components/UnifiedCdrPanel';
 
 const VisibleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} {...props}>
@@ -5846,6 +5847,8 @@ const App: React.FC = () => {
                   </form>
                 </div>
               </section>
+
+              <UnifiedCdrPanel />
 
               <section className="space-y-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
