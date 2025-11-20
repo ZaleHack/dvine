@@ -298,8 +298,9 @@ type RequestMetric = {
 };
 
 
+const SHOW_REQUESTS_SECTION = false;
 const DASHBOARD_CARD_STORAGE_KEY = 'sora.dashboard.cardOrder';
-const DEFAULT_CARD_ORDER = ['total-searches', 'data', 'profiles', 'requests', 'operations'];
+const DEFAULT_CARD_ORDER = ['total-searches', 'data', 'profiles', 'operations'];
 
 interface ProfileData {
   id: number;
@@ -1071,6 +1072,12 @@ const App: React.FC = () => {
       navigateToPage('login', { replace: true });
     }
   }, [isAuthenticated, currentPage, navigateToPage]);
+
+  useEffect(() => {
+    if (!SHOW_REQUESTS_SECTION && currentPage === 'requests') {
+      navigateToPage('dashboard', { replace: true });
+    }
+  }, [currentPage, navigateToPage]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -2670,36 +2677,6 @@ const App: React.FC = () => {
     setSearchParams
   ]);
 
-  const handleRequestIdentification = async () => {
-    const normalizedSearchPhone = searchQuery.replace(/\D/g, '');
-    const hasPendingRequest =
-      normalizedSearchPhone.length > 0 &&
-      requests.some((request) => {
-        const requestPhoneDigits = request.phone.replace(/\D/g, '');
-        return request.status !== 'identified' && requestPhoneDigits === normalizedSearchPhone;
-      });
-    if (hasPendingRequest) {
-      notifyError('Une demande est déjà en cours pour ce numéro.');
-      return;
-    }
-    try {
-      const response = await fetch('/api/requests', {
-        method: 'POST',
-        headers: createAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ phone: searchQuery.trim() })
-      });
-      const data = await response.json();
-      if (response.ok) {
-        notifySuccess('Demande envoyée');
-        await fetchRequests();
-      } else {
-        notifyError(data.error || 'Erreur lors de la demande');
-      }
-    } catch (error) {
-      notifyError('Erreur de connexion');
-    }
-  };
-
   const fetchRequests = useCallback(async () => {
     setRequestsLoading(true);
     try {
@@ -2755,12 +2732,13 @@ const App: React.FC = () => {
     }
   }, []);
 
-useEffect(() => {
-  if (currentUser) {
-    fetchRequests();
+  useEffect(() => {
+    if (!currentUser) return;
+    if (SHOW_REQUESTS_SECTION) {
+      fetchRequests();
+    }
     fetchServerNotifications();
-  }
-}, [currentUser, fetchRequests, fetchServerNotifications]);
+  }, [currentUser, fetchRequests, fetchServerNotifications]);
 
   const markRequestIdentified = async (id: number, profileId?: number) => {
     try {
@@ -3054,7 +3032,7 @@ useEffect(() => {
     const operations = statsData?.operations;
     const dataStats = statsData?.data;
 
-    return [
+    const cards: DashboardCard[] = [
       {
         id: 'total-searches',
         title: 'Recherches totales',
@@ -3092,18 +3070,6 @@ useEffect(() => {
         description: 'Identités consolidées par les analystes'
       },
       {
-        id: 'requests',
-        title: "Demandes d'identification",
-        value: numberFormatter.format(requests?.total ?? 0),
-        icon: ClipboardList,
-        gradient: 'from-indigo-500 via-indigo-600 to-purple-600',
-        badge: {
-          label: `${numberFormatter.format(requests?.pending ?? 0)} en attente`,
-          tone: 'bg-white/20 text-white'
-        },
-        description: 'Flux global des requêtes d’identification'
-      },
-      {
         id: 'operations',
         title: 'Géolocalisation',
         value: numberFormatter.format(operations?.total ?? 0),
@@ -3116,7 +3082,24 @@ useEffect(() => {
         description: 'Dossiers d’analyse et investigations actives'
       }
     ];
-    }, [numberFormatter, statsData]);
+
+    if (SHOW_REQUESTS_SECTION) {
+      cards.splice(3, 0, {
+        id: 'requests',
+        title: "Demandes d'identification",
+        value: numberFormatter.format(requests?.total ?? 0),
+        icon: ClipboardList,
+        gradient: 'from-indigo-500 via-indigo-600 to-purple-600',
+        badge: {
+          label: `${numberFormatter.format(requests?.pending ?? 0)} en attente`,
+          tone: 'bg-white/20 text-white'
+        },
+        description: 'Flux global des requêtes d’identification'
+      });
+    }
+
+    return cards;
+  }, [numberFormatter, statsData]);
 
   const orderedDashboardCards = useMemo(() => {
     const cardsMap = new Map(dashboardCards.map(card => [card.id, card]));
@@ -4414,7 +4397,7 @@ useEffect(() => {
     if (currentPage === 'cdr' && currentUser) {
       fetchCases();
     }
-    if (currentPage === 'requests' && currentUser) {
+    if (currentPage === 'requests' && currentUser && SHOW_REQUESTS_SECTION) {
       fetchRequests();
     }
   }, [
@@ -4449,37 +4432,39 @@ useEffect(() => {
 
     const items: NotificationItem[] = [];
 
-    requests.forEach((request) => {
-      if (isAdmin && request.status !== 'identified') {
-        items.push({
-          id: `admin-${request.id}`,
-          requestId: request.id,
-          phone: request.phone,
-          status: 'pending',
-          message: 'Nouvelle demande d\'identification',
-          description: request.user_login
-            ? `Envoyée par ${request.user_login}`
-            : 'Demande en attente de traitement',
-          type: 'request'
-        });
-      }
+    if (SHOW_REQUESTS_SECTION) {
+      requests.forEach((request) => {
+        if (isAdmin && request.status !== 'identified') {
+          items.push({
+            id: `admin-${request.id}`,
+            requestId: request.id,
+            phone: request.phone,
+            status: 'pending',
+            message: 'Nouvelle demande d\'identification',
+            description: request.user_login
+              ? `Envoyée par ${request.user_login}`
+              : 'Demande en attente de traitement',
+            type: 'request'
+          });
+        }
 
-      if (
-        !isAdmin &&
-        request.status === 'identified' &&
-        (request.user_id === currentUser.id || request.user_login === currentUser.login)
-      ) {
-        items.push({
-          id: `user-${request.id}`,
-          requestId: request.id,
-          phone: request.phone,
-          status: 'identified',
-          message: 'Identification terminée',
-          description: `Le numéro ${request.phone} a été identifié`,
-          type: 'request'
-        });
-      }
-    });
+        if (
+          !isAdmin &&
+          request.status === 'identified' &&
+          (request.user_id === currentUser.id || request.user_login === currentUser.login)
+        ) {
+          items.push({
+            id: `user-${request.id}`,
+            requestId: request.id,
+            phone: request.phone,
+            status: 'identified',
+            message: 'Identification terminée',
+            description: `Le numéro ${request.phone} a été identifié`,
+            type: 'request'
+          });
+        }
+      });
+    }
 
     serverNotifications.forEach((notif) => {
       if (notif.type === 'case_shared' && notif.data) {
@@ -4543,7 +4528,9 @@ useEffect(() => {
   useEffect(() => {
     if (!currentUser) return;
     const interval = setInterval(() => {
-      fetchRequests();
+      if (SHOW_REQUESTS_SECTION) {
+        fetchRequests();
+      }
       fetchServerNotifications();
     }, 60000);
     return () => clearInterval(interval);
@@ -4589,13 +4576,17 @@ useEffect(() => {
       navigateToPage('profiles');
       return;
     }
+    if (!SHOW_REQUESTS_SECTION) {
+      setShowNotifications(false);
+      return;
+    }
     setShowNotifications(false);
     navigateToPage('requests');
     setHighlightedRequestId(notification.requestId);
   };
 
   useEffect(() => {
-    if (!highlightedRequestId || currentPage !== 'requests') return;
+    if (!SHOW_REQUESTS_SECTION || !highlightedRequestId || currentPage !== 'requests') return;
     const timeout = setTimeout(() => {
       const element = document.getElementById(`request-${highlightedRequestId}`);
       if (element) {
@@ -4611,20 +4602,6 @@ useEffect(() => {
     const timeout = setTimeout(() => setHighlightedRequestId(null), 5000);
     return () => clearTimeout(timeout);
   }, [highlightedRequestId]);
-
-  const numericSearch = searchQuery.replace(/\D/g, '');
-  const hasPendingRequestForSearch =
-    numericSearch.length > 0 &&
-    requests.some((request) => {
-      const requestPhoneDigits = request.phone.replace(/\D/g, '');
-      return request.status !== 'identified' && requestPhoneDigits === numericSearch;
-    });
-  const canRequestIdentification =
-    !!searchResults &&
-    searchResults.total === 0 &&
-    (numericSearch.startsWith('77') || numericSearch.startsWith('78')) &&
-    numericSearch.length >= 9 &&
-    !hasPendingRequestForSearch;
 
   const menuSections = useMemo(
     () => {
@@ -4650,10 +4627,14 @@ useEffect(() => {
           ]
         },
         {
-          title: 'Opérations',
-          description: 'Suivi des demandes et des profils',
+          title: SHOW_REQUESTS_SECTION ? 'Opérations' : 'Profils',
+          description: SHOW_REQUESTS_SECTION
+            ? 'Suivi des demandes et des profils'
+            : 'Gestion et partage des fiches de profil',
           items: [
-            { page: 'requests', label: 'Demandes', icon: ClipboardList },
+            ...(SHOW_REQUESTS_SECTION
+              ? [{ page: 'requests', label: 'Demandes', icon: ClipboardList as const }]
+              : []),
             { page: 'profiles', label: 'Fiches de profil', icon: FileText }
           ]
         }
@@ -5190,7 +5171,7 @@ useEffect(() => {
                   <h1 className="text-xl font-extrabold bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 bg-clip-text text-transparent tracking-tight">
                     Dvine Intelligence
                   </h1>
-                  <p className="text-xs font-semibold text-red-600">Analyse proactive &amp; opérations unifiées</p>
+                  <p className="text-xs font-semibold text-red-600">Analyse et Géolocalisation</p>
                 </div>
               )}
             </div>
@@ -5590,20 +5571,6 @@ useEffect(() => {
                         <p className="text-gray-500">
                           Essayez avec d'autres termes de recherche ou vérifiez l'orthographe.
                         </p>
-                        {hasPendingRequestForSearch ? (
-                          <p className="mt-4 text-sm font-medium text-amber-600">
-                            Une demande d'identification est déjà en cours pour ce numéro.
-                          </p>
-                        ) : (
-                          canRequestIdentification && (
-                            <button
-                              onClick={handleRequestIdentification}
-                              className="mt-4 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500"
-                            >
-                              Demander identification
-                            </button>
-                          )
-                        )}
                       </div>
                     ) : viewMode === 'list' ? (
                       <div className="p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
@@ -6513,7 +6480,7 @@ useEffect(() => {
               </div>
             )}
 
-          {currentPage === 'requests' && (
+          {SHOW_REQUESTS_SECTION && currentPage === 'requests' && (
             <div className="space-y-8">
               <PageHeader icon={<ClipboardList className="h-6 w-6" />} title="Liste des demandes" />
 
