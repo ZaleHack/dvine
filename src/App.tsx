@@ -3545,7 +3545,8 @@ const App: React.FC = () => {
         setUploadTable('');
         setUploadFile(null);
         lastQueryRef.current = null;
-        fetchUploadHistory();
+        await fetchUploadHistory();
+        await loadStatistics();
       } else {
         notifyError(data.error || 'Erreur lors du chargement');
       }
@@ -3588,7 +3589,8 @@ const App: React.FC = () => {
           const data = await res.json();
           if (res.ok) {
             lastQueryRef.current = null;
-            fetchUploadHistory();
+            await fetchUploadHistory();
+            await loadStatistics();
           } else {
             notifyError(data.error || 'Erreur lors de la suppression');
           }
