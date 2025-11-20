@@ -87,14 +87,14 @@ const formatDate = (value?: string | null) => {
 const ProgressPill = ({ value, max, label }: { value: number; max: number; label: string }) => {
   const percentage = max === 0 ? 0 : Math.round((value / max) * 100);
   return (
-    <div className="space-y-2 rounded-2xl border border-slate-100/80 bg-white/70 p-4 shadow-inner shadow-slate-100">
-      <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
+    <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/70">
+      <div className="flex items-center justify-between text-sm font-semibold text-slate-800">
         <span>{label}</span>
-        <span className="text-slate-500">{percentage}%</span>
+        <span className="text-slate-600">{percentage}%</span>
       </div>
-      <div className="h-2 rounded-full bg-slate-100">
+      <div className="h-2 rounded-full bg-slate-200">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-rose-500 via-fuchsia-500 to-indigo-500"
+          className="h-full rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500"
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -113,19 +113,30 @@ const BreakdownList = ({
 }) => {
   const maxValue = useMemo(() => (data.length ? Math.max(...data.map((item) => item.count)) : 0), [data]);
 
-  const accentClass = useMemo(() => {
+  const accentStyles = useMemo(() => {
     switch (accent) {
       case 'rose':
-        return 'from-rose-500/20 via-amber-400/15 to-orange-400/10 border-rose-100/70';
+        return {
+          container: 'from-rose-600/12 via-orange-500/12 to-amber-500/12 border-rose-200/80',
+          bar: 'from-rose-500 via-orange-500 to-amber-400'
+        };
       case 'amber':
-        return 'from-amber-500/20 via-orange-400/15 to-rose-400/10 border-amber-100/70';
+        return {
+          container: 'from-amber-500/12 via-lime-500/12 to-emerald-500/12 border-amber-200/80',
+          bar: 'from-amber-500 via-lime-500 to-emerald-500'
+        };
       default:
-        return 'from-indigo-500/20 via-sky-400/15 to-cyan-400/10 border-indigo-100/70';
+        return {
+          container: 'from-indigo-600/12 via-blue-500/12 to-cyan-500/12 border-indigo-200/80',
+          bar: 'from-indigo-500 via-blue-500 to-cyan-400'
+        };
     }
   }, [accent]);
 
   return (
-    <div className={`rounded-3xl border bg-gradient-to-br ${accentClass} p-6 shadow-[0_20px_60px_-25px_rgba(79,70,229,0.4)]`}>
+    <div
+      className={`rounded-3xl border bg-gradient-to-br ${accentStyles.container} p-6 shadow-[0_20px_60px_-25px_rgba(79,70,229,0.35)] backdrop-blur`}
+    >
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-700">{title}</h3>
         <Sparkles className="h-4 w-4 text-slate-500" />
@@ -134,10 +145,10 @@ const BreakdownList = ({
         {data.length === 0 && <p className="text-sm text-slate-500">Aucune donnée disponible</p>}
         {data.map((item) => (
           <div key={item.label} className="flex items-center gap-3">
-            <div className="w-12 text-xs font-semibold text-slate-600">{item.count}</div>
-            <div className="flex-1 rounded-full bg-white/60">
+            <div className="w-12 text-xs font-semibold text-slate-700">{item.count}</div>
+            <div className="flex-1 rounded-full bg-white/70">
               <div
-                className="h-2 rounded-full bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500"
+                className={`h-2 rounded-full bg-gradient-to-r ${accentStyles.bar}`}
                 style={{ width: `${maxValue === 0 ? 0 : Math.max(10, Math.round((item.count / maxValue) * 100))}%` }}
               />
             </div>
@@ -541,24 +552,24 @@ const CallAnalysisPage: React.FC = () => {
         {globalStats ? (
           <>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl bg-white/10 p-4 shadow-inner">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">Volume total</p>
-                <p className="text-3xl font-bold">{globalStats.overview.totalCalls?.toLocaleString('fr-FR')}</p>
+              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Volume total</p>
+                <p className="text-3xl font-bold text-white">{globalStats.overview.totalCalls?.toLocaleString('fr-FR')}</p>
                 <p className="text-xs text-slate-300">{globalStats.overview.lastCallAt ? `Dernier: ${formatDateTime(globalStats.overview.lastCallAt)}` : 'En attente de données'}</p>
               </div>
-              <div className="rounded-2xl bg-white/10 p-4 shadow-inner">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">Durée cumulée</p>
-                <p className="text-3xl font-bold">{formatDuration(globalStats.overview.totalDuration)}</p>
+              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Durée cumulée</p>
+                <p className="text-3xl font-bold text-white">{formatDuration(globalStats.overview.totalDuration)}</p>
                 <p className="text-xs text-slate-300">Moyenne {formatDuration(globalStats.overview.averageDuration)}</p>
               </div>
-              <div className="rounded-2xl bg-white/10 p-4 shadow-inner">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">Durée maximale</p>
-                <p className="text-3xl font-bold">{formatDuration(globalStats.overview.maxDuration)}</p>
+              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Durée maximale</p>
+                <p className="text-3xl font-bold text-white">{formatDuration(globalStats.overview.maxDuration)}</p>
                 <p className="text-xs text-slate-300">Observation la plus longue</p>
               </div>
-              <div className="rounded-2xl bg-white/10 p-4 shadow-inner">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">Horaires actifs</p>
-                <p className="text-3xl font-bold">{busiestHour ? `${busiestHour.hour}h` : '--'}</p>
+              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Horaires actifs</p>
+                <p className="text-3xl font-bold text-white">{busiestHour ? `${busiestHour.hour}h` : '--'}</p>
                 <p className="text-xs text-slate-300">
                   {busiestHour ? `${busiestHour.count} appels sur l'heure la plus dense` : 'Volume par heure'}
                 </p>
@@ -567,51 +578,51 @@ const CallAnalysisPage: React.FC = () => {
 
             <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
               <div className="space-y-4">
-                <div className="rounded-2xl bg-white/5 p-4 shadow-inner">
-                  <div className="mb-3 flex items-center justify-between text-sm font-semibold">
+                <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                  <div className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-100">
                     <span>Volume des 14 derniers jours</span>
                     <span className="text-slate-300">Chronologie</span>
                   </div>
                   <div className="grid grid-cols-7 gap-2 text-xs">
                     {globalStats.recentVolume.map((day) => (
-                      <div key={day.day} className="space-y-1 rounded-xl bg-white/5 p-2">
-                        <div className="h-16 w-full overflow-hidden rounded-lg bg-gradient-to-t from-fuchsia-500/70 via-indigo-500/50 to-white/10">
+                      <div key={day.day} className="space-y-1 rounded-xl border border-white/5 bg-slate-900/70 p-2">
+                        <div className="h-16 w-full overflow-hidden rounded-lg bg-slate-800">
                           <div
-                            className="h-full w-full bg-gradient-to-t from-white/20 to-transparent"
-                            style={{ height: `${maxRecentVolume === 0 ? 0 : Math.min(100, Math.max(10, (day.count / maxRecentVolume) * 100))}%` }}
+                            className="w-full bg-gradient-to-t from-cyan-400 via-blue-500 to-indigo-600"
+                            style={{ height: `${maxRecentVolume === 0 ? 0 : Math.min(100, Math.max(12, (day.count / maxRecentVolume) * 100))}%` }}
                           />
                         </div>
-                        <div className="text-[10px] font-semibold text-slate-200">{formatDate(day.day)}</div>
-                        <div className="text-[10px] text-slate-400">{day.count} appels</div>
+                        <div className="text-[10px] font-semibold text-slate-100">{formatDate(day.day)}</div>
+                        <div className="text-[10px] text-slate-300">{day.count} appels</div>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="rounded-2xl bg-white/5 p-4 shadow-inner">
-                  <div className="mb-4 flex items-center justify-between text-sm font-semibold">
+                <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                  <div className="mb-4 flex items-center justify-between text-sm font-semibold text-slate-100">
                     <span>Distribution horaire</span>
                     <span className="text-slate-300">24h</span>
                   </div>
                   <div className="grid grid-cols-4 gap-3 text-xs">
                     {globalStats.hourlyDistribution.map((hour) => (
-                      <div key={hour.hour} className="rounded-xl bg-white/5 p-3">
-                        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-200">
+                      <div key={hour.hour} className="rounded-xl border border-white/5 bg-slate-900/70 p-3">
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-100">
                           <span>{hour.hour}h</span>
                           <span>{hour.count}</span>
                         </div>
-                        <div className="mt-2 h-1.5 rounded-full bg-white/10">
+                        <div className="mt-2 h-1.5 rounded-full bg-slate-700">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500"
+                            className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-300"
                             style={{ width: `${maxHourlyDistribution === 0 ? 0 : Math.min(100, (hour.count / maxHourlyDistribution) * 100)}%` }}
                           />
                         </div>
-                        <p className="mt-2 text-[10px] text-slate-400">{formatDuration(hour.averageDuration)} en moyenne</p>
+                        <p className="mt-2 text-[10px] text-slate-300">{formatDuration(hour.averageDuration)} en moyenne</p>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-
+            
               <div className="space-y-4">
                 <BreakdownList title="Opérateurs" data={globalStats.providers} accent="indigo" />
                 <BreakdownList title="Clients" data={globalStats.clients} accent="amber" />
