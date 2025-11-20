@@ -2,21 +2,21 @@
 
 @layer base {
   body {
-    @apply m-0 bg-gradient-to-br from-slate-50 via-sky-50 to-emerald-50 text-slate-900 antialiased;
+    @apply m-0 bg-gradient-to-br from-white via-rose-50 to-rose-100 text-slate-900 antialiased;
   }
   .dark body {
-    @apply bg-gradient-to-br from-[#0a0f1b] via-[#0f172a] to-[#0a0f1b] text-slate-100 antialiased;
+    @apply bg-gradient-to-br from-[#0b0b0f] via-[#111118] to-[#0b0b0f] text-slate-100 antialiased;
   }
   form {
-    @apply bg-white/90 rounded-2xl shadow-xl shadow-indigo-200/40 backdrop-blur border border-slate-100/80;
+    @apply bg-white/90 rounded-2xl shadow-xl shadow-rose-200/50 backdrop-blur border border-rose-100/70;
   }
   .dark form {
-    @apply bg-slate-900/85 rounded-2xl shadow-2xl shadow-black/50 backdrop-blur border border-sky-500/20;
+    @apply bg-slate-900/80 rounded-2xl shadow-2xl shadow-black/40 backdrop-blur border border-rose-500/20;
   }
   input,
   textarea,
   select {
-    @apply bg-white text-slate-900 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/70 focus:border-transparent;
+    @apply bg-white text-slate-900 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500/70 focus:border-transparent;
   }
   button {
     @apply rounded-xl font-medium transition-transform duration-150 ease-out;
@@ -27,10 +27,10 @@
   .dark input,
   .dark textarea,
   .dark select {
-    @apply bg-slate-900 text-slate-100 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/70;
+    @apply bg-slate-900 text-slate-100 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400/70;
   }
   .dark .btn-primary {
-    @apply bg-indigo-500 text-white;
+    @apply bg-rose-600 text-white;
   }
 }
 

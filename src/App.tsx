@@ -41,6 +41,7 @@ import {
   Share2,
   GripVertical,
   X,
+  Scan,
   MapPinOff,
   CheckCircle2,
   History,
@@ -102,6 +103,12 @@ import { useSearchHistory } from './features/search/useSearchHistory';
 const LINK_DIAGRAM_PREFIXES = ['22177', '22176', '22178', '22170', '22175', '22133'];
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const CASE_PAGE_SIZE_OPTIONS = [6, 12, 24];
+const FRAUD_ROLE_LABELS: Record<string, string> = {
+  caller: 'Appelant',
+  callee: 'Appelé',
+  target: 'Cible'
+};
+
 
 const getUploadModeLabel = (mode?: string | null) => {
   switch (mode) {
@@ -960,6 +967,85 @@ interface CdrCase {
   shared_with_me?: boolean;
 }
 
+interface FraudFileInfo {
+  id: number;
+  filename: string;
+  uploaded_at: string;
+  line_count: number;
+  cdr_number: string | null;
+}
+
+interface FraudNumberEntry {
+  number: string;
+  firstSeen: string | null;
+  lastSeen: string | null;
+  occurrences: number;
+  roles: string[];
+  files: FraudFileInfo[];
+  status: 'nouveau' | 'attendu';
+}
+
+interface FraudImeiEntry {
+  imei: string;
+  numbers: FraudNumberEntry[];
+}
+
+interface FraudDetectionResult {
+  imeis: FraudImeiEntry[];
+  updatedAt: string;
+}
+
+interface GlobalFraudCaseInfo {
+  id: number;
+  name: string;
+  owner?: string | null;
+  division?: string | null;
+}
+
+interface GlobalFraudNumberEntry {
+  number: string;
+  firstSeen: string | null;
+  lastSeen: string | null;
+  occurrences: number;
+  roles: string[];
+  cases: GlobalFraudCaseInfo[];
+}
+
+interface GlobalFraudImeiEntry {
+  imei: string;
+  numbers: GlobalFraudNumberEntry[];
+  roleSummary: {
+    caller: number;
+    callee: number;
+  };
+  cases: GlobalFraudCaseInfo[];
+}
+
+interface GlobalFraudNumberImeiEntry {
+  imei: string;
+  firstSeen: string | null;
+  lastSeen: string | null;
+  occurrences: number;
+  roles: string[];
+  cases: GlobalFraudCaseInfo[];
+}
+
+interface GlobalFraudNumberAlert {
+  number: string;
+  imeis: GlobalFraudNumberImeiEntry[];
+  roleSummary: {
+    caller: number;
+    callee: number;
+  };
+  cases: GlobalFraudCaseInfo[];
+}
+
+interface GlobalFraudDetectionResult {
+  imeis: GlobalFraudImeiEntry[];
+  numbers: GlobalFraudNumberAlert[];
+  updatedAt: string;
+}
+
 interface GraphNode {
   id: string;
   type: string;
@@ -1805,6 +1891,15 @@ const App: React.FC = () => {
   const [linkDiagram, setLinkDiagram] = useState<LinkDiagramData | null>(null);
   const [showMeetingPoints, setShowMeetingPoints] = useState(false);
   const [zoneMode, setZoneMode] = useState(false);
+  const [fraudResult, setFraudResult] = useState<FraudDetectionResult | null>(null);
+  const [fraudLoading, setFraudLoading] = useState(false);
+  const [fraudError, setFraudError] = useState('');
+  const [globalFraudIdentifier, setGlobalFraudIdentifier] = useState('');
+  const [globalFraudStart, setGlobalFraudStart] = useState('');
+  const [globalFraudEnd, setGlobalFraudEnd] = useState('');
+  const [globalFraudLoading, setGlobalFraudLoading] = useState(false);
+  const [globalFraudError, setGlobalFraudError] = useState('');
+  const [globalFraudResult, setGlobalFraudResult] = useState<GlobalFraudDetectionResult | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareTargetCase, setShareTargetCase] = useState<CdrCase | null>(null);
   const [shareDivisionUsers, setShareDivisionUsers] = useState<CaseShareUser[]>([]);
@@ -1828,6 +1923,54 @@ const App: React.FC = () => {
   const [profileListRefreshKey, setProfileListRefreshKey] = useState(0);
   const [highlightedProfileId, setHighlightedProfileId] = useState<number | null>(null);
   const [highlightedFolderId, setHighlightedFolderId] = useState<number | null>(null);
+  const hasFraudSuspiciousNumbers = useMemo(() => {
+    if (!fraudResult) return false;
+    return fraudResult.imeis.some((entry) =>
+      entry.numbers.some((number) => number.status === 'nouveau')
+    );
+  }, [fraudResult]);
+  const fraudStats = useMemo(() => {
+    if (!fraudResult) {
+      return { totalImeis: 0, totalNumbers: 0, newNumbers: 0, expectedNumbers: 0 };
+    }
+    let totalNumbers = 0;
+    let newNumbers = 0;
+    fraudResult.imeis.forEach((entry) => {
+      totalNumbers += entry.numbers.length;
+      newNumbers += entry.numbers.filter((number) => number.status === 'nouveau').length;
+    });
+    return {
+      totalImeis: fraudResult.imeis.length,
+      totalNumbers,
+      newNumbers,
+      expectedNumbers: Math.max(0, totalNumbers - newNumbers)
+    };
+  }, [fraudResult]);
+  const hasGlobalFraudImeiAlerts = useMemo(() => {
+    if (!globalFraudResult) return false;
+    return Array.isArray(globalFraudResult.imeis) && globalFraudResult.imeis.length > 0;
+  }, [globalFraudResult]);
+  const hasGlobalFraudNumberAlerts = useMemo(() => {
+    if (!globalFraudResult) return false;
+    return Array.isArray(globalFraudResult.numbers) && globalFraudResult.numbers.length > 0;
+  }, [globalFraudResult]);
+  const globalFraudStats = useMemo(() => {
+    if (!globalFraudResult) {
+      return { totalImeis: 0, totalNumbers: 0, alerts: 0 };
+    }
+    const imeiCount = Array.isArray(globalFraudResult.imeis) ? globalFraudResult.imeis.length : 0;
+    const numbersCount = Array.isArray(globalFraudResult.imeis)
+      ? globalFraudResult.imeis.reduce((acc, entry) => acc + entry.numbers.length, 0)
+      : 0;
+    const alertCount = Array.isArray(globalFraudResult.numbers) ? globalFraudResult.numbers.length : 0;
+    return { totalImeis: imeiCount, totalNumbers: numbersCount, alerts: alertCount };
+  }, [globalFraudResult]);
+
+  useEffect(() => {
+    setFraudResult(null);
+    setFraudError('');
+  }, [selectedCase, cdrIdentifiers]);
+
   const normalizeCdrNumber = useCallback((value: string) => {
     let sanitized = value.trim();
     if (!sanitized) return '';
@@ -1923,6 +2066,26 @@ const App: React.FC = () => {
     () => getEffectiveCdrIdentifiers(),
     [getEffectiveCdrIdentifiers]
   );
+  const hasFraudDetectionNumbers = effectiveCdrIdentifiers.length > 0;
+
+  const formatFraudDate = (value?: string | null) => {
+    if (!value) return '-';
+    try {
+      return format(parseISO(value), 'P', { locale: fr });
+    } catch {
+      return value;
+    }
+  };
+
+  const formatFraudDateTime = (value?: string | null) => {
+    if (!value) return '-';
+    try {
+      return format(parseISO(value), 'Pp', { locale: fr });
+    } catch {
+      return value;
+    }
+  };
+
   // États des statistiques
   const [statsData, setStatsData] = useState<DashboardStats | null>(null);
   const [cardOrder, setCardOrder] = useState<string[]>(() => {
@@ -3715,6 +3878,130 @@ const App: React.FC = () => {
     }
   };
 
+  const fetchFraudDetection = async (numbersOverride?: string[]) => {
+    if (!selectedCase) return;
+
+    const providedNumbers = Array.isArray(numbersOverride) ? numbersOverride : [];
+    const dedupedInput = providedNumbers.length > 0
+      ? dedupeCdrIdentifiers(providedNumbers)
+      : dedupeCdrIdentifiers(cdrIdentifiers);
+    const numbersForRequest = dedupedInput;
+
+    if (numbersForRequest.length === 0) {
+      setFraudResult(null);
+      setFraudError('Ajoutez au moins un numéro à analyser.');
+      return;
+    }
+
+    setFraudLoading(true);
+    setFraudError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      if (cdrStart) params.append('start', new Date(cdrStart).toISOString().split('T')[0]);
+      if (cdrEnd) params.append('end', new Date(cdrEnd).toISOString().split('T')[0]);
+      numbersForRequest.forEach((identifier) => {
+        params.append('numbers', identifier);
+      });
+      const query = params.toString();
+      const res = await fetch(
+        `/api/cases/${selectedCase.id}/fraud-detection${query ? `?${query}` : ''}`,
+        {
+          headers: { Authorization: token ? `Bearer ${token}` : '' }
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setFraudResult(data);
+      } else {
+        setFraudResult(null);
+        setFraudError(data.error || 'Erreur lors de la détection de fraude');
+      }
+    } catch (error) {
+      console.error('Erreur détection fraude:', error);
+      setFraudResult(null);
+      setFraudError('Erreur lors de la détection de fraude');
+    } finally {
+      setFraudLoading(false);
+    }
+  };
+
+  const handleFraudDetectionClick = async () => {
+    const identifiers = getEffectiveCdrIdentifiers();
+    const numbersForDetection = identifiers;
+
+    if (numbersForDetection.length === 0) {
+      setFraudResult(null);
+      setFraudError('Ajoutez au moins un numéro pour lancer l’analyse');
+      return;
+    }
+
+    if (cdrIdentifierInput) {
+      setCdrIdentifierInput('');
+    }
+
+    if (identifiers.length > 0) {
+      commitCdrIdentifiers(identifiers);
+    }
+    await fetchFraudDetection(numbersForDetection);
+  };
+
+  const handleGlobalFraudSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const trimmedIdentifier = globalFraudIdentifier.trim();
+    if (!trimmedIdentifier) {
+      setGlobalFraudError('Numéro ou IMEI requis');
+      setGlobalFraudResult(null);
+      return;
+    }
+    if (globalFraudStart && globalFraudEnd && new Date(globalFraudStart) > new Date(globalFraudEnd)) {
+      setGlobalFraudError('La date de début doit précéder la date de fin');
+      return;
+    }
+
+    setGlobalFraudLoading(true);
+    setGlobalFraudError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      params.append('identifier', trimmedIdentifier);
+      if (globalFraudStart) params.append('start', globalFraudStart);
+      if (globalFraudEnd) params.append('end', globalFraudEnd);
+      const query = params.toString();
+      const res = await fetch(`/api/fraud-detection${query ? `?${query}` : ''}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : '' }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const normalized: GlobalFraudDetectionResult = {
+          imeis: Array.isArray(data?.imeis) ? data.imeis : [],
+          numbers: Array.isArray(data?.numbers) ? data.numbers : [],
+          updatedAt: typeof data?.updatedAt === 'string' ? data.updatedAt : new Date().toISOString(),
+        };
+        setGlobalFraudResult(normalized);
+      } else {
+        setGlobalFraudResult(null);
+        setGlobalFraudError(data.error || 'Erreur lors de la détection de fraude');
+      }
+    } catch (error) {
+      console.error('Erreur détection fraude globale:', error);
+      setGlobalFraudResult(null);
+      setGlobalFraudError('Erreur lors de la détection de fraude');
+    } finally {
+      setGlobalFraudLoading(false);
+    }
+  };
+
+  const resetGlobalFraudSearch = () => {
+    setGlobalFraudIdentifier('');
+    setGlobalFraudStart('');
+    setGlobalFraudEnd('');
+    setGlobalFraudResult(null);
+    setGlobalFraudError('');
+  };
+
   const handleCdrSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!selectedCase) return;
@@ -4030,6 +4317,17 @@ const App: React.FC = () => {
       console.error('Erreur lors de la mise à jour de la notification:', error);
     }
   };
+
+  useEffect(() => {
+    if (!selectedCase) {
+      setFraudResult(null);
+      setFraudError('');
+      setFraudLoading(false);
+    } else {
+      setFraudResult(null);
+      setFraudError('');
+    }
+  }, [selectedCase]);
 
   const handleCreateCase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -4419,7 +4717,8 @@ const App: React.FC = () => {
           items: [
             { page: 'cdr', label: 'Géolocalisation', icon: Clock },
             { page: 'transaction-analysis', label: 'Analyse des transactions', icon: Banknote },
-            { page: 'call-analysis', label: 'Analyse des appels', icon: PhoneIncoming }
+            { page: 'call-analysis', label: 'Analyse des appels', icon: PhoneIncoming },
+            { page: 'fraud-detection', label: 'Détection de fraude', icon: AlertTriangle }
           ]
         },
         {
@@ -4457,21 +4756,21 @@ const App: React.FC = () => {
   // Page de connexion
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-sky-50 to-emerald-100 text-slate-900">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-white via-rose-50 to-red-100 text-red-900">
         <div className="max-w-md w-full">
-          <div className="bg-white/95 shadow-2xl shadow-indigo-200/50 rounded-2xl overflow-hidden border border-slate-100/80 backdrop-blur">
-            <div className="bg-gradient-to-r from-indigo-700 via-sky-600 to-emerald-500 px-8 py-6 text-white">
+          <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-red-600 to-rose-700 px-8 py-6">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/15 rounded-full mb-4 text-white shadow-inner shadow-black/10">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4 text-white">
                   <DvineLogo className="h-10 w-10" />
                 </div>
-                <h2 className="text-2xl font-bold">Dvine Intelligence</h2>
-                <p className="mt-1 text-sm text-white/85">
+                <h2 className="text-2xl font-bold text-white">Dvine Intelligence</h2>
+                <p className="mt-1 text-sm text-white/80">
                   Analyse augmentée et renseignements unifiés
                 </p>
               </div>
             </div>
-
+            
             <div className="px-8 py-6">
               <form onSubmit={handleLogin} className="space-y-6">
                 {logoutReason === 'inactivity' && (
@@ -4480,28 +4779,28 @@ const App: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <label htmlFor="login" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="login" className="block text-sm font-semibold text-gray-700 mb-2">
                     Nom d'utilisateur
                   </label>
                   <input
                     id="login"
                     type="text"
                     required
-                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                     placeholder="Entrez votre nom d'utilisateur"
                     value={loginData.login}
                     onChange={(e) => setLoginData({ ...loginData, login: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                     Mot de passe
                   </label>
                   <input
                     id="password"
                     type="password"
                     required
-                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                     placeholder="Entrez votre mot de passe"
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
@@ -4509,7 +4808,7 @@ const App: React.FC = () => {
                 </div>
 
                 {loginInfo && (
-                  <div className="bg-brand-50 border border-brand-200 text-brand-800 px-4 py-3 rounded-lg text-sm">
+                  <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
                     {loginInfo}
                   </div>
                 )}
@@ -4523,7 +4822,7 @@ const App: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
+                  className="w-full bg-rose-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
@@ -4543,13 +4842,15 @@ const App: React.FC = () => {
   }
 
   const renderCdrSearchForm = () => {
+    const showDetectionPanel = false;
+
     const combinedSection = (
       <section className="rounded-3xl border border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-black/40">
         <div className="space-y-8 p-6 sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-300/40">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30">
                   <Activity className="h-6 w-6" />
                 </div>
                 <div>
@@ -4581,9 +4882,53 @@ const App: React.FC = () => {
                 )}
               </div>
             </div>
+            {showDetectionPanel && (
+              <div className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-sm shadow-sm dark:border-slate-700/60 dark:bg-slate-900/40 lg:w-[320px]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Détection de fraude</p>
+                    <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100">Changement de numéro</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Analysez les terminaux identifiés dans l'opération en cours.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleFraudDetectionClick}
+                    disabled={fraudLoading || !selectedCase || !hasFraudDetectionNumbers}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-rose-500/30 transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {fraudLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Scan className="h-3.5 w-3.5" />}
+                    <span>Analyser</span>
+                  </button>
+                </div>
+                <dl className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-3">
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">IMEI analysés</dt>
+                    <dd className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{fraudStats.totalImeis}</dd>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Numéros détectés</dt>
+                    <dd className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{fraudStats.totalNumbers}</dd>
+                  </div>
+                  <div
+                    className={`rounded-xl px-4 py-3 shadow-sm ${
+                      fraudStats.newNumbers > 0
+                        ? 'border border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200'
+                        : 'border border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200'
+                    }`}
+                  >
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide">Nouveaux numéros</dt>
+                    <dd className="mt-1 text-xl font-semibold">{fraudStats.newNumbers}</dd>
+                  </div>
+                </dl>
+              </div>
+            )}
           </div>
 
-          <div className="grid gap-6">
+          <div
+            className={`grid gap-6 ${
+              showDetectionPanel ? 'xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:items-start' : ''
+            }`}
+          >
             <form
               onSubmit={handleCdrSearch}
               className="space-y-6 rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-lg shadow-slate-200/40 dark:border-slate-700/60 dark:bg-slate-900/70"
@@ -4737,7 +5082,1454 @@ const App: React.FC = () => {
                 </div>
               </div>
             </form>
-          {cdrInfoMessage && <p className="text-gray-600">{cdrInfoMessage}</p>}
+            {showDetectionPanel && (
+              <div className="space-y-6 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-6 text-sm shadow-sm dark:border-slate-700/60 dark:bg-slate-900/60">
+                {fraudError && (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
+                    {fraudError}
+                  </div>
+                )}
+                {!hasFraudDetectionNumbers ? (
+                  <div className="rounded-xl border border-dashed border-slate-300/70 bg-white px-4 py-4 text-sm text-slate-600 shadow-inner dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300">
+                    Importez des CDR ou ajoutez un numéro à la recherche pour lancer l’analyse de fraude.
+                  </div>
+                ) : fraudLoading ? (
+                  <div className="flex items-center justify-center py-10">
+                    <Loader2 className="h-6 w-6 animate-spin text-rose-600 dark:text-slate-100" />
+                  </div>
+                ) : fraudResult ? (
+                  <div className="space-y-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      <span>Dernière analyse&nbsp;: {formatFraudDateTime(fraudResult.updatedAt)}</span>
+                      {hasFraudSuspiciousNumbers && (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 px-3 py-1 text-rose-600 dark:text-rose-300">
+                          <AlertTriangle className="h-3.5 w-3.5" /> Anomalies détectées
+                        </span>
+                      )}
+                    </div>
+                    {fraudResult.imeis.length === 0 ? (
+                      <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-700 shadow-inner dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-100">
+                        Aucun changement de numéro détecté pour les identifiants recherchés.
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {fraudResult.imeis.map((imeiEntry) => (
+                          <div
+                            key={imeiEntry.imei}
+                            className="space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-slate-900/60"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-slate-700 dark:text-slate-100">IMEI {imeiEntry.imei}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {imeiEntry.numbers.length} numéro{imeiEntry.numbers.length > 1 ? 's' : ''} détecté{imeiEntry.numbers.length > 1 ? 's' : ''}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3 text-xs">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/70 px-3 py-1 font-medium text-slate-600 dark:bg-slate-800/70 dark:text-slate-200">
+                                  <Activity className="h-3.5 w-3.5" /> {imeiEntry.numbers.reduce((acc, item) => acc + item.occurrences, 0)} occurrences
+                                </span>
+                              </div>
+                            </div>
+                            {imeiEntry.numbers.length === 0 ? (
+                              <div className="rounded-xl border border-dashed border-slate-300/70 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300">
+                                Aucun numéro détecté pour cet IMEI sur la période sélectionnée.
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                {imeiEntry.numbers.map((numberEntry) => {
+                                  const isNew = numberEntry.status === 'nouveau';
+                                  return (
+                                    <div
+                                      key={`${imeiEntry.imei}-${numberEntry.number}`}
+                                      className={`rounded-2xl border px-4 py-3 transition shadow-sm ${
+                                        isNew
+                                          ? 'border-rose-200 bg-rose-50 dark:border-rose-500/40 dark:bg-rose-500/10'
+                                          : 'border-slate-200 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/50'
+                                      }`}
+                                    >
+                                      <div className="flex flex-wrap items-center justify-between gap-3">
+                                        <div>
+                                          <p className="text-base font-semibold text-slate-800 dark:text-slate-100">{numberEntry.number}</p>
+                                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                                            <span
+                                              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-semibold ${
+                                                isNew
+                                                  ? 'bg-rose-500/20 text-rose-600 dark:text-rose-200'
+                                                  : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-200'
+                                              }`}
+                                            >
+                                              {isNew ? 'Nouveau numéro détecté' : 'Numéro attendu'}
+                                            </span>
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/80 px-3 py-1 font-medium text-slate-600 dark:bg-slate-800/70 dark:text-slate-200">
+                                              <Clock className="h-3.5 w-3.5" /> {numberEntry.occurrences} occurrence{numberEntry.occurrences > 1 ? 's' : ''}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col items-end text-xs text-slate-500 dark:text-slate-300">
+                                          <span>
+                                            Première vue :{' '}
+                                            <span className="font-semibold text-slate-700 dark:text-slate-100">
+                                              {formatFraudDate(numberEntry.firstSeen)}
+                                            </span>
+                                          </span>
+                                          <span>
+                                            Dernière vue :{' '}
+                                            <span className="font-semibold text-slate-700 dark:text-slate-100">
+                                              {formatFraudDate(numberEntry.lastSeen)}
+                                            </span>
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                                        {numberEntry.roles.length === 0 ? (
+                                          <span className="rounded-full bg-slate-200/80 px-3 py-1 text-slate-600 dark:bg-slate-800/70 dark:text-slate-200">
+                                            Aucun rôle identifié
+                                          </span>
+                                        ) : (
+                                          numberEntry.roles.map((role) => (
+                                            <span
+                                              key={role}
+                                              className="rounded-full bg-slate-200/80 px-3 py-1 text-slate-600 dark:bg-slate-800/70 dark:text-slate-200"
+                                            >
+                                              {FRAUD_ROLE_LABELS[role] || role}
+                                            </span>
+                                          ))
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-slate-300/70 bg-white px-4 py-4 text-sm text-slate-600 shadow-inner dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300">
+                    Lancez une analyse pour détecter les nouveaux numéros associés aux identifiants recherchés.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+
+    if (showCdrMap) {
+      return (
+        <div className="fixed bottom-6 left-6 z-[1000] w-[32rem] max-h-[88vh] overflow-y-auto rounded-3xl border border-white/60 bg-white/90 p-5 shadow-2xl shadow-rose-500/20 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/85">
+          {combinedSection}
+        </div>
+      );
+    }
+
+    return combinedSection;
+  };
+
+    return (
+      <>
+        <div
+          className="min-h-screen flex bg-gradient-to-br from-white via-rose-50 to-red-100 text-red-900"
+        >
+        {!sidebarOpen && (
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="group fixed top-6 left-6 z-[1100] flex h-12 w-12 items-center justify-center rounded-xl border border-red-200 bg-white/95 text-red-700 shadow-lg shadow-red-200 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-red-400 hover:text-red-900 hover:shadow-xl"
+            title="Déployer le menu"
+            aria-label="Déployer le menu"
+          >
+            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-600 to-rose-500 opacity-0 transition-opacity group-hover:opacity-100" />
+            <ChevronRight className="relative h-5 w-5" />
+          </button>
+        )}
+      {/* Sidebar */}
+      <div
+        className={`${
+          sidebarOpen ? 'w-72' : 'w-20'
+        } relative overflow-hidden bg-white/95 border-r border-red-100 backdrop-blur-xl shadow-[0_20px_50px_rgba(225,29,72,0.12)] transition-all duration-300 flex flex-col`}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-rose-50/80 via-white/70 to-transparent" />
+        {/* Header */}
+        <div className="relative p-6 border-b border-red-100/70">
+          <div className="flex items-center justify-between">
+            <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center gap-0'}`}>
+              <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30">
+                <DvineLogo className="h-7 w-7" />
+              </div>
+              {sidebarOpen && (
+                <div>
+                  <h1 className="text-xl font-extrabold bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 bg-clip-text text-transparent tracking-tight">
+                    Dvine Intelligence
+                  </h1>
+                  <p className="text-xs font-semibold text-red-600">Analyse et Géolocalisation</p>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-white text-red-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-red-400 hover:text-red-800 hover:shadow-lg"
+                title={sidebarOpen ? 'Réduire le menu' : 'Déployer le menu'}
+              >
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-600 to-rose-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                <span className="relative">
+                  {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="relative flex-1 overflow-y-auto p-4 pb-48">
+          <div className="space-y-4">
+            {menuSections.map((section) => (
+              <div
+                key={section.title}
+                className={`rounded-2xl border border-red-100 bg-white/90 shadow-lg shadow-red-100/50 backdrop-blur transition-all ${sidebarOpen ? 'p-4' : 'p-3'}`}
+              >
+                {sidebarOpen && (
+                  <div className="mb-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-red-500">
+                      {section.title}
+                    </p>
+                    {section.description && (
+                      <p className="mt-1 text-xs text-red-600/80">{section.description}</p>
+                    )}
+                  </div>
+                )}
+                <div className="grid gap-2">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentPage === item.page;
+                    return (
+                      <button
+                        key={item.page}
+                        onClick={() => navigateToPage(item.page)}
+                        title={item.label}
+                        className={`group relative flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'} gap-3 rounded-xl border ${isActive ? 'border-red-500 bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-lg shadow-red-200' : 'border-red-100 bg-white text-red-800 shadow-sm hover:-translate-y-0.5 hover:border-red-300 hover:shadow-md'} px-3 py-3 text-sm font-semibold transition-all`}
+                      >
+                        <span
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-red-50 text-red-600 group-hover:bg-red-100'}`}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        {sidebarOpen && <span className="flex-1 text-left">{item.label}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </nav>
+
+        {/* User info */}
+        <div className="absolute inset-x-0 bottom-0 z-20">
+          <div className="relative border-t border-white/60 bg-white/90 p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-gray-800/70 dark:bg-gray-900/85 dark:shadow-black/40">
+            <div className="pointer-events-none absolute inset-x-0 -top-6 h-6 bg-gradient-to-t from-white/90 via-white/40 to-transparent dark:from-gray-900/80" />
+            <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center'}`}>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-500 via-gray-600 to-gray-800 text-white shadow-md shadow-gray-500/30">
+                <User className="h-5 w-5" />
+              </div>
+              {sidebarOpen && (
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{currentUser?.login}</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    {isAdmin ? (
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-rose-500/20 to-orange-500/20 px-2.5 py-0.5 text-xs font-semibold text-rose-600 dark:text-rose-300">
+                        <Shield className="mr-1 h-3 w-3" />
+                        Admin
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-rose-500/20 to-cyan-500/20 px-2.5 py-0.5 text-xs font-semibold text-rose-600 dark:text-rose-300">
+                        <UserCheck className="mr-1 h-3 w-3" />
+                        Utilisateur
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800/70 dark:text-gray-300">
+                    Division : {currentUser?.division_name || 'Non renseignée'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {sidebarOpen && (
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => openPasswordModal()}
+                  className="group relative flex items-center justify-center gap-2 rounded-xl border border-white/60 bg-white/70 px-3 py-2 text-xs font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:text-rose-600 dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-200 dark:hover:text-white"
+                >
+                  <Key className="h-3 w-3 transition-transform duration-200 group-hover:scale-110" />
+                  Mot de passe
+                </button>
+                <button
+                  onClick={() => handleLogout()}
+                  className="group relative flex items-center justify-center gap-2 rounded-xl border border-red-200/70 bg-red-50/70 px-3 py-2 text-xs font-semibold text-red-600 transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200"
+                >
+                  <LogOut className="h-3 w-3 transition-transform duration-200 group-hover:scale-110" />
+                  Déconnexion
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+        <div ref={mainContentRef} className="flex-1 overflow-auto scroll-smooth bg-white/80">
+          <div className="p-8">
+              <div className="flex justify-end mb-4 relative">
+                <button
+                  onClick={handleNotificationClick}
+                  className="relative p-2 rounded-full bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 text-gray-600 hover:text-rose-600 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:text-white"
+                >
+                  <Bell className="h-6 w-6" />
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[1.75rem] px-1 h-5 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-full text-xs font-semibold flex items-center justify-center shadow-lg">
+                      {notificationCount}
+                    </span>
+                  )}
+                </button>
+                {showNotifications && (
+                  <div className="absolute right-0 mt-3 w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl ring-1 ring-black/5 z-50 overflow-hidden border border-gray-100/50 dark:border-gray-700/50">
+                    <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-red-600 to-rose-700 text-white">
+                      <div>
+                        <div className="text-xs uppercase tracking-wide opacity-80">Centre de notifications</div>
+                        <div className="text-sm font-semibold">{totalNotifications} notification{totalNotifications > 1 ? 's' : ''}</div>
+                      </div>
+                      <button
+                        onClick={() => setShowNotifications(false)}
+                        className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto divide-y divide-gray-100/70 dark:divide-gray-800/80">
+                      {totalNotifications === 0 ? (
+                        <div className="p-6 text-sm text-center text-gray-500 dark:text-gray-400">
+                          Aucune notification disponible pour le moment.
+                        </div>
+                      ) : (
+                        notifications.map(notification => {
+                          const isUnread = !notification.read && !readNotifications.includes(notification.id);
+                          return (
+                            <button
+                              key={notification.id}
+                              onClick={() => handleNotificationSelect(notification)}
+                              className={`w-full text-left p-4 transition-all duration-200 flex items-start gap-3 focus:outline-none ${
+                                isUnread
+                                  ? 'bg-rose-50/70 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60'
+                                  : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'
+                              }`}
+                            >
+                              <div
+                                className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${
+                                  notification.status === 'pending'
+                                    ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300'
+                                    : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300'
+                                }`}
+                              >
+                                {notification.status === 'pending' ? (
+                                  <Clock className="h-5 w-5" />
+                                ) : (
+                                  <UserCheck className="h-5 w-5" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {notification.message}
+                                  </span>
+                                  <span
+                                    className={`text-xs font-medium ${
+                                      isUnread ? 'text-rose-600 dark:text-rose-300' : 'text-gray-400 dark:text-gray-500'
+                                    }`}
+                                  >
+                                    {isUnread ? 'Non lu' : 'Lu'}
+                                  </span>
+                                </div>
+                                <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                  {notification.description}
+                                </div>
+                                {notification.phone && (
+                                  <div className="mt-2 inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full">
+                                      {notification.phone}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+          {currentPage === 'search' && (
+            <div className="space-y-8">
+              {/* Header */}
+              <PageHeader icon={<Search className="h-6 w-6" />} title="Recherche Unifiée" subtitle="Explorez toutes les bases de données en une seule recherche" />
+
+              {/* Barre de recherche */}
+              <div className="bg-white shadow-xl rounded-2xl p-8">
+                <form onSubmit={handleSearch} className="space-y-6">
+                  <div ref={searchHistoryContainerRef}>
+                    <div className="relative">
+                      <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Entrez votre recherche (CNI, nom, téléphone, immatriculation...)"
+                        className="w-full pl-12 pr-40 py-4 text-lg bg-gray-50 border border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => {
+                          if (searchHistory.length > 0) {
+                            setIsHistoryOpen(true);
+                          }
+                        }}
+                        autoComplete="off"
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        {searchHistory.length > 0 && (
+                          <button
+                            type="button"
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              setIsHistoryOpen((prev) => !prev);
+                            }}
+                            className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium transition-all ${
+                              isHistoryOpen
+                                ? 'border-rose-200 bg-rose-50 text-rose-600 shadow-sm'
+                                : 'border-gray-200 bg-white/80 text-gray-500 shadow-sm hover:border-rose-200 hover:text-rose-600'
+                            }`}
+                            aria-expanded={isHistoryOpen}
+                            aria-label="Afficher l'historique des recherches"
+                          >
+                            <History className="h-4 w-4" />
+                            Historique
+                          </button>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="px-6 py-2 bg-rose-600 text-white rounded-full hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 transition-all flex items-center"
+                        >
+                          {loading ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          ) : (
+                            <>
+                              Rechercher
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {searchHistory.length > 0 && (
+                      <div className="mt-6 rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-rose-50/40 to-rose-100/20 p-5 shadow-inner dark:border-slate-700/60 dark:from-slate-900/60 dark:via-slate-900/40 dark:to-slate-800/50">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-200">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm dark:bg-rose-500/20 dark:text-rose-200">
+                              <History className="h-4 w-4" />
+                            </span>
+                            Recherches récentes
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {hasMoreHistoryEntries && (
+                              <button
+                                type="button"
+                                onClick={() => setIsHistoryOpen((prev) => !prev)}
+                                className="text-xs font-medium text-rose-600 transition-colors hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200"
+                              >
+                                {isHistoryOpen ? 'Réduire' : 'Tout afficher'}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                clearSearchHistory();
+                                setIsHistoryOpen(false);
+                              }}
+                              className="text-xs font-medium text-slate-400 transition-colors hover:text-red-500 dark:text-slate-500 dark:hover:text-red-300"
+                            >
+                              Effacer tout
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          {visibleHistoryEntries.map((entry) => (
+                            <div
+                              key={`${entry.query}-${entry.timestamp}`}
+                              className="group inline-flex items-center gap-1 rounded-full border border-slate-200/70 bg-white/80 pr-1 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50/80 dark:border-slate-700/60 dark:bg-slate-900/50 dark:hover:border-rose-500/40 dark:hover:bg-slate-800/70"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => handleHistorySelection(entry.query)}
+                                className="flex items-center gap-2 rounded-full pl-3 pr-2 py-1.5 text-sm font-medium text-slate-600 transition-colors group-hover:text-rose-700 dark:text-slate-200 dark:group-hover:text-rose-200"
+                              >
+                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm dark:bg-rose-500/20 dark:text-rose-200">
+                                  <Search className="h-4 w-4" />
+                                </span>
+                                <span className="flex flex-col text-left">
+                                  <span>{entry.query}</span>
+                                  <span className="text-xs font-normal text-slate-400 dark:text-slate-500">
+                                    {getHistoryRelativeLabel(entry.timestamp)}
+                                  </span>
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  removeSearchHistoryEntry(entry.query);
+                                }}
+                                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-slate-500 dark:hover:bg-red-500/10 dark:hover:text-red-300"
+                                aria-label={`Supprimer ${entry.query} de l'historique`}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </form>
+              </div>
+
+              {/* Erreur de recherche */}
+              {searchError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <X className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium">{searchError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {loading && <LoadingSpinner />}
+
+              {/* Résultats */}
+              {searchResults && (
+                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-600 to-rose-700 text-white">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-xl font-bold">Résultats de recherche</h2>
+                        <div className="flex items-center mt-2 space-x-4">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20">
+                            <Activity className="w-4 h-4 mr-1" />
+                            {resultsCountLabel}
+                          </span>
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {searchResults.elapsed_ms}ms
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => setViewMode(viewMode === 'list' ? 'profile' : 'list')}
+                          className="flex items-center px-4 py-2 bg-white/20 text-white rounded-lg transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 dark:hover:bg-rose-600 dark:hover:text-white dark:active:bg-rose-600 dark:active:text-white"
+                        >
+                          {viewMode === 'list' ? (
+                            <>
+                              <UserCircle className="w-4 h-4 mr-2" />
+                              Vue profils
+                            </>
+                          ) : (
+                            <>
+                              <List className="w-4 h-4 mr-2" />
+                              Vue liste
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                    {searchResults.total === 0 ? (
+                      <div className="text-center py-16">
+                        <Search className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Aucun résultat trouvé</h3>
+                        <p className="text-gray-500">
+                          Essayez avec d'autres termes de recherche ou vérifiez l'orthographe.
+                        </p>
+                      </div>
+                    ) : viewMode === 'list' ? (
+                      <div className="p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
+                        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                          {displayedHits.map((result, index) => {
+                            const previewEntries = result.previewEntries;
+
+                            return (
+                              <div
+                                key={index}
+                                className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:shadow-xl hover:border-rose-300 dark:hover:border-rose-500 transform transition-all duration-300 hover:-translate-y-1"
+                              >
+                              {/* Header de la carte */}
+                              <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-rose-500 to-rose-700 rounded-xl text-white shadow-md">
+                                    <Database className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Résultat {index + 1}</h3>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Contenu des données */}
+                              <div className="space-y-4">
+                                <dl className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  {previewEntries.map((entry) => (
+                                    <div
+                                      key={entry.key}
+                                      className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm transition-colors group-hover:border-rose-200 dark:border-slate-700/70 dark:bg-slate-800/60 dark:group-hover:border-rose-500"
+                                    >
+                                      <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                                        {entry.label}
+                                      </dt>
+                                      <dd className="mt-2 text-sm text-slate-900 dark:text-slate-100">
+                                        <StructuredPreviewValue value={entry.value} />
+                                      </dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              </div>
+
+                              {/* Footer avec actions */}
+                              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                <div className="text-xs text-gray-500">
+                                  {previewEntries.length}{' '}
+                                  champs disponibles
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    // Copier les données dans le presse-papier
+                                    const dataText = previewEntries
+                                      .map((entry) => `${entry.label}: ${entry.value}`)
+                                      .join('\n');
+                                    navigator.clipboard
+                                      .writeText(dataText)
+                                      .then(() => {
+                                        notifySuccess('Données copiées dans le presse-papier !');
+                                      })
+                                      .catch(() => {
+                                        notifyError('Impossible de copier les données dans le presse-papier.');
+                                      });
+                                  }}
+                                  className="inline-flex items-center px-3 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900 rounded-md hover:bg-rose-100 dark:hover:bg-rose-800 transition-colors"
+                                >
+                                  <User className="w-3 h-3 mr-1" />
+                                  Copier
+                                </button>
+                              </div>
+                            </div>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-8 text-center">
+                          <button
+                            className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700"
+                            onClick={() => {
+                              const combined: Record<string, string> = {};
+                              const mergeEntry = (entry: NormalizedPreviewEntry) => {
+                                const key = entry.key || entry.label;
+                                if (combined[key] === undefined) {
+                                  combined[key] = entry.value;
+                                }
+                              };
+
+                              displayedHits.forEach((h) => {
+                                h.previewEntries.forEach(mergeEntry);
+                              });
+                              const { email, ...extra } = combined;
+                              const data = {
+                                email: String(email || ''),
+                                extra_fields: Object.fromEntries(
+                                  Object.entries(extra).map(([k, v]) => [k, String(v ?? '')])
+                                )
+                              };
+                              openCreateProfile(data);
+                            }}
+                          >
+                            Créer profil
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
+                        {displayedHits.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center space-y-3 py-10 text-rose-600">
+                            <Loader2 className="h-8 w-8 animate-spin" />
+                            <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
+                              Initialisation des résultats...
+                            </p>
+                          </div>
+                        ) : (
+                          <SearchResultProfiles
+                            hits={displayedHits}
+                            query={searchQuery}
+                            onCreateProfile={openCreateProfile}
+                          />
+                        )}
+                      </div>
+                    )}
+                    {searchResults.page < searchResults.pages && (
+                      <div className="text-center p-4">
+                        <button
+                          onClick={loadMoreResults}
+                          disabled={loading || isProgressiveLoading}
+                          className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {loading || isProgressiveLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Chargement...
+                            </>
+                          ) : (
+                            'Charger plus'
+                          )}
+                        </button>
+                      </div>
+                    )}
+                    {isProgressiveLoading && (
+                      <div className="text-center pb-6">
+                        <button
+                          type="button"
+                          disabled
+                          className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-rose-500 to-indigo-600 text-white shadow-lg cursor-wait"
+                        >
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Affichage progressif des résultats...
+                        </button>
+                      </div>
+                    )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentPage === 'cdr' && (
+            <div className="space-y-10">
+              <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-[0_30px_60px_-20px_rgba(30,64,175,0.45)] backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-rose-500/20 via-indigo-500/10 to-purple-500/20" />
+                <div className="relative grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 shadow-lg shadow-rose-500/40 dark:bg-slate-900/80">
+                        <Clock className="h-6 w-6 text-rose-600 dark:text-rose-200" />
+                      </div>
+                      <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Géolocalisation</h1>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                          Une interface repensée pour gérer vos analyses télécoms en toute fluidité.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-200">
+                        <Database className="h-3.5 w-3.5" />
+                        {cases.length} dossier{cases.length > 1 ? 's' : ''}
+                      </span>
+                      {ownedCasesCount > 0 && (
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-200">
+                          <User className="h-3.5 w-3.5" />
+                          {ownedCasesCount} à votre charge
+                        </span>
+                      )}
+                      {sharedCasesCount > 0 && (
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-200">
+                          <Share2 className="h-3.5 w-3.5" />
+                          {sharedCasesCount} partagées
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <form
+                    onSubmit={handleCreateCase}
+                    className="rounded-2xl border border-white/60 bg-white/80 p-6 shadow-xl shadow-rose-500/20 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/80"
+                  >
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Créer une opération</h2>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
+                      Nommez votre nouvelle analyse pour démarrer.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-3">
+                      <input
+                        type="text"
+                        placeholder="Nom de l'opération"
+                        value={cdrCaseName}
+                        onChange={(e) => setCdrCaseName(e.target.value)}
+                        className="w-full rounded-full border border-transparent bg-white/90 px-4 py-3 text-sm font-medium text-slate-700 shadow-inner focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-500/30 dark:bg-slate-800/80 dark:text-slate-200"
+                      />
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span>Créer l'opération</span>
+                      </button>
+                    </div>
+                    {cdrCaseMessage && (
+                      <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                        {cdrCaseMessage}
+                      </div>
+                    )}
+                  </form>
+                </div>
+              </section>
+
+              <section className="space-y-6">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Vos dossiers</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-300">
+                      Retrouvez l'ensemble des opérations accessibles.
+                    </p>
+                  </div>
+                  {Math.max(totalCasePages, 1) > 1 && (
+                    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 shadow-sm backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300">
+                      Page {casePage} sur {Math.max(totalCasePages, 1)}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                  {paginatedCases.length === 0 ? (
+                    <div className="col-span-full rounded-3xl border border-dashed border-slate-300/80 bg-white/70 p-10 text-center text-sm text-slate-500 shadow-inner dark:border-slate-600/60 dark:bg-slate-900/60 dark:text-slate-300">
+                      Aucune opération enregistrée pour le moment.
+                    </div>
+                  ) : (
+                    paginatedCases.map((c) => (
+                      <div
+                        key={c.id}
+                        className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-xl shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl dark:border-slate-700/60 dark:bg-slate-900/70"
+                      >
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-rose-500/0 via-indigo-500/10 to-purple-500/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                        <div className="relative flex h-full flex-col gap-5">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-2">
+                              {renamingCaseId === c.id ? (
+                                <input
+                                  type="text"
+                                  value={renamingCaseName}
+                                  onChange={(event) => setRenamingCaseName(event.target.value)}
+                                  onKeyDown={handleRenameKeyDown}
+                                  className="w-full rounded-2xl border border-slate-300/70 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-100"
+                                  placeholder="Nouveau nom de l'opération"
+                                  autoFocus
+                                />
+                              ) : (
+                                <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{c.name}</h4>
+                              )}
+                              {isAdmin && c.user_login && (
+                                <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                  {c.user_login}
+                                </p>
+                              )}
+                              {Boolean(!c.is_owner && c.shared_with_me) ? (
+                                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-200">
+                                  <Share2 className="h-3.5 w-3.5" />
+                                  Partagée avec vous
+                                </span>
+                              ) : Boolean(c.is_owner) ? (
+                                <span className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
+                                  <User className="h-3.5 w-3.5" />
+                                  Propriétaire
+                                </span>
+                              ) : null}
+                              {c.division_name && (
+                                <p className="text-xs text-slate-500 dark:text-slate-400">{c.division_name}</p>
+                              )}
+                              {c.created_at && (
+                                <p className="text-xs text-slate-400 dark:text-slate-500">
+                                  Créée le {format(parseISO(c.created_at), 'd MMM yyyy', { locale: fr })}
+                                </p>
+                              )}
+                              {renamingCaseId === c.id && renamingCaseError && (
+                                <p className="text-xs font-medium text-rose-600 dark:text-rose-300">{renamingCaseError}</p>
+                              )}
+                            </div>
+                            <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-500 shadow-sm dark:bg-white/5 dark:text-slate-300">
+                              #{c.id}
+                            </span>
+                          </div>
+                          <div className="mt-auto flex flex-wrap gap-2">
+                            {renamingCaseId === c.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                  onClick={submitRenameCase}
+                                  disabled={renamingCaseLoading}
+                                >
+                                  {renamingCaseLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                                  <span>Enregistrer</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                                  onClick={cancelRenameCase}
+                                  disabled={renamingCaseLoading}
+                                >
+                                  <X className="h-4 w-4" />
+                                  <span>Annuler</span>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+                                onClick={() => {
+                                  cancelRenameCase();
+                                  setSelectedCase(c);
+                                  setCdrResult(null);
+                                  setShowCdrMap(false);
+                                  navigateToPage('cdr-case');
+                                }}
+                                >
+                                  <ArrowRight className="h-4 w-4" />
+                                  <span>Ouvrir</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
+                                  onClick={() => handleExportCaseReport(c)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                  <span>Exporter</span>
+                                </button>
+                                {(isAdmin || c.is_owner) && (
+                                  <button
+                                    type="button"
+                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
+                                    onClick={() => openShareModalForCase(c)}
+                                  >
+                                    <Share2 className="h-4 w-4" />
+                                    <span>Partager</span>
+                                  </button>
+                                )}
+                                {(isAdmin || c.is_owner) && (
+                                  <button
+                                    type="button"
+                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
+                                    onClick={() => startRenameCase(c)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                    <span>Renommer</span>
+                                  </button>
+                                )}
+                                {Boolean(c.is_owner) && (
+                                  <button
+                                    type="button"
+                                    className="inline-flex items-center gap-2 rounded-full border border-rose-300/70 bg-rose-50/80 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-400 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200 dark:hover:border-rose-400/60"
+                                    onClick={() => handleDeleteCase(c.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span>Supprimer</span>
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                {cases.length > 0 && (
+                  <div className="border-t border-slate-200/80 pt-4 dark:border-slate-800/60">
+                    <PaginationControls
+                      currentPage={casePage}
+                      totalPages={Math.max(totalCasePages, 1)}
+                      onPageChange={setCasePage}
+                      pageSize={casesPerPage}
+                      pageSizeOptions={CASE_PAGE_SIZE_OPTIONS}
+                      onPageSizeChange={(size) => {
+                        setCasesPerPage(size);
+                        setCasePage(1);
+                      }}
+                    />
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {currentPage === 'call-analysis' && <CallAnalysisPage />}
+
+          {currentPage === 'transaction-analysis' && <TransactionAnalysisPage />}
+
+          {currentPage === 'fraud-detection' && (
+            <div className="space-y-8">
+              <PageHeader
+                icon={<AlertTriangle className="h-6 w-6" />}
+                title="Détection de Fraude"
+                subtitle="Analyse centralisée des communications sensibles"
+              />
+
+              <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-black/40">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-rose-500/10" />
+                <div className="relative p-8 space-y-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        Analyse transversale des CDR
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-300">
+                        Surveillez les comportements critiques sans exposer les paramètres de détection.
+                      </p>
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur dark:bg-white/10 dark:text-slate-200">
+                      <Scan className="h-4 w-4" />
+                      Analyse globale
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleGlobalFraudSearch} className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                          Numéro ou IMEI à analyser
+                        </label>
+                        <div className="relative">
+                          <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+                            <Search className="h-4 w-4" />
+                          </div>
+                          <input
+                            type="text"
+                            value={globalFraudIdentifier}
+                            onChange={(e) => {
+                              setGlobalFraudIdentifier(e.target.value);
+                              if (globalFraudError) setGlobalFraudError('');
+                            }}
+                            placeholder="Ex : 221771234567 ou 356789104567890"
+                            className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-12 py-3 text-base shadow-inner focus:border-transparent focus:outline-none focus:ring-4 focus:ring-purple-500/30 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-100"
+                          />
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          L'analyse s'effectue sur l'ensemble des données importées disponibles.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            Date de début (optionnel)
+                          </label>
+                          <input
+                            type="date"
+                            value={globalFraudStart}
+                            onChange={(e) => {
+                              setGlobalFraudStart(e.target.value);
+                              if (globalFraudError) setGlobalFraudError('');
+                            }}
+                            className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-700/60 dark:bg-slate-900/60"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            Date de fin (optionnel)
+                          </label>
+                          <input
+                            type="date"
+                            value={globalFraudEnd}
+                            onChange={(e) => {
+                              setGlobalFraudEnd(e.target.value);
+                              if (globalFraudError) setGlobalFraudError('');
+                            }}
+                            className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-700/60 dark:bg-slate-900/60"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="submit"
+                        disabled={globalFraudLoading}
+                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 via-purple-500 to-rose-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {globalFraudLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scan className="h-4 w-4" />}
+                        <span>Lancer l'analyse</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetGlobalFraudSearch}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-6 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-slate-500"
+                      >
+                        <X className="h-4 w-4" />
+                        <span>Réinitialiser</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </section>
+
+              {globalFraudError && (
+                <div className="rounded-3xl border border-rose-200 bg-rose-50/80 px-6 py-4 text-sm text-rose-700 shadow-sm dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
+                  {globalFraudError}
+                </div>
+              )}
+
+              {globalFraudLoading ? (
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : globalFraudResult ? (
+                !hasGlobalFraudImeiAlerts && !hasGlobalFraudNumberAlerts ? (
+                  <section className="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-8 text-emerald-700 shadow-inner dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-200">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-600 dark:bg-emerald-500/30 dark:text-emerald-100">
+                        <Shield className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Aucune anomalie détectée</h3>
+                        <p className="mt-1 text-sm">
+                          Aucun IMEI partagé entre plusieurs numéros ni numéro associé à plusieurs IMEI sur la période analysée.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                ) : (
+                  <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-black/40">
+                    <div className="border-b border-slate-200/70 bg-gradient-to-r from-rose-500 via-purple-500 to-rose-500 px-8 py-6 text-white dark:border-slate-700/60">
+                      <div className="space-y-4">
+                        <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold">Résultats de l'analyse</h3>
+                            <p className="text-sm text-white/80">
+                              Dernière exécution&nbsp;: {formatFraudDateTime(globalFraudResult.updatedAt)}
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/80">
+                            <Scan className="h-3.5 w-3.5" /> Analyse globale des CDR
+                          </span>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          <div className="rounded-2xl border border-white/30 bg-white/10 px-4 py-3 text-sm">
+                            <p className="text-white/70">IMEI suspects</p>
+                            <p className="mt-1 text-2xl font-semibold text-white">{globalFraudStats.totalImeis}</p>
+                          </div>
+                          <div className="rounded-2xl border border-white/30 bg-white/10 px-4 py-3 text-sm">
+                            <p className="text-white/70">Numéros associés</p>
+                            <p className="mt-1 text-2xl font-semibold text-white">{globalFraudStats.totalNumbers}</p>
+                          </div>
+                          <div className="rounded-2xl border border-white/30 bg-white/10 px-4 py-3 text-sm">
+                            <p className="text-white/70">Alertes multi-IMEI</p>
+                            <p className="mt-1 text-2xl font-semibold text-white">{globalFraudStats.alerts}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {hasGlobalFraudImeiAlerts && (
+                      <div className="divide-y divide-slate-200/70 dark:divide-slate-700/60">
+                        {globalFraudResult.imeis.map((imeiEntry) => (
+                          <div key={imeiEntry.imei} className="space-y-5 p-6">
+                            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                              <div className="flex items-start gap-4">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-purple-500 to-rose-500 text-white shadow-lg shadow-purple-400/40">
+                                  <AlertTriangle className="h-7 w-7" />
+                                </div>
+                                <div>
+                                  <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">IMEI {imeiEntry.imei}</h4>
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    <span
+                                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                                        imeiEntry.roleSummary.caller >= 2
+                                          ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-200'
+                                          : 'bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300'
+                                      }`}
+                                    >
+                                      <PhoneOutgoing className="h-3.5 w-3.5" />
+                                      Appelants&nbsp;: {imeiEntry.roleSummary.caller}
+                                    </span>
+                                    <span
+                                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                                        imeiEntry.roleSummary.callee >= 2
+                                          ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-200'
+                                          : 'bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300'
+                                      }`}
+                                    >
+                                      <PhoneIncoming className="h-3.5 w-3.5" />
+                                      Appelés&nbsp;: {imeiEntry.roleSummary.callee}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="overflow-x-auto rounded-2xl border border-slate-200/70 bg-white/80 shadow-inner dark:border-slate-700/60 dark:bg-slate-900/50">
+                              <table className="min-w-full text-sm text-slate-700 dark:text-slate-200">
+                                <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-white/5 dark:text-slate-400">
+                                  <tr>
+                                    <th className="px-4 py-3 text-left">Numéro</th>
+                                    <th className="px-4 py-3 text-left">Rôles</th>
+                                    <th className="px-4 py-3 text-left">Occurrences</th>
+                                    <th className="px-4 py-3 text-left">Première apparition</th>
+                                    <th className="px-4 py-3 text-left">Dernière apparition</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100/80 dark:divide-white/10">
+                                  {imeiEntry.numbers.map((numberEntry) => (
+                                    <tr
+                                      key={`${imeiEntry.imei}-${numberEntry.number}`}
+                                      className="odd:bg-white even:bg-slate-50/60 dark:odd:bg-slate-900/40 dark:even:bg-slate-900/20"
+                                    >
+                                      <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">
+                                        {numberEntry.number}
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        {numberEntry.roles.length === 0 ? (
+                                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500 dark:bg-white/5 dark:text-slate-400">
+                                            -
+                                          </span>
+                                        ) : (
+                                          <div className="flex flex-wrap gap-2">
+                                            {numberEntry.roles.map((role) => (
+                                              <span
+                                                key={role}
+                                                className="inline-flex items-center rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200"
+                                              >
+                                                {FRAUD_ROLE_LABELS[role] || role}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{numberEntry.occurrences}</td>
+                                      <td className="px-4 py-3 text-slate-500 dark:text-slate-300">
+                                        {formatFraudDate(numberEntry.firstSeen)}
+                                      </td>
+                                      <td className="px-4 py-3 text-slate-500 dark:text-slate-300">
+                                        {formatFraudDate(numberEntry.lastSeen)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {hasGlobalFraudNumberAlerts && (
+                      <div className={`${hasGlobalFraudImeiAlerts ? 'border-t border-slate-200/70 dark:border-slate-700/60' : ''}`}>
+                        <div className="bg-slate-50/80 px-8 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-white/5 dark:text-slate-300">
+                          Numéros associés à plusieurs IMEI
+                        </div>
+                        <div className="divide-y divide-slate-200/70 dark:divide-slate-700/60">
+                          {globalFraudResult.numbers.map((numberEntry) => (
+                            <div key={numberEntry.number} className="space-y-5 p-6">
+                              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                <div className="flex items-start gap-4">
+                                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-indigo-500 to-purple-500 text-white shadow-lg shadow-rose-400/40">
+                                    <Phone className="h-7 w-7" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Numéro {numberEntry.number}</h4>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      <span
+                                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                                          numberEntry.roleSummary.caller >= 2
+                                            ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-200'
+                                            : 'bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300'
+                                        }`}
+                                      >
+                                        <PhoneOutgoing className="h-3.5 w-3.5" />
+                                        IMEI appelants&nbsp;: {numberEntry.roleSummary.caller}
+                                      </span>
+                                      <span
+                                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                                          numberEntry.roleSummary.callee >= 2
+                                            ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-200'
+                                            : 'bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300'
+                                        }`}
+                                      >
+                                        <PhoneIncoming className="h-3.5 w-3.5" />
+                                        IMEI appelés&nbsp;: {numberEntry.roleSummary.callee}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="overflow-x-auto rounded-2xl border border-slate-200/70 bg-white/80 shadow-inner dark:border-slate-700/60 dark:bg-slate-900/50">
+                                <table className="min-w-full text-sm text-slate-700 dark:text-slate-200">
+                                  <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-white/5 dark:text-slate-400">
+                                    <tr>
+                                      <th className="px-4 py-3 text-left">IMEI</th>
+                                      <th className="px-4 py-3 text-left">Rôles</th>
+                                      <th className="px-4 py-3 text-left">Occurrences</th>
+                                      <th className="px-4 py-3 text-left">Première apparition</th>
+                                      <th className="px-4 py-3 text-left">Dernière apparition</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100/80 dark:divide-white/10">
+                                    {numberEntry.imeis.map((imeiInfo) => (
+                                      <tr
+                                        key={`${numberEntry.number}-${imeiInfo.imei}`}
+                                        className="odd:bg-white even:bg-slate-50/60 dark:odd:bg-slate-900/40 dark:even:bg-slate-900/20"
+                                      >
+                                        <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">
+                                          {imeiInfo.imei}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          {imeiInfo.roles.length === 0 ? (
+                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500 dark:bg-white/5 dark:text-slate-400">
+                                              -
+                                            </span>
+                                          ) : (
+                                            <div className="flex flex-wrap gap-2">
+                                              {imeiInfo.roles.map((role) => (
+                                                <span
+                                                  key={role}
+                                                  className="inline-flex items-center rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200"
+                                                >
+                                                  {FRAUD_ROLE_LABELS[role] || role}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{imeiInfo.occurrences}</td>
+                                        <td className="px-4 py-3 text-slate-500 dark:text-slate-300">
+                                          {formatFraudDate(imeiInfo.firstSeen)}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-500 dark:text-slate-300">
+                                          {formatFraudDate(imeiInfo.lastSeen)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </section>
+                )
+              ) : (
+                <section className="rounded-3xl border border-slate-200/80 bg-white/95 p-8 shadow-xl shadow-slate-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-black/40">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-indigo-500 text-white shadow-lg shadow-rose-300/40">
+                        <AlertTriangle className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Surveillance active</h3>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
+                          Les critères précis de détection sont confidentiels. Seuls les résultats essentiels sont présentés.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-slate-100/60 px-4 py-2 text-sm text-slate-600 dark:bg-white/5 dark:text-slate-300">
+                      Analyse tous les CDR disponibles
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
+
+          {currentPage === 'cdr-case' && selectedCase && (
+            <div className="space-y-6">
+              <PageHeader icon={<Clock className="h-6 w-6" />} title={`CDR - ${selectedCase.name}`} />
+              <button
+                onClick={() => {
+                  cancelRenameCase();
+                  navigateToPage('cdr');
+                  setSelectedCase(null);
+                }}
+                className="text-rose-600"
+              >
+                &larr; Retour
+              </button>
+
+              {(isAdmin || selectedCase.is_owner) && (
+                <div className="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-lg shadow-slate-200/60 dark:border-slate-700/60 dark:bg-slate-900/70">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Nom de l'opération</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-300">Mettez à jour l'intitulé pour garder vos dossiers organisés.</p>
+                    </div>
+                    {renamingCaseId === selectedCase.id ? (
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                        <input
+                          type="text"
+                          value={renamingCaseName}
+                          onChange={(event) => setRenamingCaseName(event.target.value)}
+                          onKeyDown={handleRenameKeyDown}
+                          className="w-full rounded-2xl border border-slate-300/70 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-100"
+                          placeholder="Nouveau nom de l'opération"
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            onClick={submitRenameCase}
+                            disabled={renamingCaseLoading}
+                          >
+                            {renamingCaseLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                            <span>Enregistrer</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                            onClick={cancelRenameCase}
+                            disabled={renamingCaseLoading}
+                          >
+                            <X className="h-4 w-4" />
+                            <span>Annuler</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                        <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedCase.name}</span>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
+                          onClick={() => startRenameCase(selectedCase)}
+                        >
+                          <Edit className="h-4 w-4" />
+                          <span>Renommer</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {renamingCaseId === selectedCase.id && renamingCaseError && (
+                    <p className="mt-3 text-sm font-medium text-rose-600 dark:text-rose-300">{renamingCaseError}</p>
+                  )}
+                </div>
+              )}
+
+              {!showCdrMap && (
+                <div className="grid grid-cols-1 gap-6">
+                  {renderCdrSearchForm()}
+                </div>
+              )}
+
+              {cdrLoading && (
+                <div className="loading-bar-container my-4">
+                  <div className="loading-bar"></div>
+                </div>
+              )}
+              {cdrError && <p className="text-red-600">{cdrError}</p>}
+              {cdrInfoMessage && <p className="text-gray-600">{cdrInfoMessage}</p>}
               {showCdrMap && cdrResult && !cdrLoading && (
                 <>
                   <div className="fixed inset-0 z-0 flex">
@@ -4900,7 +6692,7 @@ const App: React.FC = () => {
                       </div>
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-300/40 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60"
                       >
                         <Search className="h-4 w-4" />
                         Lancer la recherche
@@ -4916,8 +6708,8 @@ const App: React.FC = () => {
                       }}
                       className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                         requestStatusFilter === 'all'
-                          ? 'border-indigo-300/80 bg-indigo-500/10 text-indigo-700 dark:border-indigo-300/50 dark:bg-indigo-500/20 dark:text-indigo-100'
-                          : 'border-slate-200/70 bg-white/80 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-indigo-300/60 dark:hover:text-indigo-100'
+                          ? 'border-rose-400/70 bg-rose-500/10 text-rose-600 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-200'
+                          : 'border-slate-200/70 bg-white/80 text-slate-600 hover:border-rose-300 hover:text-rose-600 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-rose-400/50 dark:hover:text-rose-200'
                       }`}
                     >
                       Toutes
