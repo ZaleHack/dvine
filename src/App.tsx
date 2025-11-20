@@ -2944,13 +2944,14 @@ const App: React.FC = () => {
     }
   };
 
+  const financialStats = statsData?.financial;
+  const callStats = statsData?.calls;
+
   const dashboardCards = useMemo<DashboardCard[]>(() => {
     const profiles = statsData?.profiles;
     const requests = statsData?.requests;
     const operations = statsData?.operations;
     const dataStats = statsData?.data;
-    const financialStats = statsData?.financial;
-    const callStats = statsData?.calls;
 
     const cards: DashboardCard[] = [
       {
