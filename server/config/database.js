@@ -608,6 +608,24 @@ class DatabaseManager {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `);
 
+      await query(`
+        CREATE TABLE IF NOT EXISTS di_autres.upload_history (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT,
+          table_name VARCHAR(255),
+          file_name VARCHAR(255),
+          total_rows INT DEFAULT 0,
+          success_rows INT DEFAULT 0,
+          error_rows INT DEFAULT 0,
+          upload_mode VARCHAR(50),
+          errors JSON,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_upload_user (user_id),
+          INDEX idx_upload_created_at (created_at),
+          FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+      `);
+
       await this.pool.execute(`
         UPDATE di_autres.search_logs
         SET extra_searches = 0
@@ -619,6 +637,13 @@ class DatabaseManager {
         nullable: false,
         default: 0,
         after: 'execution_time_ms'
+      });
+
+      await ensureColumnDefinition('di_autres.upload_history', 'error_rows', {
+        type: 'INT',
+        nullable: true,
+        default: 0,
+        after: 'success_rows'
       });
 
       // Table de journalisation des actions utilisateur
