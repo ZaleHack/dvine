@@ -9,6 +9,8 @@ import {
   getRealtimeCdrTableIdentifiers,
   REALTIME_CDR_TABLE_METADATA
 } from '../config/realtime-table.js';
+import TransactionAnalysisService from './TransactionAnalysisService.js';
+import CallAnalysisService from './CallAnalysisService.js';
 
 const EXCLUDED_DATA_TABLES = new Set(
   ['di_autres.cdr_temps_reel', 'cdr_temps_reel'].map((name) => name.toLowerCase())
@@ -42,6 +44,8 @@ class StatsService {
     this.cache = statsCache;
     this.tableResolutionCache = new Map();
     this.tableExistenceCache = new Map();
+    this.transactionService = new TransactionAnalysisService();
+    this.callAnalysisService = new CallAnalysisService();
   }
 
   formatTableName(tableName) {
@@ -229,7 +233,9 @@ class StatsService {
         profileStats,
         requestStats,
         operationStats,
-        dataStats
+        dataStats,
+        callStats,
+        transactionStats
       ] = await Promise.all([
         database.queryOne(
           `SELECT COUNT(*) as count FROM di_autres.search_logs${userId ? ' WHERE user_id = ?' : ''}`,
@@ -299,7 +305,9 @@ class StatsService {
             `,
           userId ? [userId, userId] : []
         ),
-        this.getDataStatistics()
+        this.getDataStatistics(),
+        this.callAnalysisService.getGlobalStats(),
+        this.transactionService.getGlobalStats()
       ]);
 
       const totalRecords = Object.values(dataStats || {}).reduce(
@@ -347,6 +355,19 @@ class StatsService {
           total_records: totalRecords,
           sources: sourceCount,
           tables: tableCount
+        },
+        calls: {
+          total: Number(callStats?.overview?.totalCalls ?? 0),
+          totalDuration: Number(callStats?.overview?.totalDuration ?? 0),
+          averageDuration: Number(callStats?.overview?.averageDuration ?? 0),
+          maxDuration: Number(callStats?.overview?.maxDuration ?? 0),
+          lastCallAt: callStats?.overview?.lastCallAt ?? null
+        },
+        financial: {
+          totalTransactions: Number(transactionStats?.totals?.totalTransactions ?? 0),
+          totalAmount: Number(transactionStats?.totals?.totalAmount ?? 0),
+          averageAmount: Number(transactionStats?.totals?.averageAmount ?? 0),
+          maxAmount: Number(transactionStats?.totals?.maxAmount ?? 0)
         }
       };
 

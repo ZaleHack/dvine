@@ -253,6 +253,19 @@ interface DashboardStats {
   active_users: number;
   top_search_terms: SearchTermStat[];
   searches_by_type: SearchTypeStat[];
+  financial?: {
+    totalTransactions: number;
+    totalAmount: number;
+    averageAmount: number;
+    maxAmount: number;
+  };
+  calls?: {
+    total: number;
+    totalDuration: number;
+    averageDuration: number;
+    maxDuration: number;
+    lastCallAt: string | null;
+  };
   data?: {
     total_records: number;
     sources: number;
@@ -303,7 +316,7 @@ type RequestMetric = {
 
 const SHOW_REQUESTS_SECTION = false;
 const DASHBOARD_CARD_STORAGE_KEY = 'sora.dashboard.cardOrder';
-const DEFAULT_CARD_ORDER = ['total-searches', 'data', 'profiles', 'operations'];
+const DEFAULT_CARD_ORDER = ['total-searches', 'data', 'financial', 'calls', 'profiles', 'operations'];
 
 interface ProfileData {
   id: number;
@@ -3071,6 +3084,8 @@ const App: React.FC = () => {
     const requests = statsData?.requests;
     const operations = statsData?.operations;
     const dataStats = statsData?.data;
+    const financialStats = statsData?.financial;
+    const callStats = statsData?.calls;
 
     const cards: DashboardCard[] = [
       {
@@ -3096,6 +3111,30 @@ const App: React.FC = () => {
           tone: 'bg-white/20 text-white'
         },
         description: 'Nombre de bases de données disponibles et synchronisées'
+      },
+      {
+        id: 'financial',
+        title: 'Transactions financières',
+        value: `${numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA`,
+        icon: Banknote,
+        gradient: 'from-teal-500 via-emerald-500 to-green-600',
+        badge: {
+          label: `${numberFormatter.format(financialStats?.totalTransactions ?? 0)} opérations`,
+          tone: 'bg-white/20 text-white'
+        },
+        description: 'Volume et montants issus des analyses de transactions'
+      },
+      {
+        id: 'calls',
+        title: 'Données d’appels',
+        value: numberFormatter.format(callStats?.total ?? 0),
+        icon: Phone,
+        gradient: 'from-sky-500 via-blue-500 to-indigo-600',
+        badge: {
+          label: `${formatSessionDuration(callStats?.averageDuration ?? 0)} en moyenne`,
+          tone: 'bg-white/20 text-white'
+        },
+        description: 'Synthèse des communications téléphoniques analysées'
       },
       {
         id: 'profiles',
