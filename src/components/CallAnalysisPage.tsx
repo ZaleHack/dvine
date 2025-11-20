@@ -193,7 +193,16 @@ const CallAnalysisPage: React.FC = () => {
   const fetchGlobalStats = useCallback(async () => {
     try {
       setStatsLoading(true);
-      const response = await fetch('/api/call-analysis/stats', { credentials: 'include' });
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/call-analysis/stats', {
+        credentials: 'include',
+        headers
+      });
       if (!response.ok) {
         throw new Error('Impossible de charger les statistiques');
       }
@@ -223,6 +232,12 @@ const CallAnalysisPage: React.FC = () => {
       setSearchError('');
       setSearchLoading(true);
       try {
+        const token = localStorage.getItem('token');
+        const headers: HeadersInit = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
         const params = new URLSearchParams();
         params.set('number', number.trim());
         if (startDate) params.set('startDate', startDate);
@@ -231,7 +246,8 @@ const CallAnalysisPage: React.FC = () => {
         if (endTime) params.set('endTime', endTime);
 
         const response = await fetch(`/api/call-analysis/search?${params.toString()}`, {
-          credentials: 'include'
+          credentials: 'include',
+          headers
         });
 
         if (!response.ok) {
