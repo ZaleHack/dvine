@@ -8,7 +8,7 @@ import {
   serializeExtraFields
 } from '../utils/profile-normalizer.js';
 
-const PROFILES_TABLE = 'autres.profiles';
+const PROFILES_TABLE = 'di_autres.profiles';
 
 const PROFILE_BASE_SELECT = `
   SELECT
@@ -16,9 +16,9 @@ const PROFILE_BASE_SELECT = `
     u.login AS owner_login,
     u.division_id AS owner_division_id,
     f.name AS folder_name
-  FROM autres.profiles p
-  LEFT JOIN autres.users u ON p.user_id = u.id
-  LEFT JOIN autres.profile_folders f ON p.folder_id = f.id
+  FROM di_autres.profiles p
+  LEFT JOIN di_autres.users u ON p.user_id = u.id
+  LEFT JOIN di_autres.profile_folders f ON p.folder_id = f.id
 `;
 
 class Profile {
@@ -44,7 +44,7 @@ class Profile {
       throw new Error('Dossier introuvable');
     }
     const result = await database.query(
-      `INSERT INTO autres.profiles (user_id, folder_id, first_name, last_name, phone, email, comment, extra_fields, photo_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO di_autres.profiles (user_id, folder_id, first_name, last_name, phone, email, comment, extra_fields, photo_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         normalizedUserId,
         normalizedFolderId,
@@ -142,14 +142,14 @@ class Profile {
     }
     if (fields.length === 0) return this.findById(id);
     params.push(id);
-    await database.query(`UPDATE autres.profiles SET ${fields.join(', ')} WHERE id = ?`, params);
+    await database.query(`UPDATE di_autres.profiles SET ${fields.join(', ')} WHERE id = ?`, params);
     return this.findById(id);
   }
 
   static async delete(id) {
     // Ensure related shares are removed first to avoid FK constraint issues
-    await database.query('DELETE FROM autres.profile_shares WHERE profile_id = ?', [id]);
-    await database.query('DELETE FROM autres.profiles WHERE id = ?', [id]);
+    await database.query('DELETE FROM di_autres.profile_shares WHERE profile_id = ?', [id]);
+    await database.query('DELETE FROM di_autres.profiles WHERE id = ?', [id]);
     return true;
   }
 
@@ -173,7 +173,7 @@ class Profile {
           p.user_id = ?
           OR (
             p.folder_id IS NOT NULL AND EXISTS (
-              SELECT 1 FROM autres.profile_folder_shares pfs
+              SELECT 1 FROM di_autres.profile_folder_shares pfs
               WHERE pfs.folder_id = p.folder_id AND pfs.user_id = ?
             )
           )
@@ -230,8 +230,8 @@ class Profile {
     );
     const totalRes = await database.queryOne(
       `SELECT COUNT(*) as count
-       FROM autres.profiles p
-       LEFT JOIN autres.users u ON p.user_id = u.id
+       FROM di_autres.profiles p
+       LEFT JOIN di_autres.users u ON p.user_id = u.id
        ${whereClause}`,
       params
     );

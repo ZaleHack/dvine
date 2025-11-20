@@ -18,7 +18,7 @@ class UserSession {
       }
 
       const result = await database.query(
-        `INSERT INTO autres.user_sessions (user_id, login_at)
+        `INSERT INTO di_autres.user_sessions (user_id, login_at)
          VALUES (?, NOW())`,
         [existingUserId]
       );
@@ -39,14 +39,14 @@ class UserSession {
   static async endLatest(userId) {
     if (!userId) return false;
     const latest = await database.queryOne(
-      `SELECT id FROM autres.user_sessions WHERE user_id = ? AND logout_at IS NULL ORDER BY login_at DESC LIMIT 1`,
+      `SELECT id FROM di_autres.user_sessions WHERE user_id = ? AND logout_at IS NULL ORDER BY login_at DESC LIMIT 1`,
       [userId]
     );
     if (!latest) {
       return false;
     }
     await database.query(
-      `UPDATE autres.user_sessions SET logout_at = NOW() WHERE id = ?`,
+      `UPDATE di_autres.user_sessions SET logout_at = NOW() WHERE id = ?`,
       [latest.id]
     );
     return true;
@@ -67,8 +67,8 @@ class UserSession {
     const rows = await database.query(
       `SELECT s.id, s.user_id, u.login AS username, s.login_at, s.logout_at,
               TIMESTAMPDIFF(SECOND, s.login_at, COALESCE(s.logout_at, NOW())) AS duration_seconds
-         FROM autres.user_sessions s
-         JOIN autres.users u ON s.user_id = u.id
+         FROM di_autres.user_sessions s
+         JOIN di_autres.users u ON s.user_id = u.id
          ${whereClause}
          ORDER BY s.login_at DESC
          LIMIT ${safeLimit} OFFSET ${offset}`,
@@ -77,8 +77,8 @@ class UserSession {
 
     const totalRow = await database.queryOne(
       `SELECT COUNT(*) AS total
-         FROM autres.user_sessions s
-         JOIN autres.users u ON s.user_id = u.id
+         FROM di_autres.user_sessions s
+         JOIN di_autres.users u ON s.user_id = u.id
          ${whereClause}`,
       params
     );

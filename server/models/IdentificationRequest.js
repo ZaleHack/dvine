@@ -16,7 +16,7 @@ class IdentificationRequest {
     const normalizedPhone = typeof phone === 'string' ? phone.trim() : phone;
     try {
       const result = await database.query(
-        `INSERT INTO autres.identification_requests (user_id, phone, status) VALUES (?, ?, 'pending')`,
+        `INSERT INTO di_autres.identification_requests (user_id, phone, status) VALUES (?, ?, 'pending')`,
         [safeUserId, normalizedPhone]
       );
       statsCache.clear('overview:');
@@ -35,7 +35,7 @@ class IdentificationRequest {
       return null;
     }
     return database.queryOne(
-      `SELECT * FROM autres.identification_requests WHERE user_id = ? AND phone = ? AND status = 'pending' LIMIT 1`,
+      `SELECT * FROM di_autres.identification_requests WHERE user_id = ? AND phone = ? AND status = 'pending' LIMIT 1`,
       [userId, phone]
     );
   }
@@ -50,9 +50,9 @@ class IdentificationRequest {
               p.comment as profile_comment,
               p.extra_fields as profile_extra_fields,
               p.photo_path as profile_photo_path
-         FROM autres.identification_requests r
-         LEFT JOIN autres.users u ON r.user_id = u.id
-         LEFT JOIN autres.profiles p ON r.profile_id = p.id
+         FROM di_autres.identification_requests r
+         LEFT JOIN di_autres.users u ON r.user_id = u.id
+         LEFT JOIN di_autres.profiles p ON r.profile_id = p.id
          ORDER BY r.created_at DESC`
     );
     return rows.map(row => ({
@@ -88,8 +88,8 @@ class IdentificationRequest {
               p.comment as profile_comment,
               p.extra_fields as profile_extra_fields,
               p.photo_path as profile_photo_path
-         FROM autres.identification_requests r
-         LEFT JOIN autres.profiles p ON r.profile_id = p.id
+         FROM di_autres.identification_requests r
+         LEFT JOIN di_autres.profiles p ON r.profile_id = p.id
          WHERE r.user_id = ?
          ORDER BY r.created_at DESC`,
       [user_id]
@@ -118,14 +118,14 @@ class IdentificationRequest {
 
   static async findById(id) {
     return database.queryOne(
-      `SELECT * FROM autres.identification_requests WHERE id = ?`,
+      `SELECT * FROM di_autres.identification_requests WHERE id = ?`,
       [id]
     );
   }
 
   static async delete(id) {
     await database.query(
-      `DELETE FROM autres.identification_requests WHERE id = ?`,
+      `DELETE FROM di_autres.identification_requests WHERE id = ?`,
       [id]
     );
     statsCache.clear('overview:');
@@ -133,12 +133,12 @@ class IdentificationRequest {
 
   static async updateStatus(id, status, profile_id = null) {
     await database.query(
-      `UPDATE autres.identification_requests SET status = ?, profile_id = ? WHERE id = ?`,
+      `UPDATE di_autres.identification_requests SET status = ?, profile_id = ? WHERE id = ?`,
       [status, profile_id, id]
     );
     statsCache.clear('overview:');
     const updated = await database.queryOne(
-      `SELECT * FROM autres.identification_requests WHERE id = ?`,
+      `SELECT * FROM di_autres.identification_requests WHERE id = ?`,
       [id]
     );
     if (status === 'identified' && profile_id) {

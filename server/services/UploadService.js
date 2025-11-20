@@ -23,7 +23,7 @@ class UploadService {
       const [database, table] = tableName.split('.');
       return { database, table };
     }
-    return { database: 'autres', table: tableName };
+    return { database: 'di_autres', table: tableName };
   }
   async uploadCSV(filePath, targetTable, mode = 'insert', userId = null) {
     const startTime = Date.now();
@@ -241,7 +241,7 @@ class UploadService {
         searchable: columnNames,
         preview: columnNames.slice(0, Math.min(5, columnNames.length)),
         filters: {},
-        theme: 'autres'
+        theme: 'di_autres'
       };
 
       fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2));
@@ -280,7 +280,7 @@ class UploadService {
       let sql = `
         SELECT uh.*, u.login as username
         FROM upload_history uh
-        LEFT JOIN autres.users u ON uh.user_id = u.id
+        LEFT JOIN di_autres.users u ON uh.user_id = u.id
       `;
       const params = [];
 

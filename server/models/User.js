@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { generateSecret as generateTotpSecret } from '../utils/totp.js';
 import database from '../config/database.js';
 import { getJwtSecret } from '../config/environment.js';
-const USERS_TABLE = 'autres.users';
+const USERS_TABLE = 'di_autres.users';
 
 class User {
   static async create(userData) {
@@ -13,7 +13,7 @@ class User {
     const normalizedDivisionId = division_id ?? null;
 
     const result = await database.query(
-      'INSERT INTO autres.users (login, mdp, admin, active, division_id) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO di_autres.users (login, mdp, admin, active, division_id) VALUES (?, ?, ?, ?, ?)',
       [login, hashedPassword, admin, active, normalizedDivisionId]
     );
 
@@ -31,8 +31,8 @@ class User {
   static async findById(id) {
     const row = await database.queryOne(
       `SELECT u.*, d.name AS division_name
-       FROM autres.users u
-       LEFT JOIN autres.divisions d ON u.division_id = d.id
+       FROM di_autres.users u
+       LEFT JOIN di_autres.divisions d ON u.division_id = d.id
        WHERE u.id = ?`,
       [id]
     );
@@ -43,8 +43,8 @@ class User {
     try {
       const user = await database.queryOne(
         `SELECT u.*, d.name AS division_name
-         FROM autres.users u
-         LEFT JOIN autres.divisions d ON u.division_id = d.id
+         FROM di_autres.users u
+         LEFT JOIN di_autres.divisions d ON u.division_id = d.id
          WHERE u.login = ?`,
         [login]
       );
@@ -84,8 +84,8 @@ class User {
   static async findAll() {
     const rows = await database.query(
       `SELECT u.id, u.login, u.admin, u.active, u.created_at, u.division_id, d.name AS division_name
-       FROM autres.users u
-       LEFT JOIN autres.divisions d ON u.division_id = d.id
+       FROM di_autres.users u
+       LEFT JOIN di_autres.divisions d ON u.division_id = d.id
        ORDER BY u.id DESC`
     );
     return rows;
@@ -94,7 +94,7 @@ class User {
   static async findActive({ excludeId } = {}) {
     const params = [];
     let sql = `SELECT u.id, u.login, u.admin, u.active, u.created_at
-               FROM autres.users u
+               FROM di_autres.users u
                WHERE u.active = 1`;
 
     if (excludeId) {
@@ -135,7 +135,7 @@ class User {
     values.push(id);
     
     await database.query(
-      `UPDATE autres.users SET ${fields.join(', ')} WHERE id = ?`,
+      `UPDATE di_autres.users SET ${fields.join(', ')} WHERE id = ?`,
       values
     );
 
@@ -143,7 +143,7 @@ class User {
   }
 
   static async delete(id) {
-    await database.query('DELETE FROM autres.users WHERE id = ?', [id]);
+    await database.query('DELETE FROM di_autres.users WHERE id = ?', [id]);
     return true;
   }
 
@@ -153,7 +153,7 @@ class User {
 
   static async saveOtpSecret(id, secret) {
     await database.query(
-      `UPDATE autres.users
+      `UPDATE di_autres.users
        SET otp_secret = ?, otp_enabled = 1, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [secret, id]
@@ -163,7 +163,7 @@ class User {
 
   static async resetOtpSecret(id) {
     await database.query(
-      `UPDATE autres.users
+      `UPDATE di_autres.users
        SET otp_secret = NULL, otp_enabled = 0, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [id]

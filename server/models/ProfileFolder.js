@@ -2,7 +2,7 @@ import database from '../config/database.js';
 import { ensureUserExists } from '../utils/foreign-key-helpers.js';
 import { sanitizeLimit, sanitizeOffset } from '../utils/number-utils.js';
 
-const TABLE = 'autres.profile_folders';
+const TABLE = 'di_autres.profile_folders';
 
 const BASE_SELECT = `
   SELECT
@@ -11,10 +11,10 @@ const BASE_SELECT = `
     u.division_id AS owner_division_id,
     COALESCE(pcounts.profiles_count, 0) AS profiles_count
   FROM ${TABLE} f
-  LEFT JOIN autres.users u ON f.user_id = u.id
+  LEFT JOIN di_autres.users u ON f.user_id = u.id
   LEFT JOIN (
     SELECT folder_id, COUNT(*) AS profiles_count
-    FROM autres.profiles
+    FROM di_autres.profiles
     WHERE folder_id IS NOT NULL
     GROUP BY folder_id
   ) AS pcounts ON pcounts.folder_id = f.id
@@ -96,14 +96,14 @@ class ProfileFolder {
     if (!id) return false;
     if (ensureEmpty) {
       const profiles = await database.queryOne(
-        'SELECT COUNT(*) AS count FROM autres.profiles WHERE folder_id = ?',
+        'SELECT COUNT(*) AS count FROM di_autres.profiles WHERE folder_id = ?',
         [id]
       );
       if (Number(profiles?.count || 0) > 0) {
         throw new Error('Impossible de supprimer un dossier contenant des profils');
       }
     }
-    await database.query('DELETE FROM autres.profile_folder_shares WHERE folder_id = ?', [id]);
+    await database.query('DELETE FROM di_autres.profile_folder_shares WHERE folder_id = ?', [id]);
     await database.query(`DELETE FROM ${TABLE} WHERE id = ?`, [id]);
     return true;
   }
@@ -114,7 +114,7 @@ class ProfileFolder {
 
     if (!isAdmin) {
       filters.push(
-        '(f.user_id = ? OR EXISTS (SELECT 1 FROM autres.profile_folder_shares pfs WHERE pfs.folder_id = f.id AND pfs.user_id = ?))'
+        '(f.user_id = ? OR EXISTS (SELECT 1 FROM di_autres.profile_folder_shares pfs WHERE pfs.folder_id = f.id AND pfs.user_id = ?))'
       );
       params.push(userId, userId);
     }

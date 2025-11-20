@@ -197,7 +197,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Servir l'application React pour toutes les autres routes
+// Servir l'application React pour toutes les di_autres routes
 app.get('*', (req, res) => {
   res.json({ message: 'API SORA - Utilisez /api/* pour les endpoints' });
 });

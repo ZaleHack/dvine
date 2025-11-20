@@ -47,7 +47,7 @@ class DatabaseIndexingService {
     DEFAULT_EXCLUSIONS.forEach((entry) => {
       const normalized = entry.toLowerCase();
       exclusions.add(normalized);
-      exclusions.add(`autres.${normalized}`);
+      exclusions.add(`di_autres.${normalized}`);
     });
 
     const shouldExcludeRealtime =
@@ -70,7 +70,7 @@ class DatabaseIndexingService {
         const [, withoutSchema = normalized] = normalized.split('.');
         if (withoutSchema) {
           exclusions.add(withoutSchema);
-          exclusions.add(`autres.${withoutSchema}`);
+          exclusions.add(`di_autres.${withoutSchema}`);
         }
       }
     }
@@ -223,7 +223,7 @@ class DatabaseIndexingService {
 
   #resolveTable(tableKey, config) {
     const [defaultSchema, defaultTable] = tableKey.split('.');
-    const schema = config.database || defaultSchema || 'autres';
+    const schema = config.database || defaultSchema || 'di_autres';
     const table = defaultTable || tableKey;
     return { schema, table };
   }

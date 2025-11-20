@@ -2,12 +2,12 @@ import { REALTIME_CDR_TABLE_METADATA } from './realtime-table.js';
 
 const REALTIME_TABLE_KEY = REALTIME_CDR_TABLE_METADATA.raw;
 const REALTIME_TABLE_DISPLAY = REALTIME_CDR_TABLE_METADATA.table || 'cdr_temps_reel';
-const REALTIME_TABLE_DATABASE = REALTIME_CDR_TABLE_METADATA.schema || 'autres';
+const REALTIME_TABLE_DATABASE = REALTIME_CDR_TABLE_METADATA.schema || 'di_autres';
 
 export default {
-  'autres.profiles': {
+  'di_autres.profiles': {
     display: 'profiles',
-    database: 'autres',
+    database: 'di_autres',
     primaryKey: 'id',
     searchable: ['first_name', 'last_name', 'phone', 'email'],
     linkedFields: ['phone', 'email'],
@@ -478,10 +478,10 @@ export default {
     theme: 'civique'
   },
 
-  // Base autres - toutes les tables
-  'autres.affaire_etrangere': {
+  // Base di_autres - toutes les tables
+  'di_autres.affaire_etrangere': {
     display: 'affaire_etrangere',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['prenom', 'nom', 'cni', 'corps', 'emploi', 'lib_service', 'lib_org_nv1'],
     preview: ['prenom', 'nom', 'cni', 'corps', 'emploi'],
     filters: {
@@ -492,9 +492,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.agent_non_fonctionnaire': {
+  'di_autres.agent_non_fonctionnaire': {
     display: 'agent_non_fonctionnaire',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'prenom',
       'nom',
@@ -516,9 +516,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.alignement_janvier2024': {
+  'di_autres.alignement_janvier2024': {
     display: 'alignement_janvier2024',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['prenom', 'nom', 'sexe', 'cni', 'appellation', 'cadre', 'corps', 'section', 'telephone'],
     preview: ['prenom', 'nom', 'cni', 'corps', 'telephone'],
     filters: {
@@ -530,9 +530,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.annuaire_gendarmerie': {
+  'di_autres.annuaire_gendarmerie': {
     display: 'annuaire_gendarmerie',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['Libelle', 'Telephone', 'SousCategorie', 'Secteur'],
     preview: ['Libelle', 'Telephone', 'SousCategorie', 'Secteur'],
     filters: {
@@ -544,9 +544,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.collectes1': {
+  'di_autres.collectes1': {
     display: 'collectes1',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'nom',
       'prenom',
@@ -566,9 +566,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.comptable_local': {
+  'di_autres.comptable_local': {
     display: 'comptable_local',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['prenom', 'nom', 'cni', 'corps', 'emploi', 'lib_service', 'lib_org_niv1'],
     preview: ['prenom', 'nom', 'cni', 'corps', 'emploi'],
     filters: {
@@ -579,9 +579,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.conseil_constitutionel': {
+  'di_autres.conseil_constitutionel': {
     display: 'conseil_constitutionel',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'prenom',
       'nom',
@@ -604,9 +604,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.education': {
+  'di_autres.education': {
     display: 'education',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'prenom',
       'nom',
@@ -628,9 +628,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.esolde_new': {
+  'di_autres.esolde_new': {
     display: 'esolde_new',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['matricule', 'prenom_nom', 'cni', 'telephone'],
     preview: ['matricule', 'prenom_nom', 'cni', 'telephone'],
     filters: {
@@ -641,9 +641,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.sde_clients': {
+  'di_autres.sde_clients': {
     display: 'sde_clients',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['telephone', 'prenom_nom', 'adresse', 'quartier'],
     preview: ['telephone', 'prenom_nom', 'adresse', 'quartier'],
     filters: {
@@ -653,9 +653,9 @@ export default {
     theme: 'telecom'
   },
 
-  'autres.tresor': {
+  'di_autres.tresor': {
     display: 'tresor',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['prenom_nom', 'corps', 'cni', 'section', 'chapitre'],
     preview: ['prenom_nom', 'corps', 'cni', 'section'],
     filters: {
@@ -666,9 +666,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.fpublique': {
+  'di_autres.fpublique': {
     display: 'fpublique',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['cni', 'login', 'prenom', 'nom', 'email'],
     linkedFields: ['cni'],
     preview: ['login', 'prenom', 'nom', 'cni', 'email'],
@@ -679,9 +679,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.demdikk': {
+  'di_autres.demdikk': {
     display: 'demdikk',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['prenom', 'nom', 'telephone', 'cni'],
     preview: ['prenom', 'nom', 'telephone', 'cni'],
     filters: {
@@ -691,9 +691,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.vehicules': {
+  'di_autres.vehicules': {
     display: 'vehicules',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'Numero_Immatriculation',
       'Code_Type',
@@ -716,9 +716,9 @@ export default {
     theme: 'transport'
   },
 
-  'autres.agents_collectes_ansd': {
+  'di_autres.agents_collectes_ansd': {
     display: 'agents_collectes_ansd',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['prenom', 'nom', 'cni', 'date_naissance', 'telephone'],
     linkedFields: ['cni', 'telephone'],
     preview: ['prenom', 'nom', 'cni', 'telephone'],
@@ -730,9 +730,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.agents_penitentiare': {
+  'di_autres.agents_penitentiare': {
     display: 'agents_penitentiare',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['prenom', 'nom', 'corps'],
     preview: ['prenom', 'nom', 'corps'],
     filters: {
@@ -741,9 +741,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.petrosen': {
+  'di_autres.petrosen': {
     display: 'petrosen',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['nom', 'telephone', 'email', 'departement', 'titre', 'responsable'],
     linkedFields: ['telephone'],
     preview: ['nom', 'telephone', 'email', 'departement', 'titre'],
@@ -755,9 +755,9 @@ export default {
     theme: 'pro'
   },
 
-  'autres.candidats_ansd': {
+  'di_autres.candidats_ansd': {
     display: 'candidats_ansd',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'cni',
       'prenom',
@@ -779,9 +779,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.cdr_cases': {
+  'di_autres.cdr_cases': {
     display: 'cdr_cases',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['name', 'user_id'],
     preview: ['name', 'user_id', 'created_at'],
     filters: {
@@ -791,9 +791,9 @@ export default {
     theme: 'telecom'
   },
 
-  'autres.cdr_case_files': {
+  'di_autres.cdr_case_files': {
     display: 'cdr_case_files',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['filename', 'cdr_number'],
     preview: ['filename', 'cdr_number', 'line_count'],
     filters: {
@@ -803,9 +803,9 @@ export default {
     theme: 'telecom'
   },
 
-  'autres.cdr_case_shares': {
+  'di_autres.cdr_case_shares': {
     display: 'cdr_case_shares',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['case_id', 'user_id'],
     preview: ['case_id', 'user_id', 'created_at'],
     filters: {
@@ -815,9 +815,9 @@ export default {
     theme: 'telecom'
   },
 
-  'autres.cdr_records': {
+  'di_autres.cdr_records': {
     display: 'cdr_records',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'oce',
       'type_cdr',
@@ -941,9 +941,9 @@ export default {
     }
   },
 
-  'autres.fichemilitaire': {
+  'di_autres.fichemilitaire': {
     display: 'fichemilitaire',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'nom',
       'prenom',
@@ -965,9 +965,9 @@ export default {
     theme: 'militaire'
   },
 
-  'autres.ong': {
+  'di_autres.ong': {
     display: 'ong',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'OrganizationName',
       'Name',
@@ -984,9 +984,9 @@ export default {
     theme: 'ong'
   },
 
-  'autres.entreprises': {
+  'di_autres.entreprises': {
     display: 'entreprises',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['ninea_ninet', 'cuci', 'raison_social', 'ensemble_sigle', 'numrc', 'telephone', 'email', 'region', 'departement', 'ville'],
     preview: ['ninea_ninet', 'raison_social', 'telephone', 'region', 'forme_juridique'],
     filters: {
@@ -999,9 +999,9 @@ export default {
     theme: 'entreprise'
   },
 
-  'autres.leaks': {
+  'di_autres.leaks': {
     display: 'leaks',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['cni', 'nom', 'prenom', 'email', 'telephone', 'dataset', 'source', 'risk_level'],
     preview: ['cni', 'nom', 'prenom', 'dataset', 'risk_level'],
     filters: {
@@ -1012,9 +1012,9 @@ export default {
     theme: 'securite'
   },
 
-  'autres.uvs': {
+  'di_autres.uvs': {
     display: 'uvs',
-    database: 'autres',
+    database: 'di_autres',
     searchable: [
       'id',
       'matricule',
@@ -1037,9 +1037,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.collections': {
+  'di_autres.collections': {
     display: 'collections',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['nom', 'prenom', 'date_naissance', 'cni', 'telephone', 'localite'],
     preview: ['nom', 'prenom', 'telephone', 'localite'],
     filters: {
@@ -1051,9 +1051,9 @@ export default {
     theme: 'identite'
   },
 
-  'autres.blacklist': {
+  'di_autres.blacklist': {
     display: 'blacklist',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['number'],
     preview: ['number', 'created_at'],
     filters: {
@@ -1062,9 +1062,9 @@ export default {
     theme: 'securite'
   },
 
-  'autres.notifications': {
+  'di_autres.notifications': {
     display: 'notifications',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['type', 'data'],
     preview: ['type', 'user_id', 'read_at'],
     filters: {
@@ -1074,9 +1074,9 @@ export default {
     theme: 'systeme'
   },
 
-  'autres.profile_attachments': {
+  'di_autres.profile_attachments': {
     display: 'profile_attachments',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['original_name', 'file_path'],
     preview: ['original_name', 'file_path', 'created_at'],
     filters: {
@@ -1086,9 +1086,9 @@ export default {
     theme: 'interne'
   },
 
-  'autres.profile_shares': {
+  'di_autres.profile_shares': {
     display: 'profile_shares',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['profile_id', 'user_id'],
     preview: ['profile_id', 'user_id', 'created_at'],
     filters: {
@@ -1098,9 +1098,9 @@ export default {
     theme: 'interne'
   },
 
-  'autres.sanctions': {
+  'di_autres.sanctions': {
     display: 'sanctions',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['cni', 'nom', 'prenom', 'motif', 'source', 'statut'],
     preview: ['cni', 'nom', 'prenom', 'motif', 'statut'],
     filters: {
@@ -1111,9 +1111,9 @@ export default {
     theme: 'securite'
   },
 
-  'autres.search_logs': {
+  'di_autres.search_logs': {
     display: 'search_logs',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['username', 'search_term', 'search_type', 'ip_address', 'user_agent'],
     preview: ['username', 'search_term', 'results_count', 'search_date'],
     filters: {
@@ -1123,9 +1123,9 @@ export default {
     theme: 'systeme'
   },
 
-  'autres.search_sync_events': {
+  'di_autres.search_sync_events': {
     display: 'search_sync_events',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['schema_name', 'table_name', 'primary_value', 'operation'],
     preview: ['schema_name', 'table_name', 'operation', 'processed_at'],
     filters: {
@@ -1135,9 +1135,9 @@ export default {
     theme: 'systeme'
   },
 
-  'autres.upload_history': {
+  'di_autres.upload_history': {
     display: 'upload_history',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['table_name', 'file_name', 'upload_mode'],
     preview: ['table_name', 'file_name', 'total_rows', 'success_rows'],
     filters: {
@@ -1147,9 +1147,9 @@ export default {
     theme: 'systeme'
   },
 
-  'autres.user_logs': {
+  'di_autres.user_logs': {
     display: 'user_logs',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['action', 'details'],
     preview: ['user_id', 'action', 'created_at'],
     filters: {
@@ -1159,9 +1159,9 @@ export default {
     theme: 'systeme'
   },
 
-  'autres.user_sessions': {
+  'di_autres.user_sessions': {
     display: 'user_sessions',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['user_id'],
     preview: ['user_id', 'login_at', 'logout_at'],
     filters: {
@@ -1171,9 +1171,9 @@ export default {
     theme: 'systeme'
   },
 
-  'autres.identified_numbers': {
+  'di_autres.identified_numbers': {
     display: 'identified_numbers',
-    database: 'autres',
+    database: 'di_autres',
     searchable: ['phone', 'data'],
     preview: ['phone', 'data'],
     filters: {

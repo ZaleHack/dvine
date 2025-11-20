@@ -2,7 +2,7 @@ import database from '../config/database.js';
 
 async function createProfilesTable() {
   await database.query(`
-    CREATE TABLE IF NOT EXISTS autres.profiles (
+    CREATE TABLE IF NOT EXISTS di_autres.profiles (
       id INT AUTO_INCREMENT PRIMARY KEY,
       user_id INT NOT NULL,
       first_name VARCHAR(255) DEFAULT NULL,
@@ -15,7 +15,7 @@ async function createProfilesTable() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_user_id (user_id),
-      FOREIGN KEY (user_id) REFERENCES autres.users(id) ON DELETE CASCADE
+      FOREIGN KEY (user_id) REFERENCES di_autres.users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 }

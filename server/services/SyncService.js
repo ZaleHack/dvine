@@ -186,7 +186,7 @@ class SyncService {
       ...baseSyncConfig,
       type:
         baseSyncConfig.type ||
-        (tableName === 'autres.profiles' ? 'profile' : 'generic'),
+        (tableName === 'di_autres.profiles' ? 'profile' : 'generic'),
       elasticsearchIndex: baseSyncConfig.elasticsearchIndex || this.defaultIndex
     };
 

@@ -5,7 +5,7 @@ class CaseShare {
   static async getUserIds(caseId) {
     if (!caseId) return [];
     const rows = await database.query(
-      `SELECT user_id FROM autres.cdr_case_shares WHERE case_id = ?`,
+      `SELECT user_id FROM di_autres.cdr_case_shares WHERE case_id = ?`,
       [caseId]
     );
     return rows.map((row) => row.user_id);
@@ -18,7 +18,7 @@ class CaseShare {
     }
     const placeholders = caseIds.map(() => '?').join(',');
     const rows = await database.query(
-      `SELECT case_id, user_id FROM autres.cdr_case_shares WHERE case_id IN (${placeholders})`,
+      `SELECT case_id, user_id FROM di_autres.cdr_case_shares WHERE case_id IN (${placeholders})`,
       caseIds
     );
     for (const row of rows) {
@@ -52,14 +52,14 @@ class CaseShare {
     if (toRemove.length > 0) {
       const placeholders = toRemove.map(() => '?').join(',');
       await database.query(
-        `DELETE FROM autres.cdr_case_shares WHERE case_id = ? AND user_id IN (${placeholders})`,
+        `DELETE FROM di_autres.cdr_case_shares WHERE case_id = ? AND user_id IN (${placeholders})`,
         [validCaseId, ...toRemove]
       );
     }
 
     for (const userId of toAdd) {
       await database.query(
-        `INSERT INTO autres.cdr_case_shares (case_id, user_id) VALUES (?, ?)
+        `INSERT INTO di_autres.cdr_case_shares (case_id, user_id) VALUES (?, ?)
          ON DUPLICATE KEY UPDATE created_at = VALUES(created_at)`,
         [validCaseId, userId]
       );
@@ -71,7 +71,7 @@ class CaseShare {
   static async isSharedWithUser(caseId, userId) {
     if (!caseId || !userId) return false;
     const row = await database.queryOne(
-      `SELECT 1 FROM autres.cdr_case_shares WHERE case_id = ? AND user_id = ? LIMIT 1`,
+      `SELECT 1 FROM di_autres.cdr_case_shares WHERE case_id = ? AND user_id = ? LIMIT 1`,
       [caseId, userId]
     );
     return Boolean(row);

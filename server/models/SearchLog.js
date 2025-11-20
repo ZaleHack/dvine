@@ -46,7 +46,7 @@ class SearchLog {
 
     const insert = async (userIdValue) => {
       await database.query(
-        `INSERT INTO autres.search_logs (
+        `INSERT INTO di_autres.search_logs (
           user_id,
           username,
           search_term,
