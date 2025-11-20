@@ -45,7 +45,8 @@ import {
   MapPinOff,
   CheckCircle2,
   History,
-  Fingerprint
+  Fingerprint,
+  Banknote
 } from 'lucide-react';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -76,6 +77,7 @@ import DvineLogo from './components/DvineLogo';
 import ConfirmDialog, { ConfirmDialogOptions } from './components/ConfirmDialog';
 import { useNotifications } from './components/NotificationProvider';
 import CallAnalysisPage from './components/CallAnalysisPage';
+import TransactionAnalysisPage from './components/TransactionAnalysisPage';
 import { normalizePreview, NormalizedPreviewEntry, BaseSearchHit } from './utils/search';
 
 const VisibleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -4675,6 +4677,7 @@ const App: React.FC = () => {
           description: 'Outils de terrain et d’investigation',
           items: [
             { page: 'cdr', label: 'Géolocalisation', icon: Clock },
+            { page: 'transaction-analysis', label: 'Analyse des transactions', icon: Banknote },
             { page: 'call-analysis', label: 'Analyse des appels', icon: PhoneIncoming },
             { page: 'fraud-detection', label: 'Détection de fraude', icon: AlertTriangle }
           ]
@@ -6027,6 +6030,8 @@ const App: React.FC = () => {
           )}
 
           {currentPage === 'call-analysis' && <CallAnalysisPage />}
+
+          {currentPage === 'transaction-analysis' && <TransactionAnalysisPage />}
 
           {currentPage === 'fraud-detection' && (
             <div className="space-y-8">

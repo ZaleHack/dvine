@@ -30,6 +30,7 @@ import divisionsRoutes from './routes/divisions.js';
 import notificationsRoutes from './routes/notifications.js';
 import fraudRoutes from './routes/fraud.js';
 import callAnalysisRoutes from './routes/call-analysis.js';
+import transactionRoutes from './routes/transactions.js';
 import { authenticate } from './middleware/auth.js';
 import { payloadEncryptionMiddleware } from './middleware/payloadEncryption.js';
 import requestLogger from './middleware/requestLogger.js';
@@ -178,6 +179,7 @@ app.use('/api/divisions', divisionsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/fraud-detection', fraudRoutes);
 app.use('/api/call-analysis', callAnalysisRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 app.get('/api/public/payload-encryption-key', (req, res) => {
   try {

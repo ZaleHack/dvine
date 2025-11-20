@@ -9,6 +9,7 @@ export type AppPage =
   | 'cdr'
   | 'cdr-case'
   | 'fraud-detection'
+  | 'transaction-analysis'
   | 'requests'
   | 'profiles'
   | 'blacklist'
@@ -21,6 +22,7 @@ export const pageToPath: Record<AppPage, string> = {
   dashboard: '/',
   search: '/recherche',
   'call-analysis': '/analyse-appels',
+  'transaction-analysis': '/transactions',
   cdr: '/cdr',
   'cdr-case': '/cdr/dossier',
   'fraud-detection': '/fraude',
