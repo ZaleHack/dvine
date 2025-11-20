@@ -220,13 +220,91 @@ class TransactionAnalysisService {
       return `${numeric.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${currency || ''}`.trim();
     };
 
-    const addKeyValue = (label, value) => {
+    const addDivider = () => {
       doc
+        .moveDown(0.5)
+        .strokeColor('#E2E8F0')
+        .lineWidth(1)
+        .moveTo(doc.page.margins.left, doc.y)
+        .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+        .stroke()
+        .moveDown(0.8);
+    };
+
+    const drawHeader = (title, subtitle) => {
+      const y = doc.y;
+      const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+
+      doc
+        .save()
+        .roundedRect(doc.page.margins.left, y, width, 64, 10)
+        .fill('#0F172A')
+        .fillColor('#E5E7EB')
         .fontSize(10)
-        .fillColor('#0F172A')
-        .text(`${label}: `, { continued: true })
-        .fillColor('#374151')
-        .text(value);
+        .text('Rapport Dvine', doc.page.margins.left + 16, y + 14)
+        .fillColor('#FFFFFF')
+        .fontSize(18)
+        .text(title, doc.page.margins.left + 16, y + 28);
+
+      if (subtitle) {
+        doc
+          .fillColor('#E5E7EB')
+          .fontSize(10)
+          .text(subtitle, doc.page.margins.left + 16, y + 48);
+      }
+
+      doc.restore();
+      doc.moveDown(4);
+    };
+
+    const renderStatCards = (entries) => {
+      const availableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+      const gutter = 12;
+      const columns = 2;
+      const cardWidth = (availableWidth - gutter * (columns - 1)) / columns;
+
+      for (let i = 0; i < entries.length; i += columns) {
+        const rowEntries = entries.slice(i, i + columns);
+        const startY = doc.y;
+
+        rowEntries.forEach((entry, colIndex) => {
+          const x = doc.page.margins.left + colIndex * (cardWidth + gutter);
+          doc
+            .save()
+            .roundedRect(x, startY, cardWidth, 66, 8)
+            .fill('#F8FAFC')
+            .fillColor('#475569')
+            .fontSize(9)
+            .text(entry.label, x + 12, startY + 12)
+            .fontSize(16)
+            .fillColor('#0F172A')
+            .text(entry.value, x + 12, startY + 30)
+            .restore();
+        });
+
+        doc.y = startY + 78;
+      }
+    };
+
+    const renderPills = (items) => {
+      items.forEach((item) => {
+        const startY = doc.y;
+        doc
+          .save()
+          .roundedRect(doc.page.margins.left, startY, doc.page.width - doc.page.margins.left - doc.page.margins.right, 42, 8)
+          .fill('#F1F5F9');
+
+        doc
+          .fillColor('#0F172A')
+          .fontSize(11)
+          .text(item.title, doc.page.margins.left + 12, startY + 10)
+          .fillColor('#475569')
+          .fontSize(9)
+          .text(item.subtitle, doc.page.margins.left + 12, startY + 26);
+
+        doc.restore();
+        doc.y = startY + 52;
+      });
     };
 
     const buffer = await new Promise((resolve, reject) => {
@@ -235,48 +313,34 @@ class TransactionAnalysisService {
       doc.on('error', reject);
 
       try {
-        doc
-          .fontSize(18)
-          .fillColor('#0F172A')
-          .text('Analyse des Transactions', { align: 'left' })
-          .moveDown(0.25);
+        drawHeader('Analyse des Transactions', `Généré le ${formatDateTime(new Date())}`);
 
-        doc.fontSize(10).fillColor('#6B7280').text(`Généré le ${formatDateTime(new Date())}`);
-        doc.moveDown();
+        doc.fontSize(12).fillColor('#0F172A').text('Synthèse des filtres');
+        addDivider();
 
-        doc
-          .fontSize(12)
-          .fillColor('#0F172A')
-          .text('Synthèse des filtres', { underline: false })
-          .moveDown(0.35);
+        renderStatCards([
+          { label: 'Numéro recherché', value: filters.msisdn || '—' },
+          { label: 'Début', value: formatDateTime(filters.startDateTime) },
+          { label: 'Fin', value: formatDateTime(filters.endDateTime) },
+          { label: 'Transactions extraites', value: `${transactions.length} / ${stats.totals.totalTransactions}` },
+          { label: 'Montant total filtré', value: formatAmount(stats.totals.totalAmount, 'XAF') },
+          { label: 'Montant moyen', value: formatAmount(stats.totals.averageAmount, 'XAF') },
+          { label: 'Plus haut montant', value: formatAmount(stats.totals.maxAmount, 'XAF') },
+          { label: 'Taux de réussite', value: `${stats.successRate ?? 0}%` }
+        ]);
 
-        addKeyValue('Numéro recherché', filters.msisdn || '—');
-        addKeyValue('Début', formatDateTime(filters.startDateTime));
-        addKeyValue('Fin', formatDateTime(filters.endDateTime));
-        addKeyValue('Transactions extraites', `${transactions.length} / ${stats.totals.totalTransactions}`);
-        addKeyValue('Montant total filtré', formatAmount(stats.totals.totalAmount, 'XAF'));
-        addKeyValue('Montant moyen', formatAmount(stats.totals.averageAmount, 'XAF'));
-        addKeyValue('Plus haut montant', formatAmount(stats.totals.maxAmount, 'XAF'));
-
-        doc.moveDown();
+        doc.moveDown(0.5);
         doc.fontSize(12).fillColor('#0F172A').text('Transactions récentes');
-        doc.moveDown(0.35);
+        addDivider();
 
-        transactions.slice(0, 60).forEach((tx) => {
-          doc
-            .fontSize(10)
-            .fillColor('#111827')
-            .text(
-              `${formatDateTime(tx.dateTime)} • ${tx.fromMsisdn || 'N/A'} → ${tx.toMsisdn || 'N/A'} (${tx.transactionType || '—'})`
-            );
-          doc
-            .fontSize(9)
-            .fillColor('#6B7280')
-            .text(
-              `Montant: ${formatAmount(tx.amount, tx.currency)} | Statut: ${tx.transactionStatus || '—'} | Contexte: ${tx.context || '—'}`
-            )
-            .moveDown(0.5);
-        });
+        renderPills(
+          transactions.slice(0, 60).map((tx) => ({
+            title: `${formatDateTime(tx.dateTime)} • ${tx.fromMsisdn || 'N/A'} → ${tx.toMsisdn || 'N/A'} (${tx.transactionType || '—'})`,
+            subtitle: `Montant: ${formatAmount(tx.amount, tx.currency)} | Statut: ${tx.transactionStatus || '—'} | Contexte: ${
+              tx.context || '—'
+            }`
+          }))
+        );
 
         doc.moveDown(1);
         doc.fontSize(10).fillColor('#0F172A').text('Signature : Dvine Intelligence', { align: 'right' });
