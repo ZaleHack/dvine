@@ -4034,17 +4034,6 @@ const App: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (!selectedCase) {
-      setFraudResult(null);
-      setFraudError('');
-      setFraudLoading(false);
-    } else {
-      setFraudResult(null);
-      setFraudError('');
-    }
-  }, [selectedCase]);
-
   const handleCreateCase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cdrCaseName.trim()) return;
