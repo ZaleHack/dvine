@@ -4031,17 +4031,6 @@ const App: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (!selectedCase) {
-      setFraudResult(null);
-      setFraudError('');
-      setFraudLoading(false);
-    } else {
-      setFraudResult(null);
-      setFraudError('');
-    }
-  }, [selectedCase]);
-
   const handleCreateCase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cdrCaseName.trim()) return;
@@ -4796,17 +4785,9 @@ const App: React.FC = () => {
                 <LinkDiagram data={linkDiagram} onClose={() => setLinkDiagram(null)} />
               )}
               </div>
-            </div>
-          </section>
-        );
+            )}
 
-      return combinedSection;
-    };
-
-    return (
-      <>
-
-        {SHOW_REQUESTS_SECTION && currentPage === 'requests' && (
+          {SHOW_REQUESTS_SECTION && currentPage === 'requests' && (
             <div className="space-y-8">
               <PageHeader icon={<ClipboardList className="h-6 w-6" />} title="Liste des demandes" />
 
@@ -7426,6 +7407,7 @@ const App: React.FC = () => {
           onClose={closeConfirmDialog}
         />
       )}
+    </div>
 
     </>
   );
