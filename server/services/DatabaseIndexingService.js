@@ -39,6 +39,19 @@ class DatabaseIndexingService {
     this.logger = logger;
     this.catalogPath = path.join(__dirname, '../config/tables-catalog.json');
     this.tableExclusions = this.#buildTableExclusions();
+    this.databaseAllowlist = this.#buildDatabaseAllowlist();
+  }
+
+  #buildDatabaseAllowlist() {
+    const raw = process.env.INDEX_ONLY_DATABASES || '';
+
+    const entries = raw
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .map((entry) => entry.toLowerCase());
+
+    return new Set(entries);
   }
 
   #buildTableExclusions() {
@@ -244,6 +257,15 @@ class DatabaseIndexingService {
 
     for (const [tableKey, config] of Object.entries(catalog)) {
       const { schema, table } = this.#resolveTable(tableKey, config);
+      if (
+        this.databaseAllowlist.size > 0 &&
+        !this.databaseAllowlist.has(schema.toLowerCase())
+      ) {
+        this.logger.log(
+          `ℹ️ Table ${schema}.${table} ignorée (base non ciblée pour l'indexation)`
+        );
+        continue;
+      }
 
       if (this.#isTableExcluded(schema, table)) {
         this.logger.log(`ℹ️ Table ${schema}.${table} ignorée (liste d'exclusion)`);
