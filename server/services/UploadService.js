@@ -234,7 +234,7 @@ class UploadService {
         : '{}';
       const catalog = JSON.parse(raw);
 
-      const catalogKey = `${db}_${table}`;
+      const catalogKey = `${db}.${table}`;
       catalog[catalogKey] = {
         display: table,
         database: db,
