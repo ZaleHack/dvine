@@ -2,24 +2,24 @@
 
 @layer base {
   body {
-    @apply m-0 bg-slate-100 text-slate-900 antialiased;
+    @apply m-0 bg-gradient-to-br from-white via-rose-50 to-rose-100 text-slate-900 antialiased;
   }
   .dark body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+    @apply bg-gradient-to-br from-[#0b0b0f] via-[#111118] to-[#0b0b0f] text-slate-100 antialiased;
   }
   form {
-    @apply bg-white/95 rounded-2xl shadow-xl shadow-slate-200/80 backdrop-blur;
+    @apply bg-white/90 rounded-2xl shadow-xl shadow-rose-200/50 backdrop-blur border border-rose-100/70;
   }
   .dark form {
-    @apply bg-slate-900/80 rounded-2xl shadow-2xl shadow-black/40 backdrop-blur;
+    @apply bg-slate-900/80 rounded-2xl shadow-2xl shadow-black/40 backdrop-blur border border-rose-500/20;
   }
   input,
   textarea,
   select {
-    @apply bg-white text-slate-900 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-transparent;
+    @apply bg-white text-slate-900 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500/70 focus:border-transparent;
   }
   button {
-    @apply rounded-xl font-medium;
+    @apply rounded-xl font-medium transition-transform duration-150 ease-out;
   }
   .dark button {
     @apply rounded-xl font-medium;
@@ -27,26 +27,11 @@
   .dark input,
   .dark textarea,
   .dark select {
-    @apply bg-slate-900 text-slate-100 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/60;
+    @apply bg-slate-900 text-slate-100 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400/70;
   }
   .dark .btn-primary {
-    @apply bg-blue-600 text-white;
+    @apply bg-rose-600 text-white;
   }
-}
-
-[class*="bg-gradient-"] {
-  background-image: none !important;
-  background-color: var(--tw-gradient-from, transparent) !important;
-}
-
-[class*="bg-gradient-"].bg-clip-text,
-[class*="bg-gradient-"].bg-clip-text.text-transparent {
-  color: var(--tw-gradient-from, currentColor) !important;
-  background-color: transparent !important;
-}
-
-[class*="bg-[radial-gradient"] {
-  background-image: none !important;
 }
 
 @tailwind components;
@@ -114,7 +99,7 @@
   left: 0;
   height: 100%;
   width: 100%;
-  background-color: #3b82f6;
+  background-color: #f43f5e;
   animation: loading-bar 1.5s linear infinite;
 }
 
@@ -137,12 +122,12 @@
   width: 12px;
   height: 12px;
   border-radius: 9999px;
-  background-color: #4f46e5;
+  background-color: #f43f5e;
   animation: thinking-bounce 1.4s infinite both;
 }
 
 .dark .thinking-dot {
-  background-color: #818cf8;
+  background-color: #fb7185;
 }
 
 .thinking-dot:nth-child(2) {

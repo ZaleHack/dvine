@@ -75,7 +75,7 @@ import ProfileForm from './components/ProfileForm';
 import BulkProfileImportModal, { BulkProfilePrefillData } from './components/BulkProfileImportModal';
 import CdrMap from './components/CdrMap';
 import LinkDiagram from './components/LinkDiagram';
-import SoraLogo from './components/SoraLogo';
+import DvineLogo from './components/DvineLogo';
 import ConfirmDialog, { ConfirmDialogOptions } from './components/ConfirmDialog';
 import { useNotifications } from './components/NotificationProvider';
 import { normalizePreview, NormalizedPreviewEntry, BaseSearchHit } from './utils/search';
@@ -2974,7 +2974,7 @@ useEffect(() => {
       title: 'Réafficher les demandes',
       description: 'Réafficher toutes les demandes supprimées ?',
       confirmLabel: 'Réafficher',
-      icon: <RefreshCw className="h-5 w-5 text-blue-600" />,
+      icon: <RefreshCw className="h-5 w-5 text-rose-600" />,
       onConfirm: async () => {
         setHiddenRequestIds([]);
       }
@@ -3198,7 +3198,7 @@ useEffect(() => {
         title: 'Recherches totales',
         value: numberFormatter.format(statsData?.total_searches ?? 0),
         icon: Search,
-        gradient: 'from-blue-500 via-blue-600 to-indigo-600',
+        gradient: 'from-rose-500 via-rose-600 to-indigo-600',
         badge: {
           label: `${numberFormatter.format(statsData?.today_searches ?? 0)} aujourd'hui`,
           tone: 'bg-white/20 text-white'
@@ -3342,7 +3342,7 @@ useEffect(() => {
         label: "Aujourd'hui",
         value: today,
         icon: Clock,
-        tone: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200',
+        tone: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200',
         caption: 'Nouvelle activité du jour'
       }
     ];
@@ -4987,17 +4987,20 @@ useEffect(() => {
         className={`min-h-screen flex items-center justify-center p-4 ${
           theme === 'dark'
             ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100'
-            : 'bg-gradient-to-br from-blue-50 via-white to-blue-50'
+            : 'bg-gradient-to-br from-rose-50 via-white to-red-50'
         }`}
       >
         <div className="max-w-md w-full">
           <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+            <div className="bg-gradient-to-r from-red-600 to-rose-700 px-8 py-6">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4 text-white">
-                  <SoraLogo className="h-10 w-10" />
+                  <DvineLogo className="h-10 w-10" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">SORA</h2>
+                <h2 className="text-2xl font-bold text-white">Dvine Intelligence</h2>
+                <p className="mt-1 text-sm text-white/80">
+                  Analyse augmentée et renseignements unifiés
+                </p>
               </div>
             </div>
             
@@ -5016,7 +5019,7 @@ useEffect(() => {
                     id="login"
                     type="text"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                     placeholder="Entrez votre nom d'utilisateur"
                     value={loginData.login}
                     onChange={(e) => setLoginData({ ...loginData, login: e.target.value })}
@@ -5030,7 +5033,7 @@ useEffect(() => {
                     id="password"
                     type="password"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                     placeholder="Entrez votre mot de passe"
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
@@ -5038,7 +5041,7 @@ useEffect(() => {
                 </div>
 
                 {loginInfo && (
-                  <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+                  <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
                     {loginInfo}
                   </div>
                 )}
@@ -5052,7 +5055,7 @@ useEffect(() => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
+                  className="w-full bg-rose-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
@@ -5080,7 +5083,7 @@ useEffect(() => {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30">
                   <Activity className="h-6 w-6" />
                 </div>
                 <div>
@@ -5099,7 +5102,7 @@ useEffect(() => {
                   </span>
                 )}
                 {cdrItinerary && (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-blue-50 px-3 py-1 text-blue-600 shadow-sm dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50 px-3 py-1 text-rose-600 shadow-sm dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
                     <Car className="h-3.5 w-3.5" />
                     Itinéraire activé
                   </span>
@@ -5124,7 +5127,7 @@ useEffect(() => {
                     type="button"
                     onClick={handleFraudDetectionClick}
                     disabled={fraudLoading || !selectedCase || !hasFraudDetectionNumbers}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-rose-500/30 transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {fraudLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Scan className="h-3.5 w-3.5" />}
                     <span>Analyser</span>
@@ -5201,13 +5204,13 @@ useEffect(() => {
                   {cdrIdentifiers.map((id, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-200"
+                      className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 font-medium text-rose-700 dark:bg-rose-500/20 dark:text-rose-200"
                     >
                       {id}
                       <button
                         type="button"
                         onClick={() => removeCdrIdentifier(idx)}
-                        className="text-blue-500 transition hover:text-blue-700 dark:hover:text-blue-100"
+                        className="text-rose-500 transition hover:text-rose-700 dark:hover:text-rose-100"
                       >
                         <X size={14} />
                       </button>
@@ -5240,7 +5243,7 @@ useEffect(() => {
                     type="date"
                     value={cdrStart}
                     onChange={(e) => setCdrStart(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
+                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -5249,7 +5252,7 @@ useEffect(() => {
                     type="date"
                     value={cdrEnd}
                     onChange={(e) => setCdrEnd(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
+                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
                   />
                 </div>
               </div>
@@ -5261,7 +5264,7 @@ useEffect(() => {
                     type="time"
                     value={cdrStartTime}
                     onChange={(e) => setCdrStartTime(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
+                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -5270,7 +5273,7 @@ useEffect(() => {
                     type="time"
                     value={cdrEndTime}
                     onChange={(e) => setCdrEndTime(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
+                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 dark:border-slate-700/60 dark:bg-slate-900/60"
                   />
                 </div>
               </div>
@@ -5325,7 +5328,7 @@ useEffect(() => {
                   </div>
                 ) : fraudLoading ? (
                   <div className="flex items-center justify-center py-10">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-600 dark:text-slate-100" />
+                    <Loader2 className="h-6 w-6 animate-spin text-rose-600 dark:text-slate-100" />
                   </div>
                 ) : fraudResult ? (
                   <div className="space-y-6">
@@ -5451,7 +5454,7 @@ useEffect(() => {
 
     if (showCdrMap) {
       return (
-        <div className="fixed bottom-6 left-6 z-[1000] w-[32rem] max-h-[88vh] overflow-y-auto rounded-3xl border border-white/60 bg-white/90 p-5 shadow-2xl shadow-blue-500/20 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/85">
+        <div className="fixed bottom-6 left-6 z-[1000] w-[32rem] max-h-[88vh] overflow-y-auto rounded-3xl border border-white/60 bg-white/90 p-5 shadow-2xl shadow-rose-500/20 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/85">
           {combinedSection}
         </div>
       );
@@ -5469,11 +5472,11 @@ useEffect(() => {
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
-          className="group fixed top-6 left-6 z-[1100] flex h-12 w-12 items-center justify-center rounded-xl border border-white/70 bg-white/90 text-slate-700 shadow-lg shadow-blue-500/20 backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-xl dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-200"
+          className="group fixed top-6 left-6 z-[1100] flex h-12 w-12 items-center justify-center rounded-xl border border-white/70 bg-white/90 text-slate-700 shadow-lg shadow-rose-500/20 backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-xl dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-200"
           title="Déployer le menu"
           aria-label="Déployer le menu"
         >
-          <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 opacity-0 transition-opacity group-hover:opacity-100" />
+          <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 opacity-0 transition-opacity group-hover:opacity-100" />
           <ChevronRight className="relative h-5 w-5" />
         </button>
       )}
@@ -5481,20 +5484,22 @@ useEffect(() => {
       <div
         className={`${
           sidebarOpen ? 'w-72' : 'w-20'
-        } relative overflow-hidden bg-white/80 dark:bg-gray-900/60 border-r border-white/60 dark:border-gray-800/70 backdrop-blur-xl shadow-[0_20px_50px_rgba(8,112,184,0.12)] transition-all duration-300 flex flex-col`}
+        } relative overflow-hidden bg-white/80 dark:bg-gray-900/60 border-r border-white/60 dark:border-gray-800/70 backdrop-blur-xl shadow-[0_20px_50px_rgba(225,29,72,0.12)] transition-all duration-300 flex flex-col`}
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/60 via-white/20 to-transparent dark:from-gray-900/60 dark:via-gray-900/30" />
         {/* Header */}
         <div className="relative p-6 border-b border-white/60 dark:border-gray-800/70">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center gap-0'}`}>
-              <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30">
-                <SoraLogo className="h-7 w-7" />
+              <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30">
+                <DvineLogo className="h-7 w-7" />
               </div>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">SORA</h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Surveillance &amp; Operations</p>
+                  <h1 className="text-xl font-extrabold bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 bg-clip-text text-transparent tracking-tight">
+                    Dvine Intelligence
+                  </h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Analyse proactive &amp; opérations unifiées</p>
                 </div>
               )}
             </div>
@@ -5505,7 +5510,7 @@ useEffect(() => {
                 aria-label="Toggle theme"
                 title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
               >
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 opacity-0 transition-opacity group-hover:opacity-100 dark:from-blue-500 dark:to-indigo-500" />
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 opacity-0 transition-opacity group-hover:opacity-100 dark:from-rose-500 dark:to-orange-500" />
                 <span className="relative">
                   {theme === 'dark' ? (
                     <Sun className="h-5 w-5" />
@@ -5519,7 +5524,7 @@ useEffect(() => {
                 className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/60 bg-white/70 text-gray-600 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-200"
                 title={sidebarOpen ? 'Réduire le menu' : 'Déployer le menu'}
               >
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 opacity-0 transition-opacity group-hover:opacity-100" />
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 opacity-0 transition-opacity group-hover:opacity-100" />
                 <span className="relative">
                   {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                 </span>
@@ -5536,7 +5541,7 @@ useEffect(() => {
               title="Dashboard"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'dashboard'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5549,7 +5554,7 @@ useEffect(() => {
               title="Recherche"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'search'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5562,7 +5567,7 @@ useEffect(() => {
               title="Annuaire Gendarmerie"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'annuaire'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5575,7 +5580,7 @@ useEffect(() => {
               title="ONG"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'ong'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5588,7 +5593,7 @@ useEffect(() => {
               title="Entreprises"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'entreprises'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5601,7 +5606,7 @@ useEffect(() => {
               title="Véhicules"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'vehicules'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5614,7 +5619,7 @@ useEffect(() => {
               title="Géolocalisation"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'cdr'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5627,7 +5632,7 @@ useEffect(() => {
               title="Détection de Fraude"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'fraud-detection'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5640,7 +5645,7 @@ useEffect(() => {
               title="Demandes"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'requests'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5656,7 +5661,7 @@ useEffect(() => {
               title="Fiches de profil"
               className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 currentPage === 'profiles'
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                   : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
               } ${!sidebarOpen && 'justify-center px-0'}`}
             >
@@ -5670,7 +5675,7 @@ useEffect(() => {
                 title="White List"
                 className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                   currentPage === 'blacklist'
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                     : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                 } ${!sidebarOpen && 'justify-center px-0'}`}
               >
@@ -5685,7 +5690,7 @@ useEffect(() => {
                 title="Logs"
                 className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                   currentPage === 'logs'
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                     : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                 } ${!sidebarOpen && 'justify-center px-0'}`}
               >
@@ -5700,7 +5705,7 @@ useEffect(() => {
                 title="Utilisateurs"
                 className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                   currentPage === 'users'
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                     : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                 } ${!sidebarOpen && 'justify-center px-0'}`}
               >
@@ -5715,7 +5720,7 @@ useEffect(() => {
                 title="Charger des données"
                 className={`w-full group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                   currentPage === 'upload'
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'
                     : 'text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
                 } ${!sidebarOpen && 'justify-center px-0'}`}
               >
@@ -5745,7 +5750,7 @@ useEffect(() => {
                         Admin
                       </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 px-2.5 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-300">
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-rose-500/20 to-cyan-500/20 px-2.5 py-0.5 text-xs font-semibold text-rose-600 dark:text-rose-300">
                         <UserCheck className="mr-1 h-3 w-3" />
                         Utilisateur
                       </span>
@@ -5762,7 +5767,7 @@ useEffect(() => {
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <button
                   onClick={() => openPasswordModal()}
-                  className="group relative flex items-center justify-center gap-2 rounded-xl border border-white/60 bg-white/70 px-3 py-2 text-xs font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:text-blue-600 dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-200 dark:hover:text-white"
+                  className="group relative flex items-center justify-center gap-2 rounded-xl border border-white/60 bg-white/70 px-3 py-2 text-xs font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:text-rose-600 dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-200 dark:hover:text-white"
                 >
                   <Key className="h-3 w-3 transition-transform duration-200 group-hover:scale-110" />
                   Mot de passe
@@ -5786,7 +5791,7 @@ useEffect(() => {
               <div className="flex justify-end mb-4 relative">
                 <button
                   onClick={handleNotificationClick}
-                  className="relative p-2 rounded-full bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 text-gray-600 hover:text-blue-600 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:text-white"
+                  className="relative p-2 rounded-full bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 text-gray-600 hover:text-rose-600 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:text-white"
                 >
                   <Bell className="h-6 w-6" />
                   {notificationCount > 0 && (
@@ -5797,7 +5802,7 @@ useEffect(() => {
                 </button>
                 {showNotifications && (
                   <div className="absolute right-0 mt-3 w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl ring-1 ring-black/5 z-50 overflow-hidden border border-gray-100/50 dark:border-gray-700/50">
-                    <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                    <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-red-600 to-rose-700 text-white">
                       <div>
                         <div className="text-xs uppercase tracking-wide opacity-80">Centre de notifications</div>
                         <div className="text-sm font-semibold">{totalNotifications} notification{totalNotifications > 1 ? 's' : ''}</div>
@@ -5823,7 +5828,7 @@ useEffect(() => {
                               onClick={() => handleNotificationSelect(notification)}
                               className={`w-full text-left p-4 transition-all duration-200 flex items-start gap-3 focus:outline-none ${
                                 isUnread
-                                  ? 'bg-blue-50/70 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60'
+                                  ? 'bg-rose-50/70 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60'
                                   : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'
                               }`}
                             >
@@ -5847,7 +5852,7 @@ useEffect(() => {
                                   </span>
                                   <span
                                     className={`text-xs font-medium ${
-                                      isUnread ? 'text-blue-600 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500'
+                                      isUnread ? 'text-rose-600 dark:text-rose-300' : 'text-gray-400 dark:text-gray-500'
                                     }`}
                                   >
                                     {isUnread ? 'Non lu' : 'Lu'}
@@ -5886,7 +5891,7 @@ useEffect(() => {
                       <input
                         type="text"
                         placeholder="Entrez votre recherche (CNI, nom, téléphone, immatriculation...)"
-                        className="w-full pl-12 pr-40 py-4 text-lg bg-gray-50 border border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full pl-12 pr-40 py-4 text-lg bg-gray-50 border border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => {
@@ -5906,8 +5911,8 @@ useEffect(() => {
                             }}
                             className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium transition-all ${
                               isHistoryOpen
-                                ? 'border-blue-200 bg-blue-50 text-blue-600 shadow-sm'
-                                : 'border-gray-200 bg-white/80 text-gray-500 shadow-sm hover:border-blue-200 hover:text-blue-600'
+                                ? 'border-rose-200 bg-rose-50 text-rose-600 shadow-sm'
+                                : 'border-gray-200 bg-white/80 text-gray-500 shadow-sm hover:border-rose-200 hover:text-rose-600'
                             }`}
                             aria-expanded={isHistoryOpen}
                             aria-label="Afficher l'historique des recherches"
@@ -5919,7 +5924,7 @@ useEffect(() => {
                         <button
                           type="submit"
                           disabled={loading}
-                          className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-all flex items-center"
+                          className="px-6 py-2 bg-rose-600 text-white rounded-full hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 transition-all flex items-center"
                         >
                           {loading ? (
                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -5933,10 +5938,10 @@ useEffect(() => {
                     </div>
 
                     {searchHistory.length > 0 && (
-                      <div className="mt-6 rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-blue-50/40 to-blue-100/20 p-5 shadow-inner dark:border-slate-700/60 dark:from-slate-900/60 dark:via-slate-900/40 dark:to-slate-800/50">
+                      <div className="mt-6 rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-rose-50/40 to-rose-100/20 p-5 shadow-inner dark:border-slate-700/60 dark:from-slate-900/60 dark:via-slate-900/40 dark:to-slate-800/50">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-200">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm dark:bg-blue-500/20 dark:text-blue-200">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm dark:bg-rose-500/20 dark:text-rose-200">
                               <History className="h-4 w-4" />
                             </span>
                             Recherches récentes
@@ -5946,7 +5951,7 @@ useEffect(() => {
                               <button
                                 type="button"
                                 onClick={() => setIsHistoryOpen((prev) => !prev)}
-                                className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+                                className="text-xs font-medium text-rose-600 transition-colors hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200"
                               >
                                 {isHistoryOpen ? 'Réduire' : 'Tout afficher'}
                               </button>
@@ -5967,14 +5972,14 @@ useEffect(() => {
                           {visibleHistoryEntries.map((entry) => (
                             <div
                               key={`${entry.query}-${entry.timestamp}`}
-                              className="group inline-flex items-center gap-1 rounded-full border border-slate-200/70 bg-white/80 pr-1 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50/80 dark:border-slate-700/60 dark:bg-slate-900/50 dark:hover:border-blue-500/40 dark:hover:bg-slate-800/70"
+                              className="group inline-flex items-center gap-1 rounded-full border border-slate-200/70 bg-white/80 pr-1 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50/80 dark:border-slate-700/60 dark:bg-slate-900/50 dark:hover:border-rose-500/40 dark:hover:bg-slate-800/70"
                             >
                               <button
                                 type="button"
                                 onClick={() => handleHistorySelection(entry.query)}
-                                className="flex items-center gap-2 rounded-full pl-3 pr-2 py-1.5 text-sm font-medium text-slate-600 transition-colors group-hover:text-blue-700 dark:text-slate-200 dark:group-hover:text-blue-200"
+                                className="flex items-center gap-2 rounded-full pl-3 pr-2 py-1.5 text-sm font-medium text-slate-600 transition-colors group-hover:text-rose-700 dark:text-slate-200 dark:group-hover:text-rose-200"
                               >
-                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-sm dark:bg-blue-500/20 dark:text-blue-200">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm dark:bg-rose-500/20 dark:text-rose-200">
                                   <Search className="h-4 w-4" />
                                 </span>
                                 <span className="flex flex-col text-left">
@@ -6022,7 +6027,7 @@ useEffect(() => {
               {/* Résultats */}
               {searchResults && (
                 <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                  <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-600 to-rose-700 text-white">
                     <div className="flex justify-between items-center">
                       <div>
                         <h2 className="text-xl font-bold">Résultats de recherche</h2>
@@ -6040,7 +6045,7 @@ useEffect(() => {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => setViewMode(viewMode === 'list' ? 'profile' : 'list')}
-                          className="flex items-center px-4 py-2 bg-white/20 text-white rounded-lg transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 dark:hover:bg-blue-600 dark:hover:text-white dark:active:bg-blue-600 dark:active:text-white"
+                          className="flex items-center px-4 py-2 bg-white/20 text-white rounded-lg transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 dark:hover:bg-rose-600 dark:hover:text-white dark:active:bg-rose-600 dark:active:text-white"
                         >
                           {viewMode === 'list' ? (
                             <>
@@ -6072,7 +6077,7 @@ useEffect(() => {
                           canRequestIdentification && (
                             <button
                               onClick={handleRequestIdentification}
-                              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="mt-4 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500"
                             >
                               Demander identification
                             </button>
@@ -6088,12 +6093,12 @@ useEffect(() => {
                             return (
                               <div
                                 key={index}
-                                className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-500 transform transition-all duration-300 hover:-translate-y-1"
+                                className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:shadow-xl hover:border-rose-300 dark:hover:border-rose-500 transform transition-all duration-300 hover:-translate-y-1"
                               >
                               {/* Header de la carte */}
                               <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center space-x-3">
-                                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl text-white shadow-md">
+                                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-rose-500 to-rose-700 rounded-xl text-white shadow-md">
                                     <Database className="w-5 h-5" />
                                   </div>
                                   <div>
@@ -6108,7 +6113,7 @@ useEffect(() => {
                                   {previewEntries.map((entry) => (
                                     <div
                                       key={entry.key}
-                                      className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm transition-colors group-hover:border-blue-200 dark:border-slate-700/70 dark:bg-slate-800/60 dark:group-hover:border-blue-500"
+                                      className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm transition-colors group-hover:border-rose-200 dark:border-slate-700/70 dark:bg-slate-800/60 dark:group-hover:border-rose-500"
                                     >
                                       <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                                         {entry.label}
@@ -6142,7 +6147,7 @@ useEffect(() => {
                                         notifyError('Impossible de copier les données dans le presse-papier.');
                                       });
                                   }}
-                                  className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
+                                  className="inline-flex items-center px-3 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900 rounded-md hover:bg-rose-100 dark:hover:bg-rose-800 transition-colors"
                                 >
                                   <User className="w-3 h-3 mr-1" />
                                   Copier
@@ -6154,7 +6159,7 @@ useEffect(() => {
                         </div>
                         <div className="mt-8 text-center">
                           <button
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700"
                             onClick={() => {
                               const combined: Record<string, string> = {};
                               const mergeEntry = (entry: NormalizedPreviewEntry) => {
@@ -6184,9 +6189,9 @@ useEffect(() => {
                     ) : (
                       <div className="p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
                         {displayedHits.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center space-y-3 py-10 text-blue-600">
+                          <div className="flex flex-col items-center justify-center space-y-3 py-10 text-rose-600">
                             <Loader2 className="h-8 w-8 animate-spin" />
-                            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                            <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
                               Initialisation des résultats...
                             </p>
                           </div>
@@ -6204,7 +6209,7 @@ useEffect(() => {
                         <button
                           onClick={loadMoreResults}
                           disabled={loading || isProgressiveLoading}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                          className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                           {loading || isProgressiveLoading ? (
                             <>
@@ -6222,7 +6227,7 @@ useEffect(() => {
                         <button
                           type="button"
                           disabled
-                          className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg cursor-wait"
+                          className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-rose-500 to-indigo-600 text-white shadow-lg cursor-wait"
                         >
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                           Affichage progressif des résultats...
@@ -6242,7 +6247,7 @@ useEffect(() => {
                 placeholder="Rechercher..."
                 value={gendarmerieSearch}
                 onChange={(e) => setGendarmerieSearch(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
                 {gendarmerieLoading ? (
@@ -6330,7 +6335,7 @@ useEffect(() => {
                   setOngSearch(e.target.value);
                   setOngPage(1);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
                 {ongLoading ? (
@@ -6410,7 +6415,7 @@ useEffect(() => {
                   setEntreprisesSearch(e.target.value);
                   setEntreprisesPage(1);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
                 {entreprisesLoading ? (
@@ -6542,7 +6547,7 @@ useEffect(() => {
                   setVehiculesSearch(e.target.value);
                   setVehiculesPage(1);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/95 shadow-lg shadow-slate-200/60 dark:bg-slate-900/70 dark:border-slate-700/60">
                 {vehiculesLoading ? (
@@ -6666,12 +6671,12 @@ useEffect(() => {
           {currentPage === 'cdr' && (
             <div className="space-y-10">
               <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 p-8 shadow-[0_30px_60px_-20px_rgba(30,64,175,0.45)] backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70">
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-purple-500/20" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-rose-500/20 via-indigo-500/10 to-purple-500/20" />
                 <div className="relative grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:items-center">
                   <div className="space-y-6">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 shadow-lg shadow-blue-500/40 dark:bg-slate-900/80">
-                        <Clock className="h-6 w-6 text-blue-600 dark:text-blue-200" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 shadow-lg shadow-rose-500/40 dark:bg-slate-900/80">
+                        <Clock className="h-6 w-6 text-rose-600 dark:text-rose-200" />
                       </div>
                       <div>
                         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Géolocalisation</h1>
@@ -6701,7 +6706,7 @@ useEffect(() => {
                   </div>
                   <form
                     onSubmit={handleCreateCase}
-                    className="rounded-2xl border border-white/60 bg-white/80 p-6 shadow-xl shadow-blue-500/20 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/80"
+                    className="rounded-2xl border border-white/60 bg-white/80 p-6 shadow-xl shadow-rose-500/20 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/80"
                   >
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Créer une opération</h2>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
@@ -6713,11 +6718,11 @@ useEffect(() => {
                         placeholder="Nom de l'opération"
                         value={cdrCaseName}
                         onChange={(e) => setCdrCaseName(e.target.value)}
-                        className="w-full rounded-full border border-transparent bg-white/90 px-4 py-3 text-sm font-medium text-slate-700 shadow-inner focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 dark:bg-slate-800/80 dark:text-slate-200"
+                        className="w-full rounded-full border border-transparent bg-white/90 px-4 py-3 text-sm font-medium text-slate-700 shadow-inner focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-500/30 dark:bg-slate-800/80 dark:text-slate-200"
                       />
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
                       >
                         <Plus className="h-4 w-4" />
                         <span>Créer l'opération</span>
@@ -6757,7 +6762,7 @@ useEffect(() => {
                         key={c.id}
                         className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-xl shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl dark:border-slate-700/60 dark:bg-slate-900/70"
                       >
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-500/0 via-indigo-500/10 to-purple-500/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-rose-500/0 via-indigo-500/10 to-purple-500/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                         <div className="relative flex h-full flex-col gap-5">
                           <div className="flex items-start justify-between gap-4">
                             <div className="space-y-2">
@@ -6767,7 +6772,7 @@ useEffect(() => {
                                   value={renamingCaseName}
                                   onChange={(event) => setRenamingCaseName(event.target.value)}
                                   onKeyDown={handleRenameKeyDown}
-                                  className="w-full rounded-2xl border border-slate-300/70 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-100"
+                                  className="w-full rounded-2xl border border-slate-300/70 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-100"
                                   placeholder="Nouveau nom de l'opération"
                                   autoFocus
                                 />
@@ -6785,7 +6790,7 @@ useEffect(() => {
                                   Partagée avec vous
                                 </span>
                               ) : Boolean(c.is_owner) ? (
-                                <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                                <span className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
                                   <User className="h-3.5 w-3.5" />
                                   Propriétaire
                                 </span>
@@ -6811,7 +6816,7 @@ useEffect(() => {
                               <>
                                 <button
                                   type="button"
-                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
                                   onClick={submitRenameCase}
                                   disabled={renamingCaseLoading}
                                 >
@@ -6832,7 +6837,7 @@ useEffect(() => {
                               <>
                                 <button
                                   type="button"
-                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
                                 onClick={() => {
                                   cancelRenameCase();
                                   setSelectedCase(c);
@@ -6846,7 +6851,7 @@ useEffect(() => {
                                 </button>
                                 <button
                                   type="button"
-                                  className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-200"
+                                  className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
                                   onClick={() => handleExportCaseReport(c)}
                                 >
                                   <Download className="h-4 w-4" />
@@ -6855,7 +6860,7 @@ useEffect(() => {
                                 {(isAdmin || c.is_owner) && (
                                   <button
                                     type="button"
-                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-200"
+                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
                                     onClick={() => openShareModalForCase(c)}
                                   >
                                     <Share2 className="h-4 w-4" />
@@ -6865,7 +6870,7 @@ useEffect(() => {
                                 {(isAdmin || c.is_owner) && (
                                   <button
                                     type="button"
-                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-200"
+                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
                                     onClick={() => startRenameCase(c)}
                                   >
                                     <Edit className="h-4 w-4" />
@@ -6918,7 +6923,7 @@ useEffect(() => {
               />
 
               <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-black/40">
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-blue-500/10" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-rose-500/10" />
                 <div className="relative p-8 space-y-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -6973,7 +6978,7 @@ useEffect(() => {
                               setGlobalFraudStart(e.target.value);
                               if (globalFraudError) setGlobalFraudError('');
                             }}
-                            className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-slate-700/60 dark:bg-slate-900/60"
+                            className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-700/60 dark:bg-slate-900/60"
                           />
                         </div>
                         <div className="space-y-2">
@@ -6987,7 +6992,7 @@ useEffect(() => {
                               setGlobalFraudEnd(e.target.value);
                               if (globalFraudError) setGlobalFraudError('');
                             }}
-                            className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-slate-700/60 dark:bg-slate-900/60"
+                            className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-700/60 dark:bg-slate-900/60"
                           />
                         </div>
                       </div>
@@ -6997,7 +7002,7 @@ useEffect(() => {
                       <button
                         type="submit"
                         disabled={globalFraudLoading}
-                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 via-purple-500 to-blue-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 via-purple-500 to-rose-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {globalFraudLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scan className="h-4 w-4" />}
                         <span>Lancer l'analyse</span>
@@ -7042,7 +7047,7 @@ useEffect(() => {
                   </section>
                 ) : (
                   <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-black/40">
-                    <div className="border-b border-slate-200/70 bg-gradient-to-r from-rose-500 via-purple-500 to-blue-500 px-8 py-6 text-white dark:border-slate-700/60">
+                    <div className="border-b border-slate-200/70 bg-gradient-to-r from-rose-500 via-purple-500 to-rose-500 px-8 py-6 text-white dark:border-slate-700/60">
                       <div className="space-y-4">
                         <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between">
                           <div>
@@ -7077,7 +7082,7 @@ useEffect(() => {
                           <div key={imeiEntry.imei} className="space-y-5 p-6">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                               <div className="flex items-start gap-4">
-                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-purple-500 to-blue-500 text-white shadow-lg shadow-purple-400/40">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-purple-500 to-rose-500 text-white shadow-lg shadow-purple-400/40">
                                   <AlertTriangle className="h-7 w-7" />
                                 </div>
                                 <div>
@@ -7137,7 +7142,7 @@ useEffect(() => {
                                             {numberEntry.roles.map((role) => (
                                               <span
                                                 key={role}
-                                                className="inline-flex items-center rounded-full bg-blue-100/80 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-200"
+                                                className="inline-flex items-center rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200"
                                               >
                                                 {FRAUD_ROLE_LABELS[role] || role}
                                               </span>
@@ -7171,7 +7176,7 @@ useEffect(() => {
                             <div key={numberEntry.number} className="space-y-5 p-6">
                               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div className="flex items-start gap-4">
-                                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 text-white shadow-lg shadow-blue-400/40">
+                                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-indigo-500 to-purple-500 text-white shadow-lg shadow-rose-400/40">
                                     <Phone className="h-7 w-7" />
                                   </div>
                                   <div>
@@ -7231,7 +7236,7 @@ useEffect(() => {
                                               {imeiInfo.roles.map((role) => (
                                                 <span
                                                   key={role}
-                                                  className="inline-flex items-center rounded-full bg-blue-100/80 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-200"
+                                                  className="inline-flex items-center rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200"
                                                 >
                                                   {FRAUD_ROLE_LABELS[role] || role}
                                                 </span>
@@ -7262,7 +7267,7 @@ useEffect(() => {
                 <section className="rounded-3xl border border-slate-200/80 bg-white/95 p-8 shadow-xl shadow-slate-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-black/40">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-300/40">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-indigo-500 text-white shadow-lg shadow-rose-300/40">
                         <AlertTriangle className="h-6 w-6" />
                       </div>
                       <div>
@@ -7290,7 +7295,7 @@ useEffect(() => {
                   navigateToPage('cdr');
                   setSelectedCase(null);
                 }}
-                className="text-blue-600"
+                className="text-rose-600"
               >
                 &larr; Retour
               </button>
@@ -7309,14 +7314,14 @@ useEffect(() => {
                           value={renamingCaseName}
                           onChange={(event) => setRenamingCaseName(event.target.value)}
                           onKeyDown={handleRenameKeyDown}
-                          className="w-full rounded-2xl border border-slate-300/70 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-inner focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-100"
+                          className="w-full rounded-2xl border border-slate-300/70 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-inner focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/30 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-100"
                           placeholder="Nouveau nom de l'opération"
                           autoFocus
                         />
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
                             onClick={submitRenameCase}
                             disabled={renamingCaseLoading}
                           >
@@ -7339,7 +7344,7 @@ useEffect(() => {
                         <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">{selectedCase.name}</span>
                         <button
                           type="button"
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-200"
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
                           onClick={() => startRenameCase(selectedCase)}
                         >
                           <Edit className="h-4 w-4" />
@@ -7384,7 +7389,7 @@ useEffect(() => {
                       ) : (
                         <div className="flex h-full w-full flex-col items-center justify-center bg-white/90 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
                           <div className="flex flex-col items-center gap-3 px-6 text-center">
-                            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600 shadow-inner shadow-blue-500/20 dark:bg-blue-500/20 dark:text-blue-200">
+                            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-600 shadow-inner shadow-rose-500/20 dark:bg-rose-500/20 dark:text-rose-200">
                               <MapPinOff className="h-8 w-8" />
                             </span>
                             <div className="space-y-1">
@@ -7421,14 +7426,14 @@ useEffect(() => {
               <PageHeader icon={<ClipboardList className="h-6 w-6" />} title="Liste des demandes" />
 
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-white/95 p-5 shadow-lg shadow-blue-200/40 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
-                  <div className="absolute -right-16 top-0 h-32 w-32 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-900/30" />
+                <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-white/95 p-5 shadow-lg shadow-rose-200/40 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                  <div className="absolute -right-16 top-0 h-32 w-32 rounded-full bg-rose-200/40 blur-3xl dark:bg-rose-900/30" />
                   <div className="relative z-10 flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Total des demandes</p>
                       <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-slate-100">{requestStats.total}</p>
                     </div>
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 shadow-inner shadow-blue-400/30 dark:bg-blue-500/20 dark:text-blue-200">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 shadow-inner shadow-rose-400/30 dark:bg-rose-500/20 dark:text-rose-200">
                       <ClipboardList className="h-5 w-5" />
                     </span>
                   </div>
@@ -7475,7 +7480,7 @@ useEffect(() => {
                 </div>
               </div>
 
-              <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/95 p-6 shadow-xl shadow-blue-200/40 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70">
+              <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/95 p-6 shadow-xl shadow-rose-200/40 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70">
                 <div className="absolute -left-24 top-0 h-48 w-48 rounded-full bg-sky-200/40 blur-3xl dark:bg-sky-900/30" />
                 <div className="absolute -right-20 bottom-0 h-48 w-48 rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-900/30" />
                 <div className="relative z-10 space-y-6">
@@ -7487,7 +7492,7 @@ useEffect(() => {
                       </p>
                     </div>
                     {requestSearch && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-blue-200/60 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-rose-200/60 bg-rose-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/20 dark:text-rose-200">
                         Filtre texte actif
                       </span>
                     )}
@@ -7501,7 +7506,7 @@ useEffect(() => {
                     className="flex flex-col gap-3 lg:flex-row lg:items-center"
                   >
                     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
-                      <div className="flex flex-1 items-center overflow-hidden rounded-full border border-slate-200/70 bg-white/90 shadow-inner focus-within:border-blue-400/60 focus-within:ring-2 focus-within:ring-blue-500/30 dark:border-slate-700/70 dark:bg-slate-900/60">
+                      <div className="flex flex-1 items-center overflow-hidden rounded-full border border-slate-200/70 bg-white/90 shadow-inner focus-within:border-rose-400/60 focus-within:ring-2 focus-within:ring-rose-500/30 dark:border-slate-700/70 dark:bg-slate-900/60">
                         <span className="pl-4 text-slate-400 dark:text-slate-500">
                           <Search className="h-4 w-4" />
                         </span>
@@ -7529,7 +7534,7 @@ useEffect(() => {
                       </div>
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60"
                       >
                         <Search className="h-4 w-4" />
                         Lancer la recherche
@@ -7545,8 +7550,8 @@ useEffect(() => {
                       }}
                       className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                         requestStatusFilter === 'all'
-                          ? 'border-blue-400/70 bg-blue-500/10 text-blue-600 dark:border-blue-400/50 dark:bg-blue-500/20 dark:text-blue-200'
-                          : 'border-slate-200/70 bg-white/80 text-slate-600 hover:border-blue-300 hover:text-blue-600 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-blue-400/50 dark:hover:text-blue-200'
+                          ? 'border-rose-400/70 bg-rose-500/10 text-rose-600 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-200'
+                          : 'border-slate-200/70 bg-white/80 text-slate-600 hover:border-rose-300 hover:text-rose-600 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-rose-400/50 dark:hover:text-rose-200'
                       }`}
                     >
                       Toutes
@@ -7592,7 +7597,7 @@ useEffect(() => {
                       <button
                         type="button"
                         onClick={handleResetHiddenRequests}
-                        className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:-translate-y-0.5 hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200"
+                        className="inline-flex items-center gap-2 rounded-full border border-rose-200/70 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 dark:border-rose-500/40 dark:bg-rose-500/20 dark:text-rose-200"
                       >
                         <RefreshCw className="h-4 w-4" />
                         Réafficher les demandes supprimées
@@ -7642,7 +7647,7 @@ useEffect(() => {
                   <div className="grid gap-5">
                     {paginatedRequests.length === 0 && (
                       <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-slate-300/70 bg-white/70 px-6 py-12 text-center text-slate-500 shadow-inner dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
                           <ClipboardList className="h-6 w-6" />
                         </span>
                         <div className="space-y-1">
@@ -7680,15 +7685,15 @@ useEffect(() => {
                           id={`request-${r.id}`}
                           key={r.id}
                           className={`group relative overflow-hidden rounded-3xl border border-white/70 bg-white/95 p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl dark:border-slate-700/60 dark:bg-slate-900/70 ${
-                            isHighlighted ? 'ring-2 ring-blue-500/70 shadow-blue-200/50 dark:ring-blue-400/40' : ''
+                            isHighlighted ? 'ring-2 ring-rose-500/70 shadow-rose-200/50 dark:ring-rose-400/40' : ''
                           }`}
                         >
-                          <div className="absolute -right-24 top-0 h-48 w-48 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-900/30" />
+                          <div className="absolute -right-24 top-0 h-48 w-48 rounded-full bg-rose-200/40 blur-3xl dark:bg-rose-900/30" />
                           <div className="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-900/30" />
                           <div className="relative z-10 space-y-6">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex items-start gap-4">
-                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 shadow-inner shadow-blue-400/30 dark:bg-blue-500/20 dark:text-blue-200">
+                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 shadow-inner shadow-rose-400/30 dark:bg-rose-500/20 dark:text-rose-200">
                                   <PhoneIncoming className="h-6 w-6" />
                                 </span>
                                 <div className="space-y-2">
@@ -7705,7 +7710,7 @@ useEffect(() => {
                               <div className="flex flex-col items-start gap-2 text-sm text-slate-500 dark:text-slate-300 lg:items-end">
                                 {createdAgo && (
                                   <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-blue-500/70 dark:text-blue-300/80" />
+                                    <Clock className="h-4 w-4 text-rose-500/70 dark:text-rose-300/80" />
                                     <span>Créée {createdAgo}</span>
                                   </div>
                                 )}
@@ -7713,7 +7718,7 @@ useEffect(() => {
                                   <span className="rounded-full bg-slate-100/70 px-3 py-1 text-xs font-medium text-slate-500 dark:bg-slate-800/60 dark:text-slate-300">{createdLabel}</span>
                                 )}
                                 {updatedAgo && updatedLabel && updatedLabel !== createdLabel && (
-                                  <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                                  <span className="rounded-full bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
                                     Mise à jour {updatedAgo}
                                   </span>
                                 )}
@@ -7759,7 +7764,7 @@ useEffect(() => {
                             <div className="flex flex-wrap items-center gap-3">
                               {isAdmin && r.status !== 'identified' && (
                                 <button
-                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
+                                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60"
                                   onClick={() => startIdentify(r)}
                                 >
                                   <UserCheck className="h-4 w-4" />
@@ -7904,7 +7909,7 @@ useEffect(() => {
                         <button
                           type="button"
                           onClick={() => setShowBulkImportModal(true)}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:-translate-y-0.5 hover:border-blue-400 hover:text-blue-600 dark:border-slate-600/60 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-200"
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:-translate-y-0.5 hover:border-rose-400 hover:text-rose-600 dark:border-slate-600/60 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
                         >
                           <UploadCloud className="h-4 w-4" />
                           Importer des numéros
@@ -7942,8 +7947,8 @@ useEffect(() => {
         {currentPage === 'blacklist' && isAdmin && (
           <div className="space-y-6">
             <PageHeader icon={<Ban className="h-6 w-6" />} title="White List" />
-            <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/90 to-blue-50/40 p-6 shadow-xl shadow-blue-200/50 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/40 dark:shadow-black/40">
-              <div className="absolute -right-32 top-10 h-64 w-64 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-900/30" />
+            <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/90 to-rose-50/40 p-6 shadow-xl shadow-rose-200/50 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/40 dark:shadow-black/40">
+              <div className="absolute -right-32 top-10 h-64 w-64 rounded-full bg-rose-200/40 blur-3xl dark:bg-rose-900/30" />
               <div className="absolute -left-36 bottom-0 h-56 w-56 rounded-full bg-purple-200/40 blur-3xl dark:bg-purple-900/30" />
               <div className="relative z-10 space-y-8">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -7954,7 +7959,7 @@ useEffect(() => {
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="rounded-2xl border border-white/60 bg-white/80 px-6 py-4 shadow-sm shadow-blue-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                    <div className="rounded-2xl border border-white/60 bg-white/80 px-6 py-4 shadow-sm shadow-rose-200/60 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Numéros surveillés</p>
                       <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">{blacklist.length}</p>
                     </div>
@@ -7971,7 +7976,7 @@ useEffect(() => {
                         <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100">Ajouter un numéro</h4>
                         <p className="text-sm text-slate-600 dark:text-slate-300">Insérez un numéro unique à surveiller dans la liste noire.</p>
                       </div>
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
                         <Plus className="h-5 w-5" />
                       </span>
                     </div>
@@ -7981,12 +7986,12 @@ useEffect(() => {
                         placeholder="Numéro à ajouter"
                         value={blacklistNumber}
                         onChange={(e) => setBlacklistNumber(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200/70 bg-white/90 px-4 py-3 text-sm text-slate-800 shadow-inner focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/60 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-100"
+                        className="w-full rounded-xl border border-slate-200/70 bg-white/90 px-4 py-3 text-sm text-slate-800 shadow-inner focus:border-transparent focus:outline-none focus:ring-2 focus:ring-rose-500/60 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-100"
                       />
                       <button
                         type="submit"
                         disabled={!blacklistNumber.trim()}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/40 transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-500/40 transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <Plus className="h-4 w-4" />
                         Ajouter
@@ -8017,7 +8022,7 @@ useEffect(() => {
                       />
                       <label
                         htmlFor="blacklist-upload"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300/70 bg-white/90 px-4 py-3 text-sm font-medium text-slate-600 transition hover:border-blue-400 hover:text-blue-600 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-blue-400/60 dark:hover:text-blue-300"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300/70 bg-white/90 px-4 py-3 text-sm font-medium text-slate-600 transition hover:border-rose-400 hover:text-rose-600 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-rose-400/60 dark:hover:text-rose-300"
                       >
                         <UploadCloud className="h-4 w-4" />
                         {blacklistFile ? 'Changer de fichier' : 'Sélectionner un fichier'}
@@ -8049,7 +8054,7 @@ useEffect(() => {
                 <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/90 shadow-inner dark:border-slate-700/60 dark:bg-slate-900/70">
                   {paginatedBlacklist.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center text-slate-500 dark:text-slate-300">
-                      <Ban className="h-10 w-10 text-blue-500/60 dark:text-blue-400/60" />
+                      <Ban className="h-10 w-10 text-rose-500/60 dark:text-rose-400/60" />
                       <div>
                         <p className="text-sm font-semibold">Aucun numéro blacklisté</p>
                         <p className="text-xs text-slate-400 dark:text-slate-500">Ajoutez un numéro ou importez une liste pour commencer.</p>
@@ -8072,13 +8077,13 @@ useEffect(() => {
                             return (
                               <tr
                                 key={entry.id}
-                                className="odd:bg-white even:bg-slate-50/70 transition-colors hover:bg-blue-50/50 dark:odd:bg-slate-900/40 dark:even:bg-slate-800/40 dark:hover:bg-slate-800/70"
+                                className="odd:bg-white even:bg-slate-50/70 transition-colors hover:bg-rose-50/50 dark:odd:bg-slate-900/40 dark:even:bg-slate-800/40 dark:hover:bg-slate-800/70"
                               >
                                 <td className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                                   #{String(displayIndex).padStart(2, '0')}
                                 </td>
                                 <td className="px-6 py-4 text-sm font-medium text-slate-800 dark:text-slate-100">
-                                  <span className="inline-flex items-center rounded-full bg-blue-500/10 px-3 py-1 text-sm font-semibold text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                                  <span className="inline-flex items-center rounded-full bg-rose-500/10 px-3 py-1 text-sm font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
                                     {entry.number}
                                   </span>
                                 </td>
@@ -8124,8 +8129,8 @@ useEffect(() => {
         {currentPage === 'logs' && isAdmin && (
           <div className="space-y-6">
             <PageHeader icon={<List className="h-6 w-6" />} title="Logs" />
-            <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/80 to-blue-50/60 p-8 shadow-xl shadow-blue-200/60 dark:border-slate-700/60 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/40">
-              <div className="absolute -right-32 top-1/4 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-900/30"></div>
+            <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/80 to-rose-50/60 p-8 shadow-xl shadow-rose-200/60 dark:border-slate-700/60 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/40">
+              <div className="absolute -right-32 top-1/4 h-72 w-72 rounded-full bg-rose-200/40 blur-3xl dark:bg-rose-900/30"></div>
               <div className="absolute -left-32 top-2/3 h-64 w-64 rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-900/30"></div>
               <div className="relative z-10 space-y-8">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -8136,11 +8141,11 @@ useEffect(() => {
                     </p>
                   </div>
                   <div className="grid w-full gap-3 sm:grid-cols-3 lg:w-auto">
-                    <div className="rounded-2xl border border-white/60 bg-white/80 px-5 py-4 shadow-sm shadow-blue-200/50 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                    <div className="rounded-2xl border border-white/60 bg-white/80 px-5 py-4 shadow-sm shadow-rose-200/50 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Logs totaux</p>
                       <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{logTotal}</p>
                     </div>
-                    <div className="rounded-2xl border border-white/60 bg-white/80 px-5 py-4 shadow-sm shadow-blue-200/50 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                    <div className="rounded-2xl border border-white/60 bg-white/80 px-5 py-4 shadow-sm shadow-rose-200/50 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Logs récents</p>
                       <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{logsData.length}</p>
                     </div>
@@ -8159,7 +8164,7 @@ useEffect(() => {
                       value={logUserFilter}
                       onChange={(e) => setLogUserFilter(e.target.value)}
                       placeholder="Filtrer par utilisateur"
-                      className="w-full rounded-2xl border border-white/60 bg-white/80 py-3 pl-11 pr-4 text-sm text-slate-800 shadow-inner focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-slate-700/60 dark:bg-slate-900/70 dark:text-slate-100"
+                      className="w-full rounded-2xl border border-white/60 bg-white/80 py-3 pl-11 pr-4 text-sm text-slate-800 shadow-inner focus:border-rose-500/60 focus:outline-none focus:ring-2 focus:ring-rose-500/40 dark:border-slate-700/60 dark:bg-slate-900/70 dark:text-slate-100"
                     />
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -8196,7 +8201,7 @@ useEffect(() => {
                   </div>
                 )}
 
-                <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/90 shadow-xl shadow-blue-200/40 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/90 shadow-xl shadow-rose-200/40 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/70">
                   <table className="min-w-full text-left text-sm text-slate-700 dark:text-slate-200">
                     <thead className="bg-white/80 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500 backdrop-blur-sm dark:bg-slate-800/80 dark:text-slate-300">
                       <tr>
@@ -8303,7 +8308,7 @@ useEffect(() => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             {pageName ? (
-                              <span className="inline-flex items-center rounded-full border border-blue-200/60 bg-blue-50/70 px-3 py-1 text-xs font-medium text-blue-600 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200">
+                              <span className="inline-flex items-center rounded-full border border-rose-200/60 bg-rose-50/70 px-3 py-1 text-xs font-medium text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
                                 {pageName}
                               </span>
                             ) : (
@@ -8313,7 +8318,7 @@ useEffect(() => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
                             {details.profile_id ? (
                               <button
-                                className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 transition hover:-translate-y-0.5 hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-blue-500/40 dark:text-blue-300"
+                                className="inline-flex items-center gap-2 rounded-full border border-rose-200/70 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-500/20 focus:outline-none focus:ring-2 focus:ring-rose-500/40 dark:border-rose-500/40 dark:text-rose-300"
                                 onClick={() => openEditProfile(details.profile_id)}
                               >
                                 Voir le profil
@@ -8393,7 +8398,7 @@ useEffect(() => {
                         return (
                           <li
                             key={session.id}
-                            className="group px-6 py-5 transition-colors duration-200 hover:bg-blue-50/40 dark:hover:bg-slate-800/60"
+                            className="group px-6 py-5 transition-colors duration-200 hover:bg-rose-50/40 dark:hover:bg-slate-800/60"
                           >
                             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                               <div className="flex items-start gap-4">
@@ -8482,13 +8487,13 @@ useEffect(() => {
 
         {currentPage === 'users' && isAdmin && (
           <div className="space-y-8">
-            <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-blue-50/60 to-indigo-50/40 p-6 shadow-xl shadow-blue-200/50 dark:border-slate-700/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-blue-950/40">
+            <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-rose-50/60 to-indigo-50/40 p-6 shadow-xl shadow-rose-200/50 dark:border-slate-700/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-rose-950/40">
               <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <PageHeader icon={<User className="h-6 w-6" />} title="Gestion des utilisateurs" subtitle="Créez et gérez les comptes utilisateurs" />
                 <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                   <button
                     onClick={openCreateModal}
-                    className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-400/40 transition-transform hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rose-400/40 transition-transform hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   >
                     <Plus className="mr-2 h-5 w-5" />
                     Nouvel utilisateur
@@ -8498,12 +8503,12 @@ useEffect(() => {
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="flex items-center justify-between rounded-2xl border border-blue-100/70 bg-white/95 p-5 shadow-lg shadow-blue-100/60 dark:border-slate-700/60 dark:bg-slate-900/70">
+              <div className="flex items-center justify-between rounded-2xl border border-rose-100/70 bg-white/95 p-5 shadow-lg shadow-rose-100/60 dark:border-slate-700/60 dark:bg-slate-900/70">
                 <div>
                   <p className="text-sm text-slate-500 dark:text-slate-300">Utilisateurs</p>
                   <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{userStats.total}</p>
                 </div>
-                <span className="rounded-full bg-blue-500/10 p-3 text-blue-600 dark:text-blue-300">
+                <span className="rounded-full bg-rose-500/10 p-3 text-rose-600 dark:text-rose-300">
                   <Users className="h-5 w-5" />
                 </span>
               </div>
@@ -8538,7 +8543,7 @@ useEffect(() => {
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
               <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-lg shadow-slate-200/80 dark:border-slate-700/60 dark:bg-slate-900/70 xl:col-span-2">
-                <div className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-900/30"></div>
+                <div className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-rose-200/40 blur-3xl dark:bg-rose-900/30"></div>
                 <div className="relative z-10">
                   <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100">Créer une nouvelle division</h4>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">Organisez vos équipes en regroupant les utilisateurs par division.</p>
@@ -8552,7 +8557,7 @@ useEffect(() => {
                       value={newDivisionName}
                       onChange={(e) => setNewDivisionName(e.target.value)}
                       placeholder="Nom de la division"
-                      className="w-full rounded-xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-inner focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/60 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-100"
+                      className="w-full rounded-xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-inner focus:border-transparent focus:outline-none focus:ring-2 focus:ring-rose-500/60 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-100"
                     />
                   </div>
                   <button
@@ -8630,12 +8635,12 @@ useEffect(() => {
                       value={userSearchTerm}
                       onChange={(e) => setUserSearchTerm(e.target.value)}
                       placeholder="Rechercher un utilisateur, un rôle ou une division"
-                      className="w-full rounded-xl border border-slate-200/70 bg-white/80 py-2.5 pl-10 pr-3 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-100"
+                      className="w-full rounded-xl border border-slate-200/70 bg-white/80 py-2.5 pl-10 pr-3 text-sm text-slate-700 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-100"
                     />
                   </div>
                   <button
                     onClick={openCreateModal}
-                    className="hidden items-center rounded-xl border border-blue-200/70 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-100 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-300 md:inline-flex"
+                    className="hidden items-center rounded-xl border border-rose-200/70 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-100 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-300 md:inline-flex"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Nouvel utilisateur
@@ -8651,7 +8656,7 @@ useEffect(() => {
                   </div>
                   <button
                     onClick={openCreateModal}
-                    className="inline-flex items-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-400/40 transition hover:-translate-y-0.5 hover:shadow-xl"
+                    className="inline-flex items-center rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-400/40 transition hover:-translate-y-0.5 hover:shadow-xl"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Créer un utilisateur
@@ -8679,7 +8684,7 @@ useEffect(() => {
                         <tr key={user.id} className="bg-white/95 transition hover:bg-slate-50/80 dark:bg-slate-900/60 dark:hover:bg-slate-800/60">
                           <td className="px-6 py-4">
                             <div className="flex items-center">
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-200/70">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-indigo-600 text-white shadow-md shadow-rose-200/70">
                                 <User className="h-5 w-5" />
                               </div>
                               <div className="ml-4">
@@ -8695,7 +8700,7 @@ useEffect(() => {
                                 Administrateur
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
+                              <span className="inline-flex items-center gap-2 rounded-full bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-600 dark:text-rose-300">
                                 <UserCheck className="h-3 w-3" />
                                 Utilisateur
                               </span>
@@ -8728,7 +8733,7 @@ useEffect(() => {
                             <div className="flex items-center space-x-3">
                               <button
                                 onClick={() => openEditModal(user)}
-                                className="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                                className="text-rose-600 transition-colors hover:text-rose-500 dark:text-rose-400 dark:hover:text-rose-300"
                                 title="Modifier l'utilisateur"
                               >
                                 <Edit className="h-4 w-4" />
@@ -8765,11 +8770,11 @@ useEffect(() => {
           {currentPage === 'dashboard' && (
             <div className="space-y-8">
               {/* Header */}
-              <PageHeader icon={<BarChart3 className="h-6 w-6" />} title="Dashboard" subtitle="Analyse complète de l'utilisation de la plateforme SORA" />
+              <PageHeader icon={<BarChart3 className="h-6 w-6" />} title="Dashboard" subtitle="Analyse complète de l'utilisation de la plateforme Dvine Intelligence" />
 
               {loadingStats ? (
                 <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
                   <span className="ml-4 text-lg text-gray-600">Chargement des statistiques...</span>
                 </div>
               ) : (
@@ -8783,7 +8788,7 @@ useEffect(() => {
                       <button
                         type="button"
                         onClick={resetCardOrder}
-                        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors dark:bg-blue-900/40 dark:text-blue-200 dark:hover:bg-blue-900/60"
+                        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors dark:bg-rose-900/40 dark:text-rose-200 dark:hover:bg-rose-900/60"
                       >
                         Réinitialiser l'ordre
                       </button>
@@ -8840,7 +8845,7 @@ useEffect(() => {
                     {/* Graphique des recherches par jour */}
                     <div className="bg-white rounded-2xl shadow-xl p-6">
                       <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                        <BarChart3 className="h-6 w-6 mr-2 text-blue-600" />
+                        <BarChart3 className="h-6 w-6 mr-2 text-rose-600" />
                         Recherches des 7 derniers jours
                       </h3>
                       <div className="h-80">
@@ -9047,7 +9052,7 @@ useEffect(() => {
                                   key={type.key}
                                   className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900/60 dark:text-gray-200"
                                 >
-                                  <span className="inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"></span>
+                                  <span className="inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-rose-500 to-indigo-500"></span>
                                   <span className="capitalize">{type.label}</span>
                                   <span className="text-gray-500 dark:text-gray-400">• {type.value}</span>
                                 </span>
@@ -9064,7 +9069,7 @@ useEffect(() => {
                   <div className="lg:col-span-2">
                     <div className="bg-white rounded-2xl shadow-xl p-6">
                           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                            <FileText className="h-6 w-6 mr-2 text-blue-600" />
+                            <FileText className="h-6 w-6 mr-2 text-rose-600" />
                             Logs de recherche
                           </h3>
                           {isAdmin && (
@@ -9074,11 +9079,11 @@ useEffect(() => {
                                 value={logUserFilter}
                                 onChange={(e) => setLogUserFilter(e.target.value)}
                                 placeholder="Filtrer par utilisateur"
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
                               />
                               <button
                                 onClick={loadStatistics}
-                                className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                className="ml-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700"
                               >
                                 Rechercher
                               </button>
@@ -9094,8 +9099,8 @@ useEffect(() => {
                                   >
                                     <div className="flex-1">
                                       <div className="flex items-center space-x-3">
-                                        <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                                          <User className="h-4 w-4 text-blue-600" />
+                                        <div className="flex items-center justify-center w-8 h-8 bg-rose-100 rounded-full">
+                                          <User className="h-4 w-4 text-rose-600" />
                                         </div>
                                         <div>
                                           <p className="font-medium text-gray-900 dark:text-gray-100">
@@ -9110,7 +9115,7 @@ useEffect(() => {
                                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                           {log.results_count || 0} résultats
                                         </span>
-                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
                                           {log.execution_time_ms || 0}ms
                                         </span>
                                       </div>
@@ -9235,7 +9240,7 @@ useEffect(() => {
                                                 {alertLog?.action || 'blacklist_alert'}
                                               </span>
                                               {pageName && (
-                                                <span className="inline-flex items-center rounded-full border border-blue-200/60 bg-blue-50/70 px-3 py-1 text-xs font-medium text-blue-600 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200">
+                                                <span className="inline-flex items-center rounded-full border border-rose-200/60 bg-rose-50/70 px-3 py-1 text-xs font-medium text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
                                                   {pageName}
                                                 </span>
                                               )}
@@ -9290,15 +9295,15 @@ useEffect(() => {
                           topSearchTerms.slice(0, 9).map((term, index) => (
                             <div
                               key={index}
-                              className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-blue-50 hover:to-blue-100 transition-all dark:from-gray-800 dark:to-gray-700 dark:hover:from-blue-900 dark:hover:to-blue-800"
+                              className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-rose-50 hover:to-rose-100 transition-all dark:from-gray-800 dark:to-gray-700 dark:hover:from-rose-900 dark:hover:to-rose-800"
                             >
                               <div className="flex items-center space-x-3">
-                                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-blue-600 font-bold text-sm dark:bg-blue-900 dark:text-blue-200">
+                                <div className="flex items-center justify-center w-8 h-8 bg-rose-100 rounded-full text-rose-600 font-bold text-sm dark:bg-rose-900 dark:text-rose-200">
                                   {index + 1}
                                 </div>
                                 <span className="font-medium text-gray-900 truncate max-w-xs dark:text-gray-100">"{term.search_term}"</span>
                               </div>
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">
                                 {term.search_count} fois
                               </span>
                             </div>
@@ -9319,7 +9324,7 @@ useEffect(() => {
           {currentPage === 'upload' && isAdmin && (
             <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950" />
-              <div className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10" />
+              <div className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-rose-200/40 blur-3xl dark:bg-rose-500/10" />
               <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-500/10" />
               <div className="relative mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
                 <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
@@ -9334,9 +9339,9 @@ useEffect(() => {
                         Déposez vos fichiers structurés pour alimenter vos analyses et partager des jeux de données fiables avec vos équipes.
                       </p>
                       <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="rounded-2xl border border-blue-100/70 bg-blue-50/80 p-4 text-left shadow-sm dark:border-blue-500/30 dark:bg-blue-950/30">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-blue-700 dark:text-blue-200">Imports réalisés</p>
-                          <p className="mt-2 text-3xl font-bold text-blue-900 dark:text-blue-100">{uploadSummary.totalImports}</p>
+                        <div className="rounded-2xl border border-rose-100/70 bg-rose-50/80 p-4 text-left shadow-sm dark:border-rose-500/30 dark:bg-rose-950/30">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-rose-700 dark:text-rose-200">Imports réalisés</p>
+                          <p className="mt-2 text-3xl font-bold text-rose-900 dark:text-rose-100">{uploadSummary.totalImports}</p>
                         </div>
                         <div className="rounded-2xl border border-emerald-100/70 bg-emerald-50/80 p-4 text-left shadow-sm dark:border-emerald-500/30 dark:bg-emerald-950/30">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700 dark:text-emerald-200">Enregistrements traités</p>
@@ -9351,7 +9356,7 @@ useEffect(() => {
                       </div>
                       <div className="space-y-4">
                         <div className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-sm dark:border-slate-700/60 dark:bg-slate-900/60">
-                          <span className="mt-1 rounded-xl bg-blue-500/10 p-2 text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                          <span className="mt-1 rounded-xl bg-rose-500/10 p-2 text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
                             <FileText className="h-4 w-4" />
                           </span>
                           <div>
@@ -9412,7 +9417,7 @@ useEffect(() => {
                           type="text"
                           required
                           placeholder="ex: transactions_2024"
-                          className="mt-2 w-full rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-200 dark:focus:border-blue-400"
+                          className="mt-2 w-full rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-500/30 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-200 dark:focus:border-rose-400"
                           value={uploadTable}
                           onChange={(e) => setUploadTable(e.target.value)}
                         />
@@ -9426,7 +9431,7 @@ useEffect(() => {
                           accept=".csv"
                           required
                           onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                          className="mt-2 block w-full cursor-pointer rounded-2xl border border-dashed border-slate-300/80 bg-white/60 px-4 py-5 text-sm text-slate-500 shadow-sm transition file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-blue-400 hover:bg-blue-50 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-300 dark:file:bg-blue-500 dark:hover:border-blue-400"
+                          className="mt-2 block w-full cursor-pointer rounded-2xl border border-dashed border-slate-300/80 bg-white/60 px-4 py-5 text-sm text-slate-500 shadow-sm transition file:mr-4 file:rounded-full file:border-0 file:bg-rose-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-rose-400 hover:bg-rose-50 focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-500/20 dark:border-slate-600/70 dark:bg-slate-900/60 dark:text-slate-300 dark:file:bg-rose-500 dark:hover:border-rose-400"
                         />
                         <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
                           Formats supportés : CSV (UTF-8). Conservez la première ligne pour les en-têtes de colonnes.
@@ -9435,7 +9440,7 @@ useEffect(() => {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="group relative flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-4 focus:ring-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="group relative flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-rose-500 hover:via-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-4 focus:ring-rose-500/40 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {loading ? (
                           <span className="flex items-center gap-2">
@@ -9460,7 +9465,7 @@ useEffect(() => {
                         <p className="text-sm text-slate-500 dark:text-slate-400">Suivez vos dernières opérations et consultez les éventuelles erreurs.</p>
                       </div>
                       {uploadSummary.lastImportRelative && (
-                        <span className="inline-flex items-center gap-2 rounded-full bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-200">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-rose-100/70 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200">
                           <Clock className="h-3.5 w-3.5" />
                           Dernier import {uploadSummary.lastImportRelative}
                         </span>
@@ -9490,10 +9495,10 @@ useEffect(() => {
                               key={item.id ?? `${item.table_name}-${index}`}
                               className="group relative overflow-hidden rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white/85 to-white/60 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-xl dark:border-slate-700/60 dark:from-slate-900/60 dark:to-slate-900/40"
                             >
-                              <div className="absolute -right-20 -top-16 h-36 w-36 rounded-full bg-blue-200/40 blur-3xl transition-opacity duration-300 group-hover:opacity-80 dark:bg-blue-500/20" />
+                              <div className="absolute -right-20 -top-16 h-36 w-36 rounded-full bg-rose-200/40 blur-3xl transition-opacity duration-300 group-hover:opacity-80 dark:bg-rose-500/20" />
                               <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                                 <div className="flex items-start gap-3">
-                                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
                                     <Database className="h-5 w-5" />
                                   </span>
                                   <div>
@@ -9580,7 +9585,7 @@ useEffect(() => {
         <button
           type="button"
           onClick={handleScrollToTop}
-          className="group fixed bottom-6 right-6 z-[1000] flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 text-white shadow-[0_15px_40px_rgba(79,70,229,0.35)] transition-all hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 relative"
+          className="group fixed bottom-6 right-6 z-[1000] flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-rose-500 via-indigo-600 to-purple-600 text-white shadow-[0_15px_40px_rgba(79,70,229,0.35)] transition-all hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 relative"
           aria-label="Revenir en haut de la page"
         >
           <span className="absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -9643,7 +9648,7 @@ useEffect(() => {
                               disabled={disabled}
                               checked={disabled ? true : checked}
                               onChange={() => toggleFolderShareUser(member.id)}
-                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                              className="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500"
                             />
                             <span className="text-slate-700 dark:text-slate-200">{member.login}</span>
                           </label>
@@ -9673,7 +9678,7 @@ useEffect(() => {
                 <button
                   type="submit"
                   disabled={folderShareLoading}
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/30 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-rose-500/30 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {folderShareLoading ? 'Enregistrement...' : 'Enregistrer le partage'}
                 </button>
@@ -9699,7 +9704,7 @@ useEffect(() => {
                 <input
                   type="text"
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   value={userFormData.login}
                   onChange={(e) => setUserFormData({ ...userFormData, login: e.target.value })}
                 />
@@ -9712,7 +9717,7 @@ useEffect(() => {
                     type="password"
                     required
                     minLength={8}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                     value={userFormData.password}
                     onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
                   />
@@ -9723,7 +9728,7 @@ useEffect(() => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Rôle</label>
                 <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   value={userFormData.admin}
                   onChange={(e) => handleUserRoleChange(parseInt(e.target.value, 10))}
                 >
@@ -9735,7 +9740,7 @@ useEffect(() => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Division</label>
                 <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   value={userFormData.divisionId ?? 0}
                   onChange={(e) => setUserFormData({ ...userFormData, divisionId: parseInt(e.target.value, 10) })}
                   required={userFormData.admin !== 1}
@@ -9763,7 +9768,7 @@ useEffect(() => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Statut</label>
                 <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                   value={userFormData.active}
                   onChange={(e) => setUserFormData({ ...userFormData, active: parseInt(e.target.value) })}
                 >
@@ -9793,7 +9798,7 @@ useEffect(() => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg disabled:opacity-50 transition-colors"
                 >
                   {loading ? 'Enregistrement...' : (editingUser ? 'Modifier' : 'Créer')}
                 </button>
@@ -9857,7 +9862,7 @@ useEffect(() => {
                               disabled={disabled}
                               checked={disabled ? true : checked}
                               onChange={() => toggleShareUser(member.id)}
-                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                              className="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500"
                             />
                             <span className="text-slate-700 dark:text-slate-200">{member.login}</span>
                           </label>
@@ -9915,7 +9920,7 @@ useEffect(() => {
                     <input
                       type={showPasswords.current ? 'text' : 'password'}
                       required
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                       value={passwordFormData.currentPassword}
                       onChange={(e) => setPasswordFormData({ ...passwordFormData, currentPassword: e.target.value })}
                     />
@@ -9941,7 +9946,7 @@ useEffect(() => {
                     type={showPasswords.new ? 'text' : 'password'}
                     required
                     minLength={8}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                     value={passwordFormData.newPassword}
                     onChange={(e) => setPasswordFormData({ ...passwordFormData, newPassword: e.target.value })}
                   />
@@ -9967,7 +9972,7 @@ useEffect(() => {
                     type={showPasswords.confirm ? 'text' : 'password'}
                     required
                     minLength={8}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                     value={passwordFormData.confirmPassword}
                     onChange={(e) => setPasswordFormData({ ...passwordFormData, confirmPassword: e.target.value })}
                   />
@@ -10001,7 +10006,7 @@ useEffect(() => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg disabled:opacity-50 transition-colors"
                 >
                   {loading ? 'Modification...' : 'Changer le mot de passe'}
                 </button>
