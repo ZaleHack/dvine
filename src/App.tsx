@@ -292,7 +292,7 @@ type DashboardCard = {
   title: string;
   value: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  gradient: string;
+  color: string;
   badge?: {
     label: string;
     tone: string;
@@ -2958,7 +2958,7 @@ const App: React.FC = () => {
         title: 'Recherches totales',
         value: numberFormatter.format(statsData?.total_searches ?? 0),
         icon: Search,
-        gradient: 'from-rose-400 via-fuchsia-500 to-purple-500',
+        color: 'bg-rose-600',
         badge: {
           label: `${numberFormatter.format(statsData?.today_searches ?? 0)} aujourd'hui`,
           tone: 'bg-white/20 text-white'
@@ -2970,7 +2970,7 @@ const App: React.FC = () => {
         title: 'Données disponibles',
         value: numberFormatter.format(dataStats?.sources ?? 0),
         icon: Database,
-        gradient: 'from-sky-400 via-cyan-400 to-emerald-500',
+        color: 'bg-sky-600',
         badge: {
           label: `${numberFormatter.format(dataStats?.total_records ?? 0)} enregistrements`,
           tone: 'bg-white/20 text-white'
@@ -2982,7 +2982,7 @@ const App: React.FC = () => {
         title: 'Transactions financières',
         value: `${numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA`,
         icon: Banknote,
-        gradient: 'from-emerald-400 via-teal-500 to-green-500',
+        color: 'bg-emerald-600',
         badge: {
           label: `${numberFormatter.format(financialStats?.totalTransactions ?? 0)} opérations`,
           tone: 'bg-white/20 text-white'
@@ -2994,7 +2994,7 @@ const App: React.FC = () => {
         title: 'Données d’appels',
         value: numberFormatter.format(callStats?.total ?? 0),
         icon: Phone,
-        gradient: 'from-indigo-400 via-blue-500 to-sky-500',
+        color: 'bg-indigo-600',
         badge: {
           label: `${formatSessionDuration(callStats?.averageDuration ?? 0)} en moyenne`,
           tone: 'bg-white/20 text-white'
@@ -3006,7 +3006,7 @@ const App: React.FC = () => {
         title: 'Profils créés',
         value: numberFormatter.format(profiles?.total ?? 0),
         icon: UserCircle,
-        gradient: 'from-amber-400 via-orange-400 to-rose-500',
+        color: 'bg-amber-500',
         badge: {
           label: `${numberFormatter.format(profiles?.today ?? 0)} aujourd'hui`,
           tone: 'bg-white/20 text-white'
@@ -3018,7 +3018,7 @@ const App: React.FC = () => {
         title: 'Géolocalisation',
         value: numberFormatter.format(operations?.total ?? 0),
         icon: Activity,
-        gradient: 'from-violet-400 via-indigo-500 to-blue-500',
+        color: 'bg-violet-600',
         badge: {
           label: `${numberFormatter.format(operations?.today ?? 0)} nouvelles`,
           tone: 'bg-white/20 text-white'
@@ -3033,7 +3033,7 @@ const App: React.FC = () => {
         title: "Demandes d'identification",
         value: numberFormatter.format(requests?.total ?? 0),
         icon: ClipboardList,
-        gradient: 'from-blue-400 via-indigo-500 to-violet-500',
+        color: 'bg-blue-600',
         badge: {
           label: `${numberFormatter.format(requests?.pending ?? 0)} en attente`,
           tone: 'bg-white/20 text-white'
@@ -4784,17 +4784,16 @@ const App: React.FC = () => {
     return (
       <>
         <div
-          className="min-h-screen flex bg-gradient-to-br from-white via-rose-50 to-red-100 text-red-900 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100"
+          className="min-h-screen flex bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100"
         >
         {!sidebarOpen && (
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="group fixed top-6 left-6 z-[1100] flex h-12 w-12 items-center justify-center rounded-xl border border-red-200 bg-white/95 text-red-700 shadow-lg shadow-red-200 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-red-400 hover:text-red-900 hover:shadow-xl"
+            className="group fixed top-6 left-6 z-[1100] flex h-12 w-12 items-center justify-center rounded-xl border border-rose-200 bg-white/95 text-rose-700 shadow-lg shadow-rose-100 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800 hover:shadow-xl"
             title="Déployer le menu"
             aria-label="Déployer le menu"
           >
-            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-600 to-rose-500 opacity-0 transition-opacity group-hover:opacity-100" />
             <ChevronRight className="relative h-5 w-5" />
           </button>
         )}
@@ -4804,30 +4803,28 @@ const App: React.FC = () => {
           sidebarOpen ? 'w-72' : 'w-20'
         } relative overflow-hidden bg-white/95 border-r border-red-100 backdrop-blur-xl shadow-[0_20px_50px_rgba(225,29,72,0.12)] transition-all duration-300 flex flex-col dark:bg-slate-950/80 dark:border-slate-800/70 dark:shadow-black/40`}
       >
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-rose-50/80 via-white/70 to-transparent dark:from-slate-900/60 dark:via-slate-950/50" />
         {/* Header */}
         <div className="relative p-6 border-b border-red-100/70 dark:border-slate-800/70 dark:bg-slate-950/70">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center gap-0'}`}>
-              <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-600 via-red-500 to-orange-500 text-white shadow-lg shadow-rose-500/30">
+              <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-rose-600 text-white shadow-lg shadow-rose-300/40">
                 <DvineLogo className="h-7 w-7" />
               </div>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-xl font-extrabold bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 bg-clip-text text-transparent tracking-tight">
+                  <h1 className="text-xl font-extrabold text-rose-700 tracking-tight">
                     Dvine Intelligence
                   </h1>
-                  <p className="text-xs font-semibold text-red-600">Analyse et Géolocalisation</p>
+                  <p className="text-xs font-semibold text-rose-600">Analyse et Géolocalisation</p>
                 </div>
               )}
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-white text-red-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-red-400 hover:text-red-800 hover:shadow-lg"
+                className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800 hover:shadow-lg"
                 title={sidebarOpen ? 'Réduire le menu' : 'Déployer le menu'}
               >
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-600 to-rose-500 opacity-0 transition-opacity group-hover:opacity-100" />
                 <span className="relative">
                   {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                 </span>
@@ -4842,15 +4839,15 @@ const App: React.FC = () => {
             {menuSections.map((section) => (
               <div
                 key={section.title}
-                className={`rounded-2xl border border-red-100 bg-white/90 shadow-lg shadow-red-100/50 backdrop-blur transition-all ${sidebarOpen ? 'p-4' : 'p-3'}`}
+                className={`rounded-2xl border border-rose-100 bg-white/90 shadow-lg shadow-rose-100/50 backdrop-blur transition-all ${sidebarOpen ? 'p-4' : 'p-3'}`}
               >
                 {sidebarOpen && (
                   <div className="mb-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-red-500">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-rose-500">
                       {section.title}
                     </p>
                     {section.description && (
-                      <p className="mt-1 text-xs text-red-600/80">{section.description}</p>
+                      <p className="mt-1 text-xs text-rose-600/80">{section.description}</p>
                     )}
                   </div>
                 )}
@@ -4863,10 +4860,10 @@ const App: React.FC = () => {
                         key={item.page}
                         onClick={() => navigateToPage(item.page)}
                         title={item.label}
-                        className={`group relative flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'} gap-3 rounded-xl border ${isActive ? 'border-red-500 bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-lg shadow-red-200' : 'border-red-100 bg-white text-red-800 shadow-sm hover:-translate-y-0.5 hover:border-red-300 hover:shadow-md'} px-3 py-3 text-sm font-semibold transition-all`}
+                        className={`group relative flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'} gap-3 rounded-xl border ${isActive ? 'border-rose-500 bg-rose-600 text-white shadow-lg shadow-rose-200' : 'border-rose-100 bg-white text-slate-800 shadow-sm hover:-translate-y-0.5 hover:border-rose-200 hover:bg-rose-50 hover:shadow-md'} px-3 py-3 text-sm font-semibold transition-all`}
                       >
                         <span
-                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-red-50 text-red-600 group-hover:bg-red-100'}`}
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-rose-50 text-rose-600 group-hover:bg-rose-100'}`}
                         >
                           <Icon className="h-5 w-5" />
                         </span>
@@ -4883,9 +4880,8 @@ const App: React.FC = () => {
         {/* User info */}
         <div className="absolute inset-x-0 bottom-0 z-20">
           <div className="relative border-t border-white/60 bg-white/90 p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-gray-800/70 dark:bg-gray-900/85 dark:shadow-black/40">
-            <div className="pointer-events-none absolute inset-x-0 -top-6 h-6 bg-gradient-to-t from-white/90 via-white/40 to-transparent dark:from-gray-900/80" />
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center'}`}>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-500 via-gray-600 to-gray-800 text-white shadow-md shadow-gray-500/30">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-700 text-white shadow-md shadow-gray-500/30">
                 <User className="h-5 w-5" />
               </div>
               {sidebarOpen && (
@@ -4893,12 +4889,12 @@ const App: React.FC = () => {
                   <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{currentUser?.login}</p>
                   <div className="mt-1 flex items-center gap-2">
                     {isAdmin ? (
-                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-rose-500/20 to-orange-500/20 px-2.5 py-0.5 text-xs font-semibold text-rose-600 dark:text-rose-300">
+                      <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-900/40 dark:text-rose-200">
                         <Shield className="mr-1 h-3 w-3" />
                         Admin
                       </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-rose-500/20 to-cyan-500/20 px-2.5 py-0.5 text-xs font-semibold text-rose-600 dark:text-rose-300">
+                      <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-900/40 dark:text-rose-200">
                         <UserCheck className="mr-1 h-3 w-3" />
                         Utilisateur
                       </span>
@@ -7152,8 +7148,8 @@ const App: React.FC = () => {
                             onDragEnd={handleCardDragEnd}
                           className={`relative overflow-hidden rounded-3xl p-6 shadow-xl transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-white/70 scale-[1.02]' : 'hover:-translate-y-1'}`}
                         >
-                          <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-90`}></div>
-                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.25),transparent)]"></div>
+                          <div className={`absolute inset-0 ${card.color}`}></div>
+                          <div className="absolute inset-0 bg-white/5"></div>
                             <div className="relative z-10 flex flex-col h-full text-white">
                               <div className="flex items-start justify-between gap-4">
                                 <div>
@@ -7319,7 +7315,7 @@ const App: React.FC = () => {
                               {item.progress !== undefined && (
                                 <div className="mt-3 h-2 rounded-full bg-white/60 dark:bg-gray-800/70">
                                   <div
-                                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                                    className="h-full rounded-full bg-indigo-500"
                                     style={{ width: `${item.progress}%` }}
                                   ></div>
                                 </div>
@@ -7332,11 +7328,81 @@ const App: React.FC = () => {
 
                       <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                          <BarChart3 className="h-6 w-6 mr-2 text-emerald-600 dark:text-emerald-400" />
+                          Transactions & appels
+                        </h3>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="rounded-2xl border border-gray-100 bg-emerald-50 p-4 shadow-sm dark:border-gray-700/60 dark:bg-gray-900/60">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Transactions</p>
+                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                  {numberFormatter.format(financialStats?.totalTransactions ?? 0)}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                  Montant total : {numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA
+                                </p>
+                              </div>
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white">
+                                <Banknote className="h-5 w-5" />
+                              </span>
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-200">
+                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
+                                <p className="font-semibold text-emerald-700 dark:text-emerald-300">Moyenne</p>
+                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+                                  {numberFormatter.format(financialStats?.averageAmount ?? 0)} FCFA
+                                </p>
+                              </div>
+                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
+                                <p className="font-semibold text-emerald-700 dark:text-emerald-300">Max</p>
+                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+                                  {numberFormatter.format(financialStats?.maxAmount ?? 0)} FCFA
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-gray-100 bg-indigo-50 p-4 shadow-sm dark:border-gray-700/60 dark:bg-gray-900/60">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Appels</p>
+                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                  {numberFormatter.format(callStats?.total ?? 0)}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                  Durée moyenne : {formatSessionDuration(callStats?.averageDuration ?? 0)}
+                                </p>
+                              </div>
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-indigo-600 text-white">
+                                <Phone className="h-5 w-5" />
+                              </span>
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-200">
+                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
+                                <p className="font-semibold text-indigo-700 dark:text-indigo-300">Durée max</p>
+                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+                                  {formatSessionDuration(callStats?.maxDuration ?? 0)}
+                                </p>
+                              </div>
+                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
+                                <p className="font-semibold text-indigo-700 dark:text-indigo-300">Dernier appel</p>
+                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+                                  {callStats?.lastCallAt ? format(parseISO(callStats.lastCallAt), 'dd MMM yyyy', { locale: fr }) : 'Aucune donnée'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                           <Activity className="h-6 w-6 mr-2 text-rose-600 dark:text-rose-400" />
                           Profils & opérations
                         </h3>
                         <div className="space-y-6">
-                          <div className="rounded-2xl border border-gray-100 dark:border-gray-700/60 p-5 bg-gradient-to-br from-rose-50 via-white to-white dark:from-rose-950/30 dark:via-gray-900/60">
+                          <div className="rounded-2xl border border-gray-100 dark:border-gray-700/60 p-5 bg-rose-50 dark:bg-gray-900/60">
                             <div className="flex items-start justify-between gap-4">
                               <div>
                                 <p className="text-sm font-semibold text-rose-600 dark:text-rose-300">Profils enregistrés</p>
@@ -7356,13 +7422,13 @@ const App: React.FC = () => {
                             </div>
                             <div className="mt-4 h-2 rounded-full bg-rose-100 dark:bg-rose-900/40">
                               <div
-                                className="h-full rounded-full bg-gradient-to-r from-rose-500 to-fuchsia-500"
+                                className="h-full rounded-full bg-rose-500"
                                 style={{ width: `${profileProgress}%` }}
                               ></div>
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-gray-100 dark:border-gray-700/60 p-5 bg-gradient-to-br from-amber-50 via-white to-white dark:from-amber-950/30 dark:via-gray-900/60">
+                          <div className="rounded-2xl border border-gray-100 dark:border-gray-700/60 p-5 bg-amber-50 dark:bg-gray-900/60">
                             <div className="flex items-start justify-between gap-4">
                               <div>
                                 <p className="text-sm font-semibold text-amber-600 dark:text-amber-300">Géolocalisation</p>
@@ -7382,7 +7448,7 @@ const App: React.FC = () => {
                             </div>
                             <div className="mt-4 h-2 rounded-full bg-amber-100 dark:bg-amber-900/40">
                               <div
-                                className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
+                                className="h-full rounded-full bg-amber-500"
                                 style={{ width: `${operationsProgress}%` }}
                               ></div>
                             </div>
@@ -7398,7 +7464,7 @@ const App: React.FC = () => {
                                   key={type.key}
                                   className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900/60 dark:text-gray-200"
                                 >
-                                  <span className="inline-flex h-2 w-2 rounded-full bg-gradient-to-r from-rose-500 to-indigo-500"></span>
+                                  <span className="inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
                                   <span className="capitalize">{type.label}</span>
                                   <span className="text-gray-500 dark:text-gray-400">• {type.value}</span>
                                 </span>
