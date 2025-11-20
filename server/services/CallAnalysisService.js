@@ -1,4 +1,5 @@
 import database from '../config/database.js';
+import { PassThrough } from 'stream';
 
 const TABLE_NAME = '`di_autres`.`cdr_mtn__airtel_in_out`';
 
@@ -196,6 +197,128 @@ class CallAnalysisService {
       hourlyDistribution,
       recentVolume
     };
+  }
+
+  async generateReport(params) {
+    const result = await this.searchCalls(params);
+    const { default: PDFDocument } = await import('pdfkit');
+
+    const doc = new PDFDocument({ margin: 50, compress: false });
+    const stream = new PassThrough();
+    const chunks = [];
+    doc.pipe(stream);
+
+    const formatDateTime = (value) => {
+      if (!value) return '—';
+      const date = value instanceof Date ? value : new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString('fr-FR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    const formatDurationValue = (seconds) => {
+      const safeSeconds = Math.max(0, Math.round(Number(seconds || 0)));
+      const minutes = Math.floor(safeSeconds / 60);
+      const remainingSeconds = safeSeconds % 60;
+      if (minutes === 0) return `${remainingSeconds}s`;
+      return `${minutes}m ${remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds}s`;
+    };
+
+    const addKeyValue = (label, value) => {
+      doc
+        .fontSize(10)
+        .fillColor('#0F172A')
+        .text(`${label}: `, { continued: true })
+        .fillColor('#374151')
+        .text(value);
+    };
+
+    const buffer = await new Promise((resolve, reject) => {
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      try {
+        doc
+          .fontSize(18)
+          .fillColor('#0F172A')
+          .text('Analyse des appels', { align: 'left' })
+          .moveDown(0.25);
+
+        doc.fontSize(10).fillColor('#6B7280').text(`Généré le ${formatDateTime(new Date())}`);
+        doc.moveDown();
+
+        doc
+          .fontSize(12)
+          .fillColor('#0F172A')
+          .text('Synthèse de la recherche', { underline: false })
+          .moveDown(0.35);
+
+        addKeyValue('Numéro analysé', result.number || 'Non précisé');
+        addKeyValue('Résultats inclus', `${result.calls.length} / ${result.limit}`);
+        addKeyValue('Appels entrants', `${result.summary.asCallee}`);
+        addKeyValue('Appels sortants', `${result.summary.asCaller}`);
+        addKeyValue('Durée cumulée', formatDurationValue(result.summary.totalDuration));
+        addKeyValue('Durée moyenne', formatDurationValue(result.summary.averageDuration));
+        addKeyValue('Durée max', formatDurationValue(result.summary.maxDuration));
+
+        const periodLabel = `${params.startDate || 'Non défini'} ${params.startTime || ''} → ${params.endDate || 'Non défini'} ${
+          params.endTime || ''
+        }`;
+        addKeyValue('Période filtrée', periodLabel.trim());
+
+        doc.moveDown();
+
+        if (result.summary.providerBreakdown?.length) {
+          doc.fontSize(12).fillColor('#0F172A').text('Top opérateurs');
+          doc.moveDown(0.25);
+          result.summary.providerBreakdown.slice(0, 5).forEach((entry) => {
+            addKeyValue(entry.label || 'Non renseigné', `${entry.count} appels`);
+          });
+          doc.moveDown();
+        }
+
+        doc.fontSize(12).fillColor('#0F172A').text('Chronologie des appels');
+        doc.moveDown(0.35);
+
+        result.calls.forEach((call) => {
+          doc
+            .fontSize(10)
+            .fillColor('#111827')
+            .text(
+              `${formatDateTime(call.start_time)} • ${call.calling_id} → ${call.called_id} (${formatDurationValue(call.duration)})`
+            );
+          doc
+            .fontSize(9)
+            .fillColor('#6B7280')
+            .text(`Origine: ${call.org_pcip || 'N/A'} | Destination: ${call.dst_pcip || 'N/A'} | Cause: ${
+              call.release_cause || '—'
+            }`)
+            .moveDown(0.5);
+        });
+
+        doc.moveDown(1);
+        doc
+          .fontSize(10)
+          .fillColor('#0F172A')
+          .text('Signature : Dvine Intelligence', { align: 'right' });
+      } catch (error) {
+        reject(error);
+        return;
+      } finally {
+        doc.end();
+      }
+    });
+
+    const sanitizedNumber = result.number ? result.number.replace(/[^0-9+]/g, '') : 'analyse';
+    const fileName = `analyse-appels-${sanitizedNumber || 'export'}.pdf`;
+
+    return { buffer, fileName };
   }
 }
 

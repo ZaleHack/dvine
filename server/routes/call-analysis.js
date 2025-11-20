@@ -28,4 +28,19 @@ router.get('/stats', authenticate, async (_req, res) => {
   }
 });
 
+router.get('/export', authenticate, async (req, res) => {
+  try {
+    const { buffer, fileName } = await callAnalysisService.generateReport(req.query || {});
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(buffer);
+  } catch (error) {
+    if (error?.message === 'NUMERO_REQUIS') {
+      return res.status(400).json({ error: 'Numéro de téléphone requis' });
+    }
+    console.error('Erreur export analyse des appels:', error);
+    res.status(500).json({ error: "Impossible de générer le rapport PDF" });
+  }
+});
+
 export default router;
