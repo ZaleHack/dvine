@@ -1139,7 +1139,7 @@ export default {
     display: 'upload_history',
     database: 'di_autres',
     searchable: ['table_name', 'file_name', 'upload_mode'],
-    preview: ['table_name', 'file_name', 'total_rows', 'success_rows'],
+    preview: ['table_name', 'file_name', 'total_rows', 'success_rows', 'error_rows'],
     filters: {
       user_id: 'number',
       created_at: 'date'
