@@ -1746,6 +1746,12 @@ const App: React.FC = () => {
   }, [uploadHistoryPerPage]);
 
   const parseRowCount = useCallback((value: unknown) => {
+    if (typeof value === 'string') {
+      const cleanedValue = value.replace(/[^0-9.-]/g, '');
+      const parsed = Number(cleanedValue);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    }
+
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
   }, []);
@@ -1796,7 +1802,9 @@ const App: React.FC = () => {
       const normalizedItem = normalizeUploadRecord(item);
       const currentTotal = parseRowCount(normalizedItem.total_rows);
       const currentErrors = parseRowCount(normalizedItem.error_rows);
-      const currentSuccess = parseRowCount(normalizedItem.success_rows || currentTotal - currentErrors);
+      const currentSuccess = parseRowCount(
+        normalizedItem.success_rows ?? currentTotal - currentErrors
+      );
 
       totalRows += currentTotal;
       errorRows += currentErrors;
