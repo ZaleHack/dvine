@@ -3048,14 +3048,14 @@ const App: React.FC = () => {
       {
         id: 'data',
         title: 'Données disponibles',
-        value: numberFormatter.format(dataStats?.total_records ?? 0),
+        value: numberFormatter.format(dataStats?.sources ?? 0),
         icon: Database,
         gradient: 'from-emerald-500 via-teal-500 to-cyan-600',
         badge: {
-          label: `${numberFormatter.format(dataStats?.sources ?? 0)} sources`,
+          label: `${numberFormatter.format(dataStats?.total_records ?? 0)} enregistrements`,
           tone: 'bg-white/20 text-white'
         },
-        description: 'Volume total de données exploitables via la plateforme'
+        description: 'Nombre de bases de données disponibles et synchronisées'
       },
       {
         id: 'profiles',
