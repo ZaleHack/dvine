@@ -7120,12 +7120,12 @@ const App: React.FC = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
                   <span className="ml-4 text-lg text-gray-600">Chargement des statistiques...</span>
                 </div>
-              ) : (
-                <>
-                  {/* Métriques principales */}
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <p className="text-sm text-gray-500 dark:text-gray-300">
+                ) : (
+                  <React.Fragment>
+                    {/* Métriques principales */}
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <p className="text-sm text-gray-500 dark:text-gray-300">
                         Glissez-déposez les cartes pour personnaliser votre tableau de bord.
                       </p>
                       <button
@@ -7734,10 +7734,10 @@ const App: React.FC = () => {
                         )}
                       </div>
                     </div>
-                </>
-              )}
-            </div>
-          )}
+                  </React.Fragment>
+                )}
+              </div>
+            )}
 
           {currentPage === 'upload' && isAdmin && (
             <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
