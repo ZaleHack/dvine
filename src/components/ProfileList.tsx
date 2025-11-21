@@ -1129,8 +1129,8 @@ const ProfileList: React.FC<ProfileListProps> = ({
                 disabled={creatingFolder}
                 className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
                   showCreateFolderForm
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-400/40 hover:shadow-2xl'
-                    : 'border border-white/70 bg-white/60 text-blue-600 shadow-inner shadow-blue-100/60 hover:bg-white/80 dark:border-slate-700/70 dark:bg-slate-900/60 dark:text-blue-200 dark:hover:bg-slate-900/80'
+                    ? 'bg-gradient-to-r from-rose-600 via-red-600 to-orange-500 text-white shadow-lg shadow-rose-400/40 hover:shadow-2xl'
+                    : 'border border-white/70 bg-white/60 text-rose-600 shadow-inner shadow-rose-100/60 hover:bg-white/80 dark:border-rose-500/40 dark:bg-slate-900/60 dark:text-rose-200 dark:hover:bg-slate-900/80'
                 } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 {showCreateFolderForm ? (
