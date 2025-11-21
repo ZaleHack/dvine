@@ -7147,10 +7147,10 @@ const App: React.FC = () => {
                             onDragOver={handleCardDragOver}
                             onDrop={handleCardDrop(card.id)}
                             onDragEnd={handleCardDragEnd}
-                          className={`relative overflow-hidden rounded-3xl p-6 shadow-xl transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-white/70 scale-[1.02]' : 'hover:-translate-y-1'}`}
-                        >
-                          <div className={`absolute inset-0 ${card.color}`}></div>
-                          <div className="absolute inset-0 bg-white/5"></div>
+                            className={`relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-slate-900 p-6 text-white shadow-xl shadow-cyan-900/40 transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-cyan-300/70 scale-[1.02]' : 'hover:-translate-y-1'}`}
+                          >
+                          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/15 via-slate-900/40 to-amber-400/10"></div>
+                          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
                             <div className="relative z-10 flex flex-col h-full text-white">
                               <div className="flex items-start justify-between gap-4">
                                 <div>
@@ -7171,7 +7171,7 @@ const App: React.FC = () => {
                               </div>
                               {card.badge && (
                                 <div className="mt-auto pt-6">
-                                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm border border-white/30 ${card.badge.tone}`}>
+                                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm border border-cyan-200/50 text-white ${card.badge.tone}`}>
                                     {card.badge.label}
                                   </span>
                                 </div>
@@ -7186,9 +7186,9 @@ const App: React.FC = () => {
                   {/* Graphiques */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Graphique des recherches par jour */}
-                    <div className="bg-white rounded-2xl shadow-xl p-6">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                        <BarChart3 className="h-6 w-6 mr-2 text-rose-600" />
+                    <div className="rounded-3xl border border-cyan-500/20 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-cyan-900/40">
+                      <h3 className="text-xl font-bold mb-4 flex items-center text-white">
+                        <BarChart3 className="h-6 w-6 mr-2 text-cyan-400" />
                         Recherches des 7 derniers jours
                       </h3>
                       <div className="h-80">
@@ -7233,9 +7233,9 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Graphique des temps de réponse */}
-                    <div className="bg-white rounded-2xl shadow-xl p-6">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                        <Timer className="h-6 w-6 mr-2 text-purple-600" />
+                    <div className="rounded-3xl border border-amber-300/20 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-amber-900/30">
+                      <h3 className="text-xl font-bold mb-4 flex items-center text-white">
+                        <Timer className="h-6 w-6 mr-2 text-amber-300" />
                         Temps de réponse (ms)
                       </h3>
                       <div className="h-80">
@@ -7283,9 +7283,9 @@ const App: React.FC = () => {
                   {/* Activité opérationnelle */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="space-y-6">
-                      <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                          <ClipboardList className="h-6 w-6 mr-2 text-indigo-600 dark:text-indigo-400" />
+                      <div className="rounded-3xl border border-cyan-500/15 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-cyan-900/30">
+                        <h3 className="text-xl font-bold mb-4 flex items-center text-white">
+                          <ClipboardList className="h-6 w-6 mr-2 text-cyan-400" />
                           Activité des demandes
                         </h3>
                         <div className="space-y-4">
@@ -7294,29 +7294,29 @@ const App: React.FC = () => {
                             return (
                             <div
                               key={item.key}
-                              className="rounded-2xl border border-gray-100 dark:border-gray-700/60 bg-gray-50/60 dark:bg-gray-900/40 px-4 py-4"
+                              className="rounded-2xl border border-cyan-500/10 bg-slate-900/70 px-4 py-4 shadow-inner shadow-black/20"
                             >
                               <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-3">
-                                  <span className={`flex h-11 w-11 items-center justify-center rounded-full ${item.tone}`}>
+                                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-500/20 text-cyan-100">
                                     <Icon className="h-5 w-5" />
                                   </span>
                                   <div>
-                                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-100">{item.label}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.caption}</p>
+                                    <p className="text-sm font-semibold text-white">{item.label}</p>
+                                    <p className="text-xs text-slate-300">{item.caption}</p>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{numberFormatter.format(item.value)}</p>
+                                  <p className="text-xl font-bold text-white">{numberFormatter.format(item.value)}</p>
                                   {item.progress !== undefined && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.progress}% du total</p>
+                                    <p className="text-xs text-slate-300">{item.progress}% du total</p>
                                   )}
                                 </div>
                               </div>
                               {item.progress !== undefined && (
-                                <div className="mt-3 h-2 rounded-full bg-white/60 dark:bg-gray-800/70">
+                                <div className="mt-3 h-2 rounded-full bg-slate-800">
                                   <div
-                                    className="h-full rounded-full bg-indigo-500"
+                                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-300"
                                     style={{ width: `${item.progress}%` }}
                                   ></div>
                                 </div>
@@ -7327,153 +7327,153 @@ const App: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                          <BarChart3 className="h-6 w-6 mr-2 text-emerald-600 dark:text-emerald-400" />
+                      <div className="rounded-3xl border border-emerald-400/15 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-emerald-900/30">
+                        <h3 className="text-xl font-bold mb-4 flex items-center text-white">
+                          <BarChart3 className="h-6 w-6 mr-2 text-emerald-300" />
                           Transactions & appels
                         </h3>
                         <div className="grid gap-4 md:grid-cols-2">
-                          <div className="rounded-2xl border border-gray-100 bg-emerald-50 p-4 shadow-sm dark:border-gray-700/60 dark:bg-gray-900/60">
+                          <div className="rounded-2xl border border-emerald-400/20 bg-slate-900/70 p-4 shadow-inner shadow-black/20">
                             <div className="flex items-start justify-between gap-3">
                               <div>
-                                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Transactions</p>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                <p className="text-sm font-semibold text-emerald-200">Transactions</p>
+                                <p className="mt-2 text-2xl font-bold text-white">
                                   {numberFormatter.format(financialStats?.totalTransactions ?? 0)}
                                 </p>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                <p className="text-sm text-slate-300">
                                   Montant total : {numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA
                                 </p>
                               </div>
-                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white">
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/25 text-emerald-100">
                                 <Banknote className="h-5 w-5" />
                               </span>
                             </div>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-200">
-                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
-                                <p className="font-semibold text-emerald-700 dark:text-emerald-300">Moyenne</p>
-                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-100">
+                              <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
+                                <p className="font-semibold text-emerald-200">Moyenne</p>
+                                <p className="mt-1 text-sm font-bold text-white">
                                   {numberFormatter.format(financialStats?.averageAmount ?? 0)} FCFA
                                 </p>
                               </div>
-                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
-                                <p className="font-semibold text-emerald-700 dark:text-emerald-300">Max</p>
-                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+                              <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
+                                <p className="font-semibold text-emerald-200">Max</p>
+                                <p className="mt-1 text-sm font-bold text-white">
                                   {numberFormatter.format(financialStats?.maxAmount ?? 0)} FCFA
                                 </p>
                               </div>
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-gray-100 bg-indigo-50 p-4 shadow-sm dark:border-gray-700/60 dark:bg-gray-900/60">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Appels</p>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                  {numberFormatter.format(callStats?.total ?? 0)}
-                                </p>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
-                                  Durée moyenne : {formatSessionDuration(callStats?.averageDuration ?? 0)}
-                                </p>
+                            <div className="rounded-2xl border border-cyan-400/20 bg-slate-900/70 p-4 shadow-inner shadow-black/20">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-semibold text-cyan-200">Appels</p>
+                                  <p className="mt-2 text-2xl font-bold text-white">
+                                    {numberFormatter.format(callStats?.total ?? 0)}
+                                  </p>
+                                  <p className="text-sm text-slate-300">
+                                    Durée moyenne : {formatSessionDuration(callStats?.averageDuration ?? 0)}
+                                  </p>
+                                </div>
+                                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-cyan-500/25 text-cyan-100">
+                                  <Phone className="h-5 w-5" />
+                                </span>
                               </div>
-                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-indigo-600 text-white">
-                                <Phone className="h-5 w-5" />
-                              </span>
+                              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-100">
+                                <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
+                                  <p className="font-semibold text-cyan-200">Durée max</p>
+                                  <p className="mt-1 text-sm font-bold text-white">
+                                    {formatSessionDuration(callStats?.maxDuration ?? 0)}
+                                  </p>
+                                </div>
+                                <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
+                                  <p className="font-semibold text-cyan-200">Dernier appel</p>
+                                  <p className="mt-1 text-sm font-bold text-white">
+                                    {callStats?.lastCallAt ? format(parseISO(callStats.lastCallAt), 'dd MMM yyyy', { locale: fr }) : 'Aucune donnée'}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-200">
-                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
-                                <p className="font-semibold text-indigo-700 dark:text-indigo-300">Durée max</p>
-                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
-                                  {formatSessionDuration(callStats?.maxDuration ?? 0)}
-                                </p>
-                              </div>
-                              <div className="rounded-xl bg-white/80 p-3 shadow-sm dark:bg-gray-800/70">
-                                <p className="font-semibold text-indigo-700 dark:text-indigo-300">Dernier appel</p>
-                                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-gray-100">
-                                  {callStats?.lastCallAt ? format(parseISO(callStats.lastCallAt), 'dd MMM yyyy', { locale: fr }) : 'Aucune donnée'}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
                         </div>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                          <Activity className="h-6 w-6 mr-2 text-rose-600 dark:text-rose-400" />
+                      <div className="rounded-3xl border border-amber-400/15 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-amber-900/30">
+                        <h3 className="text-xl font-bold mb-4 flex items-center text-white">
+                          <Activity className="h-6 w-6 mr-2 text-amber-300" />
                           Profils & opérations
                         </h3>
                         <div className="space-y-6">
-                          <div className="rounded-2xl border border-gray-100 dark:border-gray-700/60 p-5 bg-rose-50 dark:bg-gray-900/60">
+                          <div className="rounded-2xl border border-cyan-400/20 p-5 bg-slate-900/70">
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <p className="text-sm font-semibold text-rose-600 dark:text-rose-300">Profils enregistrés</p>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{numberFormatter.format(profilesTotal)}</p>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-rose-700 dark:text-rose-200">
-                                  <span className="inline-flex items-center rounded-full bg-white/70 dark:bg-white/10 px-3 py-1">
+                                <p className="text-sm font-semibold text-cyan-200">Profils enregistrés</p>
+                                <p className="mt-2 text-2xl font-bold text-white">{numberFormatter.format(profilesTotal)}</p>
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-cyan-100">
+                                  <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
                                     Aujourd'hui : {numberFormatter.format(profileStats?.today ?? 0)}
                                   </span>
-                                  <span className="inline-flex items-center rounded-full bg-white/70 dark:bg-white/10 px-3 py-1">
+                                  <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
                                     30 derniers jours : {numberFormatter.format(profilesRecent)}
                                   </span>
                                 </div>
                               </div>
-                              <span className="inline-flex items-center justify-center p-3 rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/50 dark:text-rose-200">
+                              <span className="inline-flex items-center justify-center p-3 rounded-full bg-cyan-500/25 text-cyan-100">
                                 <UserCircle className="h-6 w-6" />
                               </span>
                             </div>
-                            <div className="mt-4 h-2 rounded-full bg-rose-100 dark:bg-rose-900/40">
+                            <div className="mt-4 h-2 rounded-full bg-slate-800">
                               <div
-                                className="h-full rounded-full bg-rose-500"
+                                className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-300"
                                 style={{ width: `${profileProgress}%` }}
                               ></div>
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-gray-100 dark:border-gray-700/60 p-5 bg-amber-50 dark:bg-gray-900/60">
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <p className="text-sm font-semibold text-amber-600 dark:text-amber-300">Géolocalisation</p>
-                                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{numberFormatter.format(operationsTotal)}</p>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-amber-700 dark:text-amber-200">
-                                  <span className="inline-flex items-center rounded-full bg-white/70 dark:bg-white/10 px-3 py-1">
-                                    Aujourd'hui : {numberFormatter.format(operationStats?.today ?? 0)}
-                                  </span>
-                                  <span className="inline-flex items-center rounded-full bg-white/70 dark:bg-white/10 px-3 py-1">
-                                    30 derniers jours : {numberFormatter.format(operationsRecent)}
-                                  </span>
+                            <div className="rounded-2xl border border-amber-300/20 p-5 bg-slate-900/70">
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <p className="text-sm font-semibold text-amber-200">Géolocalisation</p>
+                                  <p className="mt-2 text-2xl font-bold text-white">{numberFormatter.format(operationsTotal)}</p>
+                                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-amber-100">
+                                    <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
+                                      Aujourd'hui : {numberFormatter.format(operationStats?.today ?? 0)}
+                                    </span>
+                                    <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
+                                      30 derniers jours : {numberFormatter.format(operationsRecent)}
+                                    </span>
+                                  </div>
                                 </div>
+                                <span className="inline-flex items-center justify-center p-3 rounded-full bg-amber-500/25 text-amber-100">
+                                  <Activity className="h-6 w-6" />
+                                </span>
                               </div>
-                              <span className="inline-flex items-center justify-center p-3 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-200">
-                                <Activity className="h-6 w-6" />
-                              </span>
-                            </div>
-                            <div className="mt-4 h-2 rounded-full bg-amber-100 dark:bg-amber-900/40">
-                              <div
-                                className="h-full rounded-full bg-amber-500"
-                                style={{ width: `${operationsProgress}%` }}
-                              ></div>
-                            </div>
+                              <div className="mt-4 h-2 rounded-full bg-slate-800">
+                                <div
+                                  className="h-full rounded-full bg-gradient-to-r from-amber-300 via-cyan-400 to-emerald-400"
+                                  style={{ width: `${operationsProgress}%` }}
+                                ></div>
+                              </div>
                           </div>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700/60">
-                          <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Types de recherche</h4>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {searchTypeChips.length > 0 ? (
-                              searchTypeChips.map(type => (
-                                <span
-                                  key={type.key}
-                                  className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900/60 dark:text-gray-200"
-                                >
-                                  <span className="inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
-                                  <span className="capitalize">{type.label}</span>
-                                  <span className="text-gray-500 dark:text-gray-400">• {type.value}</span>
-                                </span>
-                              ))
-                            ) : (
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Aucun historique de type de recherche disponible.</p>
-                            )}
-                          </div>
+                          <div className="mt-6 pt-4 border-t border-cyan-500/20">
+                            <h4 className="text-sm font-semibold uppercase tracking-wide text-cyan-200">Types de recherche</h4>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {searchTypeChips.length > 0 ? (
+                                searchTypeChips.map(type => (
+                                  <span
+                                    key={type.key}
+                                    className="inline-flex items-center gap-2 rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-cyan-50 border border-cyan-500/20"
+                                  >
+                                    <span className="inline-flex h-2 w-2 rounded-full bg-amber-300"></span>
+                                    <span className="capitalize">{type.label}</span>
+                                    <span className="text-cyan-200">• {type.value}</span>
+                                  </span>
+                                ))
+                              ) : (
+                                <p className="text-sm text-cyan-100">Aucun historique de type de recherche disponible.</p>
+                              )}
+                            </div>
                         </div>
                     </div>
                   </div>
