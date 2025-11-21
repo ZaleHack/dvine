@@ -7120,8 +7120,8 @@ const App: React.FC = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
                   <span className="ml-4 text-lg text-gray-600">Chargement des statistiques...</span>
                 </div>
-                ) : (
-                  <React.Fragment>
+              ) : (
+                <React.Fragment>
                     {/* Métriques principales */}
                     <div className="space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -7700,40 +7700,38 @@ const App: React.FC = () => {
                           )}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Termes de recherche populaires */}
-                    <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
-                      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center dark:text-gray-100">
-                        <TrendingUp className="h-6 w-6 mr-2 text-orange-600 dark:text-orange-400" />
-                        Termes de recherche populaires
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {topSearchTerms.length > 0 ? (
-                          topSearchTerms.slice(0, 9).map((term, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-rose-50 hover:to-rose-100 transition-all dark:from-gray-800 dark:to-gray-700 dark:hover:from-rose-900 dark:hover:to-rose-800"
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div className="flex items-center justify-center w-8 h-8 bg-rose-100 rounded-full text-rose-600 font-bold text-sm dark:bg-rose-900 dark:text-rose-200">
-                                  {index + 1}
+                        {/* Termes de recherche populaires */}
+                        <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
+                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center dark:text-gray-100">
+                            <TrendingUp className="h-6 w-6 mr-2 text-orange-600 dark:text-orange-400" />
+                            Termes de recherche populaires
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {topSearchTerms.length > 0 ? (
+                              topSearchTerms.slice(0, 9).map((term, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-rose-50 hover:to-rose-100 transition-all dark:from-gray-800 dark:to-gray-700 dark:hover:from-rose-900 dark:hover:to-rose-800"
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <div className="flex items-center justify-center w-8 h-8 bg-rose-100 rounded-full text-rose-600 font-bold text-sm dark:bg-rose-900 dark:text-rose-200">
+                                      {index + 1}
+                                    </div>
+                                    <span className="font-medium text-gray-900 truncate max-w-xs dark:text-gray-100">"{term.search_term}"</span>
+                                  </div>
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">
+                                    {term.search_count} fois
+                                  </span>
                                 </div>
-                                <span className="font-medium text-gray-900 truncate max-w-xs dark:text-gray-100">"{term.search_term}"</span>
+                              ))
+                            ) : (
+                              <div className="col-span-full text-center py-8">
+                                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4 dark:text-gray-500" />
+                                <p className="text-gray-500 dark:text-gray-400">Aucun terme de recherche populaire</p>
                               </div>
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">
-                                {term.search_count} fois
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="col-span-full text-center py-8">
-                            <Search className="mx-auto h-12 w-12 text-gray-400 mb-4 dark:text-gray-500" />
-                            <p className="text-gray-500 dark:text-gray-400">Aucun terme de recherche populaire</p>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
+                        </div>
                   </React.Fragment>
                 )}
               </div>
