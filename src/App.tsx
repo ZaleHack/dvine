@@ -7281,200 +7281,205 @@ const App: React.FC = () => {
                   </div>
 
                   {/* Activité opérationnelle */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-6">
-                      <div className="rounded-3xl border border-cyan-500/15 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-cyan-900/30">
-                        <h3 className="text-xl font-bold mb-4 flex items-center text-white">
-                          <ClipboardList className="h-6 w-6 mr-2 text-cyan-400" />
+                      <div className="rounded-3xl border border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-sky-50 p-6 text-slate-900 shadow-lg shadow-cyan-100/60 dark:border-cyan-800/50 dark:from-slate-900 dark:via-slate-950 dark:to-cyan-950 dark:text-slate-50">
+                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900 dark:text-white">
+                          <ClipboardList className="mr-2 h-6 w-6 text-cyan-500 dark:text-cyan-300" />
                           Activité des demandes
                         </h3>
                         <div className="space-y-4">
                           {requestMetrics.map(item => {
                             const Icon = item.icon;
                             return (
-                            <div
-                              key={item.key}
-                              className="rounded-2xl border border-cyan-500/10 bg-slate-900/70 px-4 py-4 shadow-inner shadow-black/20"
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3">
-                                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-500/20 text-cyan-100">
-                                    <Icon className="h-5 w-5" />
-                                  </span>
-                                  <div>
-                                    <p className="text-sm font-semibold text-white">{item.label}</p>
-                                    <p className="text-xs text-slate-300">{item.caption}</p>
+                              <div
+                                key={item.key}
+                                className="rounded-2xl border border-white/80 bg-white/80 px-4 py-4 shadow-inner shadow-cyan-100/40 dark:border-cyan-800/50 dark:bg-slate-900/70"
+                              >
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="flex items-center gap-3">
+                                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-100">
+                                      <Icon className="h-5 w-5" />
+                                    </span>
+                                    <div>
+                                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.label}</p>
+                                      <p className="text-xs text-slate-500 dark:text-slate-300">{item.caption}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xl font-bold text-slate-900 dark:text-white">{numberFormatter.format(item.value)}</p>
+                                    {item.progress !== undefined && (
+                                      <p className="text-xs text-slate-500 dark:text-slate-300">{item.progress}% du total</p>
+                                    )}
                                   </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-xl font-bold text-white">{numberFormatter.format(item.value)}</p>
-                                  {item.progress !== undefined && (
-                                    <p className="text-xs text-slate-300">{item.progress}% du total</p>
-                                  )}
-                                </div>
+                                {item.progress !== undefined && (
+                                  <div className="mt-3 h-2 rounded-full bg-sky-100 dark:bg-slate-800">
+                                    <div
+                                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-emerald-400 to-amber-300"
+                                      style={{ width: `${item.progress}%` }}
+                                    ></div>
+                                  </div>
+                                )}
                               </div>
-                              {item.progress !== undefined && (
-                                <div className="mt-3 h-2 rounded-full bg-slate-800">
-                                  <div
-                                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-300"
-                                    style={{ width: `${item.progress}%` }}
-                                  ></div>
-                                </div>
-                              )}
-                            </div>
-                          );
+                            );
                           })}
                         </div>
                       </div>
 
-                      <div className="rounded-3xl border border-emerald-400/15 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-emerald-900/30">
-                        <h3 className="text-xl font-bold mb-4 flex items-center text-white">
-                          <BarChart3 className="h-6 w-6 mr-2 text-emerald-300" />
+                      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-lg shadow-slate-100/70 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+                        <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-800 dark:text-slate-100">Types de recherche</h4>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {searchTypeChips.length > 0 ? (
+                            searchTypeChips.map(type => (
+                              <span
+                                key={type.key}
+                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 shadow-sm dark:border-cyan-700/40 dark:bg-slate-800 dark:text-cyan-50"
+                              >
+                                <span className="inline-flex h-2 w-2 rounded-full bg-amber-400"></span>
+                                <span className="capitalize">{type.label}</span>
+                                <span className="text-cyan-600 dark:text-cyan-200">• {type.value}</span>
+                              </span>
+                            ))
+                          ) : (
+                            <p className="text-sm text-slate-600 dark:text-cyan-100">Aucun historique de type de recherche disponible.</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 text-slate-900 shadow-lg shadow-emerald-100/60 dark:border-emerald-800/60 dark:from-slate-900 dark:via-slate-950 dark:to-emerald-950 dark:text-slate-50">
+                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900 dark:text-white">
+                          <BarChart3 className="mr-2 h-6 w-6 text-emerald-500 dark:text-emerald-300" />
                           Transactions & appels
                         </h3>
                         <div className="grid gap-4 md:grid-cols-2">
-                          <div className="rounded-2xl border border-emerald-400/20 bg-slate-900/70 p-4 shadow-inner shadow-black/20">
+                          <div className="rounded-2xl border border-emerald-100 bg-white/80 p-4 shadow-inner shadow-emerald-100/50 dark:border-emerald-800/60 dark:bg-emerald-950/40">
                             <div className="flex items-start justify-between gap-3">
                               <div>
-                                <p className="text-sm font-semibold text-emerald-200">Transactions</p>
-                                <p className="mt-2 text-2xl font-bold text-white">
+                                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-100">Transactions</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
                                   {numberFormatter.format(financialStats?.totalTransactions ?? 0)}
                                 </p>
-                                <p className="text-sm text-slate-300">
+                                <p className="text-sm text-slate-600 dark:text-slate-300">
                                   Montant total : {numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA
                                 </p>
                               </div>
-                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/25 text-emerald-100">
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-100">
                                 <Banknote className="h-5 w-5" />
                               </span>
                             </div>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-100">
-                              <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
-                                <p className="font-semibold text-emerald-200">Moyenne</p>
-                                <p className="mt-1 text-sm font-bold text-white">
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-100">
+                              <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60 dark:bg-emerald-900/50">
+                                <p className="font-semibold text-emerald-800 dark:text-emerald-200">Moyenne</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
                                   {numberFormatter.format(financialStats?.averageAmount ?? 0)} FCFA
                                 </p>
                               </div>
-                              <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
-                                <p className="font-semibold text-emerald-200">Max</p>
-                                <p className="mt-1 text-sm font-bold text-white">
+                              <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60 dark:bg-emerald-900/50">
+                                <p className="font-semibold text-emerald-800 dark:text-emerald-200">Max</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
                                   {numberFormatter.format(financialStats?.maxAmount ?? 0)} FCFA
                                 </p>
                               </div>
                             </div>
                           </div>
 
-                            <div className="rounded-2xl border border-cyan-400/20 bg-slate-900/70 p-4 shadow-inner shadow-black/20">
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <p className="text-sm font-semibold text-cyan-200">Appels</p>
-                                  <p className="mt-2 text-2xl font-bold text-white">
-                                    {numberFormatter.format(callStats?.total ?? 0)}
-                                  </p>
-                                  <p className="text-sm text-slate-300">
-                                    Durée moyenne : {formatSessionDuration(callStats?.averageDuration ?? 0)}
-                                  </p>
-                                </div>
-                                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-cyan-500/25 text-cyan-100">
-                                  <Phone className="h-5 w-5" />
-                                </span>
+                          <div className="rounded-2xl border border-cyan-100 bg-white/80 p-4 shadow-inner shadow-cyan-100/50 dark:border-cyan-800/60 dark:bg-cyan-950/40">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-cyan-800 dark:text-cyan-100">Appels</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
+                                  {numberFormatter.format(callStats?.total ?? 0)}
+                                </p>
+                                <p className="text-sm text-slate-600 dark:text-slate-300">
+                                  Durée moyenne : {formatSessionDuration(callStats?.averageDuration ?? 0)}
+                                </p>
                               </div>
-                              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-100">
-                                <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
-                                  <p className="font-semibold text-cyan-200">Durée max</p>
-                                  <p className="mt-1 text-sm font-bold text-white">
-                                    {formatSessionDuration(callStats?.maxDuration ?? 0)}
-                                  </p>
-                                </div>
-                                <div className="rounded-xl bg-slate-950/60 p-3 shadow-sm shadow-black/20">
-                                  <p className="font-semibold text-cyan-200">Dernier appel</p>
-                                  <p className="mt-1 text-sm font-bold text-white">
-                                    {callStats?.lastCallAt ? format(parseISO(callStats.lastCallAt), 'dd MMM yyyy', { locale: fr }) : 'Aucune donnée'}
-                                  </p>
-                                </div>
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-100">
+                                <Phone className="h-5 w-5" />
+                              </span>
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-100">
+                              <div className="rounded-xl bg-cyan-50 p-3 shadow-sm shadow-cyan-100/60 dark:bg-cyan-900/50">
+                                <p className="font-semibold text-cyan-800 dark:text-cyan-200">Durée max</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                                  {formatSessionDuration(callStats?.maxDuration ?? 0)}
+                                </p>
+                              </div>
+                              <div className="rounded-xl bg-cyan-50 p-3 shadow-sm shadow-cyan-100/60 dark:bg-cyan-900/50">
+                                <p className="font-semibold text-cyan-800 dark:text-cyan-200">Dernier appel</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                                  {callStats?.lastCallAt ? format(parseISO(callStats.lastCallAt), 'dd MMM yyyy', { locale: fr }) : 'Aucune donnée'}
+                                </p>
                               </div>
                             </div>
+                          </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="rounded-3xl border border-amber-400/15 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-amber-900/30">
-                        <h3 className="text-xl font-bold mb-4 flex items-center text-white">
-                          <Activity className="h-6 w-6 mr-2 text-amber-300" />
+                    <div className="space-y-6">
+                      <div className="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-6 text-slate-900 shadow-lg shadow-amber-100/60 dark:border-amber-800/60 dark:from-slate-900 dark:via-slate-950 dark:to-amber-950 dark:text-slate-50">
+                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900 dark:text-white">
+                          <Activity className="mr-2 h-6 w-6 text-amber-500 dark:text-amber-300" />
                           Profils & opérations
                         </h3>
                         <div className="space-y-6">
-                          <div className="rounded-2xl border border-cyan-400/20 p-5 bg-slate-900/70">
+                          <div className="rounded-2xl border border-cyan-100 p-5 bg-white/80 shadow-inner shadow-cyan-100/50 dark:border-cyan-800/60 dark:bg-cyan-950/40">
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <p className="text-sm font-semibold text-cyan-200">Profils enregistrés</p>
-                                <p className="mt-2 text-2xl font-bold text-white">{numberFormatter.format(profilesTotal)}</p>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-cyan-100">
-                                  <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
+                                <p className="text-sm font-semibold text-cyan-800 dark:text-cyan-100">Profils enregistrés</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{numberFormatter.format(profilesTotal)}</p>
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-cyan-700 dark:text-cyan-100">
+                                  <span className="inline-flex items-center rounded-full bg-cyan-50 px-3 py-1 dark:bg-slate-900/60">
                                     Aujourd'hui : {numberFormatter.format(profileStats?.today ?? 0)}
                                   </span>
-                                  <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
+                                  <span className="inline-flex items-center rounded-full bg-cyan-50 px-3 py-1 dark:bg-slate-900/60">
                                     30 derniers jours : {numberFormatter.format(profilesRecent)}
                                   </span>
                                 </div>
                               </div>
-                              <span className="inline-flex items-center justify-center p-3 rounded-full bg-cyan-500/25 text-cyan-100">
+                              <span className="inline-flex items-center justify-center rounded-full bg-cyan-100 p-3 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-100">
                                 <UserCircle className="h-6 w-6" />
                               </span>
                             </div>
-                            <div className="mt-4 h-2 rounded-full bg-slate-800">
+                            <div className="mt-4 h-2 rounded-full bg-cyan-100 dark:bg-slate-800">
                               <div
-                                className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-300"
+                                className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-emerald-400 to-amber-300"
                                 style={{ width: `${profileProgress}%` }}
                               ></div>
                             </div>
                           </div>
 
-                            <div className="rounded-2xl border border-amber-300/20 p-5 bg-slate-900/70">
-                              <div className="flex items-start justify-between gap-4">
-                                <div>
-                                  <p className="text-sm font-semibold text-amber-200">Géolocalisation</p>
-                                  <p className="mt-2 text-2xl font-bold text-white">{numberFormatter.format(operationsTotal)}</p>
-                                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-amber-100">
-                                    <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
-                                      Aujourd'hui : {numberFormatter.format(operationStats?.today ?? 0)}
-                                    </span>
-                                    <span className="inline-flex items-center rounded-full bg-slate-950/60 px-3 py-1">
-                                      30 derniers jours : {numberFormatter.format(operationsRecent)}
-                                    </span>
-                                  </div>
+                          <div className="rounded-2xl border border-amber-100 p-5 bg-white/80 shadow-inner shadow-amber-100/60 dark:border-amber-800/60 dark:bg-amber-950/40">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-100">Géolocalisation</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{numberFormatter.format(operationsTotal)}</p>
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-amber-700 dark:text-amber-100">
+                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 dark:bg-slate-900/60">
+                                    Aujourd'hui : {numberFormatter.format(operationStats?.today ?? 0)}
+                                  </span>
+                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 dark:bg-slate-900/60">
+                                    30 derniers jours : {numberFormatter.format(operationsRecent)}
+                                  </span>
                                 </div>
-                                <span className="inline-flex items-center justify-center p-3 rounded-full bg-amber-500/25 text-amber-100">
-                                  <Activity className="h-6 w-6" />
-                                </span>
                               </div>
-                              <div className="mt-4 h-2 rounded-full bg-slate-800">
-                                <div
-                                  className="h-full rounded-full bg-gradient-to-r from-amber-300 via-cyan-400 to-emerald-400"
-                                  style={{ width: `${operationsProgress}%` }}
-                                ></div>
-                              </div>
+                              <span className="inline-flex items-center justify-center rounded-full bg-amber-100 p-3 text-amber-700 dark:bg-amber-500/20 dark:text-amber-100">
+                                <Activity className="h-6 w-6" />
+                              </span>
+                            </div>
+                            <div className="mt-4 h-2 rounded-full bg-amber-100 dark:bg-slate-800">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-emerald-400"
+                                style={{ width: `${operationsProgress}%` }}
+                              ></div>
+                            </div>
                           </div>
                         </div>
-
-                          <div className="mt-6 pt-4 border-t border-cyan-500/20">
-                            <h4 className="text-sm font-semibold uppercase tracking-wide text-cyan-200">Types de recherche</h4>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {searchTypeChips.length > 0 ? (
-                                searchTypeChips.map(type => (
-                                  <span
-                                    key={type.key}
-                                    className="inline-flex items-center gap-2 rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-cyan-50 border border-cyan-500/20"
-                                  >
-                                    <span className="inline-flex h-2 w-2 rounded-full bg-amber-300"></span>
-                                    <span className="capitalize">{type.label}</span>
-                                    <span className="text-cyan-200">• {type.value}</span>
-                                  </span>
-                                ))
-                              ) : (
-                                <p className="text-sm text-cyan-100">Aucun historique de type de recherche disponible.</p>
-                              )}
-                            </div>
-                        </div>
+                      </div>
                     </div>
                   </div>
 
