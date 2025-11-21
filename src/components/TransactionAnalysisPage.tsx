@@ -332,9 +332,8 @@ const TransactionAnalysisPage: React.FC = () => {
 
       <form
         onSubmit={handleSearch}
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-800 p-8 text-white shadow-2xl shadow-indigo-500/30"
+        className="relative overflow-hidden rounded-3xl border border-red-300/50 bg-red-700 p-8 text-white shadow-2xl shadow-red-500/40"
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.2),transparent_35%)]" />
         <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="space-y-3 lg:col-span-3">
             <label className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-100">Numéro MSISDN</label>

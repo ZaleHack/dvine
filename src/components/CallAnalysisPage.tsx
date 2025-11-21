@@ -683,7 +683,7 @@ const CallAnalysisPage: React.FC = () => {
         </section>
       )}
 
-      <section className="space-y-4 rounded-3xl border border-slate-200/70 bg-gradient-to-br from-slate-950 via-slate-900/95 to-slate-950 p-8 text-white shadow-[0_40px_80px_-40px_rgba(0,0,0,0.45)]">
+      <section className="space-y-4 rounded-3xl border border-cyan-500/20 bg-slate-950 p-8 text-white shadow-[0_40px_80px_-40px_rgba(0,0,0,0.55)]">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-xl font-bold">Statistiques globales</h3>
@@ -702,22 +702,22 @@ const CallAnalysisPage: React.FC = () => {
         {globalStats ? (
           <>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-cyan-500/30 bg-slate-900/80 p-4 shadow-lg shadow-cyan-900/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Volume total</p>
                 <p className="text-3xl font-bold text-white">{globalStats.overview.totalCalls?.toLocaleString('fr-FR')}</p>
                 <p className="text-xs text-slate-300">{globalStats.overview.lastCallAt ? `Dernier: ${formatDateTime(globalStats.overview.lastCallAt)}` : 'En attente de données'}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-amber-400/30 bg-slate-900/80 p-4 shadow-lg shadow-amber-900/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Durée cumulée</p>
                 <p className="text-3xl font-bold text-white">{formatDuration(globalStats.overview.totalDuration)}</p>
                 <p className="text-xs text-slate-300">Moyenne {formatDuration(globalStats.overview.averageDuration)}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-emerald-400/30 bg-slate-900/80 p-4 shadow-lg shadow-emerald-900/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Durée maximale</p>
                 <p className="text-3xl font-bold text-white">{formatDuration(globalStats.overview.maxDuration)}</p>
                 <p className="text-xs text-slate-300">Observation la plus longue</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-cyan-500/30 bg-slate-900/80 p-4 shadow-lg shadow-cyan-900/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Horaires actifs</p>
                 <p className="text-3xl font-bold text-white">{busiestHour ? `${busiestHour.hour}h` : '--'}</p>
                 <p className="text-xs text-slate-300">
@@ -728,17 +728,17 @@ const CallAnalysisPage: React.FC = () => {
 
             <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
               <div className="space-y-4">
-                <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                <div className="rounded-2xl border border-cyan-500/25 bg-slate-900/80 p-4 shadow-lg shadow-cyan-900/30">
                   <div className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-100">
                     <span>Volume des 14 derniers jours</span>
                     <span className="text-slate-300">Chronologie</span>
                   </div>
                   <div className="grid grid-cols-7 gap-2 text-xs">
                     {globalStats.recentVolume.map((day) => (
-                      <div key={day.day} className="space-y-1 rounded-xl border border-white/5 bg-slate-900/70 p-2">
-                        <div className="h-16 w-full overflow-hidden rounded-lg bg-slate-800">
+                      <div key={day.day} className="space-y-1 rounded-xl border border-cyan-500/10 bg-slate-950/50 p-2">
+                        <div className="h-16 w-full overflow-hidden rounded-lg bg-slate-900">
                           <div
-                            className="w-full bg-gradient-to-t from-emerald-400 via-teal-400 to-sky-400"
+                            className="w-full bg-gradient-to-t from-cyan-400 via-emerald-400 to-amber-300"
                             style={{ height: `${maxRecentVolume === 0 ? 0 : Math.min(100, Math.max(12, (day.count / maxRecentVolume) * 100))}%` }}
                           />
                         </div>
@@ -748,21 +748,21 @@ const CallAnalysisPage: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+                <div className="rounded-2xl border border-cyan-500/25 bg-slate-900/80 p-4 shadow-lg shadow-cyan-900/30">
                   <div className="mb-4 flex items-center justify-between text-sm font-semibold text-slate-100">
                     <span>Distribution horaire</span>
                     <span className="text-slate-300">24h</span>
                   </div>
                   <div className="grid grid-cols-4 gap-3 text-xs">
                     {globalStats.hourlyDistribution.map((hour) => (
-                      <div key={hour.hour} className="rounded-xl border border-white/5 bg-slate-900/70 p-3">
+                      <div key={hour.hour} className="rounded-xl border border-cyan-500/10 bg-slate-950/50 p-3">
                         <div className="flex items-center justify-between text-[11px] font-semibold text-slate-100">
                           <span>{hour.hour}h</span>
-                          <span>{hour.count}</span>
+                          <span className="text-amber-200">{hour.count}</span>
                         </div>
-                        <div className="mt-2 h-1.5 rounded-full bg-slate-700">
+                        <div className="mt-2 h-1.5 rounded-full bg-slate-800">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400"
+                            className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-300"
                             style={{ width: `${maxHourlyDistribution === 0 ? 0 : Math.min(100, (hour.count / maxHourlyDistribution) * 100)}%` }}
                           />
                         </div>
