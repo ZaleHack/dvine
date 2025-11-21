@@ -293,6 +293,7 @@ type DashboardCard = {
   value: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   color: string;
+  background: string;
   badge?: {
     label: string;
     tone: string;
@@ -2960,9 +2961,10 @@ const App: React.FC = () => {
         value: numberFormatter.format(statsData?.total_searches ?? 0),
         icon: Search,
         color: 'bg-rose-600',
+        background: 'from-rose-50 via-white to-orange-50',
         badge: {
           label: `${numberFormatter.format(statsData?.today_searches ?? 0)} aujourd'hui`,
-          tone: 'bg-white/20 text-white'
+          tone: 'bg-white/60 text-rose-700 border-rose-100'
         },
         description: 'Suivi global des requêtes effectuées sur la plateforme'
       },
@@ -2972,9 +2974,10 @@ const App: React.FC = () => {
         value: numberFormatter.format(dataStats?.sources ?? 0),
         icon: Database,
         color: 'bg-sky-600',
+        background: 'from-sky-50 via-white to-cyan-50',
         badge: {
           label: `${numberFormatter.format(dataStats?.total_records ?? 0)} enregistrements`,
-          tone: 'bg-white/20 text-white'
+          tone: 'bg-white/60 text-sky-700 border-sky-100'
         },
         description: 'Nombre de bases de données disponibles et synchronisées'
       },
@@ -2984,9 +2987,10 @@ const App: React.FC = () => {
         value: `${numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA`,
         icon: Banknote,
         color: 'bg-emerald-600',
+        background: 'from-emerald-50 via-white to-lime-50',
         badge: {
           label: `${numberFormatter.format(financialStats?.totalTransactions ?? 0)} opérations`,
-          tone: 'bg-white/20 text-white'
+          tone: 'bg-white/60 text-emerald-700 border-emerald-100'
         },
         description: 'Volume et montants issus des analyses de transactions'
       },
@@ -2996,9 +3000,10 @@ const App: React.FC = () => {
         value: numberFormatter.format(callStats?.total ?? 0),
         icon: Phone,
         color: 'bg-indigo-600',
+        background: 'from-indigo-50 via-white to-slate-50',
         badge: {
           label: `${formatSessionDuration(callStats?.averageDuration ?? 0)} en moyenne`,
-          tone: 'bg-white/20 text-white'
+          tone: 'bg-white/60 text-indigo-700 border-indigo-100'
         },
         description: 'Synthèse des communications téléphoniques analysées'
       },
@@ -3008,9 +3013,10 @@ const App: React.FC = () => {
         value: numberFormatter.format(profiles?.total ?? 0),
         icon: UserCircle,
         color: 'bg-amber-500',
+        background: 'from-amber-50 via-white to-orange-50',
         badge: {
           label: `${numberFormatter.format(profiles?.today ?? 0)} aujourd'hui`,
-          tone: 'bg-white/20 text-white'
+          tone: 'bg-white/60 text-amber-800 border-amber-100'
         },
         description: 'Identités consolidées par les analystes'
       },
@@ -3020,9 +3026,10 @@ const App: React.FC = () => {
         value: numberFormatter.format(operations?.total ?? 0),
         icon: Activity,
         color: 'bg-violet-600',
+        background: 'from-violet-50 via-white to-fuchsia-50',
         badge: {
           label: `${numberFormatter.format(operations?.today ?? 0)} nouvelles`,
-          tone: 'bg-white/20 text-white'
+          tone: 'bg-white/60 text-violet-700 border-violet-100'
         },
         description: 'Dossiers d’analyse et investigations actives'
       }
@@ -3035,9 +3042,10 @@ const App: React.FC = () => {
         value: numberFormatter.format(requests?.total ?? 0),
         icon: ClipboardList,
         color: 'bg-blue-600',
+        background: 'from-blue-50 via-white to-cyan-50',
         badge: {
           label: `${numberFormatter.format(requests?.pending ?? 0)} en attente`,
-          tone: 'bg-white/20 text-white'
+          tone: 'bg-white/60 text-blue-700 border-blue-100'
         },
         description: 'Flux global des requêtes d’identification'
       });
@@ -7147,9 +7155,9 @@ const App: React.FC = () => {
                             onDragOver={handleCardDragOver}
                             onDrop={handleCardDrop(card.id)}
                             onDragEnd={handleCardDragEnd}
-                            className={`relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 text-gray-900 shadow-lg shadow-gray-200 transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-cyan-200 scale-[1.02]' : 'hover:-translate-y-1'}`}
+                            className={`relative overflow-hidden rounded-3xl border border-white/40 bg-white/90 p-6 text-gray-900 shadow-lg shadow-gray-200 transition-transform duration-200 cursor-grab active:cursor-grabbing backdrop-blur ${draggedCard === card.id ? 'ring-2 ring-cyan-200 scale-[1.02]' : 'hover:-translate-y-1'}`}
                           >
-                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-white to-amber-50"></div>
+                            <div className={`absolute inset-0 bg-gradient-to-br ${card.background}`}></div>
                             <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
                             <div className="relative z-10 flex flex-col h-full text-gray-900">
                               <div className="flex items-start justify-between gap-4">
@@ -7163,7 +7171,7 @@ const App: React.FC = () => {
                                   )}
                                 </div>
                                 <div className="flex flex-col items-end gap-3">
-                                  <span className="inline-flex items-center justify-center p-3 rounded-full bg-gray-100">
+                                  <span className={`inline-flex items-center justify-center p-3 rounded-full text-white shadow-sm ${card.color}`}>
                                     <Icon className="h-7 w-7" />
                                   </span>
                                   <GripVertical className="h-5 w-5 text-gray-500" />
@@ -7171,7 +7179,7 @@ const App: React.FC = () => {
                               </div>
                               {card.badge && (
                                 <div className="mt-auto pt-6">
-                                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border border-cyan-100 text-gray-800 ${card.badge.tone}`}>
+                                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border ${card.badge.tone}`}>
                                     {card.badge.label}
                                   </span>
                                 </div>
