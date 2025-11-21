@@ -6224,7 +6224,7 @@ const App: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openCreateProfile({})}
-                          className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/40 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                          className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/40 transition hover:-translate-y-0.5 hover:bg-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/60 dark:bg-rose-500/80 dark:hover:bg-rose-400"
                         >
                           <Plus className="h-4 w-4" />
                           Nouvelle fiche
@@ -6232,7 +6232,7 @@ const App: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setShowBulkImportModal(true)}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:-translate-y-0.5 hover:border-rose-400 hover:text-rose-600 dark:border-slate-600/60 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-200"
+                          className="inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50/80 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-500/50 dark:bg-rose-500/10 dark:text-rose-100 dark:hover:border-rose-400 dark:hover:bg-rose-500/20"
                         >
                           <UploadCloud className="h-4 w-4" />
                           Importer des numéros
@@ -6240,7 +6240,7 @@ const App: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setProfileListRefreshKey((prev) => prev + 1)}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:-translate-y-0.5 hover:border-slate-400 hover:text-slate-800 dark:border-slate-600/60 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
+                          className="inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50/80 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-500/50 dark:bg-rose-500/10 dark:text-rose-100 dark:hover:border-rose-400 dark:hover:bg-rose-500/20"
                         >
                           <RefreshCw className="h-4 w-4" />
                           Actualiser
