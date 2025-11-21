@@ -332,11 +332,11 @@ const TransactionAnalysisPage: React.FC = () => {
 
       <form
         onSubmit={handleSearch}
-        className="relative overflow-hidden rounded-3xl border border-red-300/50 bg-red-700 p-8 text-white shadow-2xl shadow-red-500/40"
+        className="relative overflow-hidden rounded-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50 via-white to-rose-100 p-8 text-rose-950 shadow-2xl shadow-rose-200/60 dark:border-rose-700/60 dark:from-rose-900/80 dark:via-slate-950 dark:to-rose-950 dark:text-rose-50"
       >
         <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="space-y-3 lg:col-span-3">
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-100">Numéro MSISDN</label>
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-800 dark:text-rose-100">Numéro MSISDN</label>
             <div className="relative">
               <input
                 type="text"
@@ -346,48 +346,48 @@ const TransactionAnalysisPage: React.FC = () => {
                   setSearchError('');
                 }}
                 placeholder="Ex: 242069793133"
-                className="w-full rounded-2xl border border-white/20 bg-white/15 px-4 py-3 text-base font-semibold text-white placeholder:text-blue-100/70 shadow-inner focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
+                className="w-full rounded-2xl border border-rose-200/80 bg-white/70 px-4 py-3 text-base font-semibold text-rose-900 placeholder:text-rose-400 shadow-inner focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-300/60 dark:border-rose-700/70 dark:bg-rose-900/40 dark:text-rose-50 dark:placeholder:text-rose-200/70 dark:focus:border-pink-400 dark:focus:ring-pink-400/50"
               />
-              {searchError && <p className="mt-2 text-xs text-amber-200">{searchError}</p>}
+              {searchError && <p className="mt-2 text-xs text-rose-700 dark:text-amber-200">{searchError}</p>}
             </div>
-            <p className="text-xs text-blue-100/80">Filtre les transactions où le MSISDN apparaît en émetteur ou bénéficiaire.</p>
+            <p className="text-xs text-rose-700/80 dark:text-rose-100/80">Filtre les transactions où le MSISDN apparaît en émetteur ou bénéficiaire.</p>
           </div>
 
           <div className="lg:col-span-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-100">Date de début</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-800 dark:text-rose-100">Date de début</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/15 px-3 py-2 text-sm font-medium text-white shadow-inner focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40"
+                className="w-full rounded-2xl border border-rose-200/70 bg-white/70 px-3 py-2 text-sm font-medium text-rose-900 shadow-inner focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-300/50 dark:border-rose-700/70 dark:bg-rose-900/40 dark:text-rose-50 dark:focus:border-pink-400 dark:focus:ring-pink-400/50"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-100">Heure de début</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-800 dark:text-rose-100">Heure de début</label>
               <input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/15 px-3 py-2 text-sm font-medium text-white shadow-inner focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40"
+                className="w-full rounded-2xl border border-rose-200/70 bg-white/70 px-3 py-2 text-sm font-medium text-rose-900 shadow-inner focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-300/50 dark:border-rose-700/70 dark:bg-rose-900/40 dark:text-rose-50 dark:focus:border-pink-400 dark:focus:ring-pink-400/50"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-100">Date de fin</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-800 dark:text-rose-100">Date de fin</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/15 px-3 py-2 text-sm font-medium text-white shadow-inner focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40"
+                className="w-full rounded-2xl border border-rose-200/70 bg-white/70 px-3 py-2 text-sm font-medium text-rose-900 shadow-inner focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-300/50 dark:border-rose-700/70 dark:bg-rose-900/40 dark:text-rose-50 dark:focus:border-pink-400 dark:focus:ring-pink-400/50"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-100">Heure de fin</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-800 dark:text-rose-100">Heure de fin</label>
               <input
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/15 px-3 py-2 text-sm font-medium text-white shadow-inner focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40"
+                className="w-full rounded-2xl border border-rose-200/70 bg-white/70 px-3 py-2 text-sm font-medium text-rose-900 shadow-inner focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-300/50 dark:border-rose-700/70 dark:bg-rose-900/40 dark:text-rose-50 dark:focus:border-pink-400 dark:focus:ring-pink-400/50"
               />
             </div>
           </div>
@@ -396,7 +396,7 @@ const TransactionAnalysisPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-white shadow-lg shadow-cyan-500/30 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 via-orange-400 to-amber-400 px-4 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-white shadow-lg shadow-rose-300/50 transition hover:-translate-y-0.5 hover:shadow-xl dark:from-pink-600 dark:via-fuchsia-500 dark:to-indigo-500 dark:shadow-fuchsia-700/50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
               {loading ? 'Analyse en cours…' : 'Lancer la recherche'}
@@ -405,12 +405,12 @@ const TransactionAnalysisPage: React.FC = () => {
               type="button"
               onClick={handleExport}
               disabled={!result || exporting}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:border-cyan-200/80 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200/80 bg-white/70 px-4 py-3 text-sm font-semibold text-rose-900 backdrop-blur transition hover:border-rose-400 hover:text-rose-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-700/70 dark:bg-rose-900/40 dark:text-rose-50 dark:hover:border-pink-400"
             >
               {exporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
               Export PDF sécurisé
             </button>
-            <p className="text-[11px] text-blue-100/80">Le rapport inclut la signature « Dvine Intelligence » pour authenticité.</p>
+            <p className="text-[11px] text-rose-700/80 dark:text-rose-100/80">Le rapport inclut la signature « Dvine Intelligence » pour authenticité.</p>
           </div>
         </div>
       </form>
