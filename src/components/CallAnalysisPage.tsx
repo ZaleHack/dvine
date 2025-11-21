@@ -184,18 +184,18 @@ const BreakdownList = ({
     switch (accent) {
       case 'rose':
         return {
-          container: 'from-rose-600/12 via-orange-500/12 to-amber-500/12 border-rose-200/80',
-          bar: 'from-rose-500 via-orange-500 to-amber-400'
+          container: 'from-rose-500/15 via-orange-500/12 to-amber-400/12 border-rose-200/70',
+          bar: 'from-rose-400 via-orange-400 to-amber-300'
         };
       case 'amber':
         return {
-          container: 'from-amber-500/12 via-lime-500/12 to-emerald-500/12 border-amber-200/80',
-          bar: 'from-amber-500 via-lime-500 to-emerald-500'
+          container: 'from-emerald-500/12 via-lime-500/12 to-teal-500/12 border-emerald-200/70',
+          bar: 'from-emerald-400 via-lime-400 to-teal-300'
         };
       default:
         return {
-          container: 'from-indigo-600/12 via-blue-500/12 to-cyan-500/12 border-indigo-200/80',
-          bar: 'from-indigo-500 via-blue-500 to-cyan-400'
+          container: 'from-sky-500/14 via-indigo-500/12 to-violet-500/12 border-indigo-200/70',
+          bar: 'from-sky-400 via-indigo-400 to-violet-300'
         };
     }
   }, [accent]);
@@ -683,7 +683,7 @@ const CallAnalysisPage: React.FC = () => {
         </section>
       )}
 
-      <section className="space-y-4 rounded-3xl border border-slate-200/70 bg-slate-900/95 p-8 text-white shadow-[0_40px_80px_-40px_rgba(0,0,0,0.45)]">
+      <section className="space-y-4 rounded-3xl border border-slate-200/70 bg-gradient-to-br from-slate-950 via-slate-900/95 to-slate-950 p-8 text-white shadow-[0_40px_80px_-40px_rgba(0,0,0,0.45)]">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-xl font-bold">Statistiques globales</h3>
@@ -702,22 +702,22 @@ const CallAnalysisPage: React.FC = () => {
         {globalStats ? (
           <>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Volume total</p>
                 <p className="text-3xl font-bold text-white">{globalStats.overview.totalCalls?.toLocaleString('fr-FR')}</p>
                 <p className="text-xs text-slate-300">{globalStats.overview.lastCallAt ? `Dernier: ${formatDateTime(globalStats.overview.lastCallAt)}` : 'En attente de données'}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Durée cumulée</p>
                 <p className="text-3xl font-bold text-white">{formatDuration(globalStats.overview.totalDuration)}</p>
                 <p className="text-xs text-slate-300">Moyenne {formatDuration(globalStats.overview.averageDuration)}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Durée maximale</p>
                 <p className="text-3xl font-bold text-white">{formatDuration(globalStats.overview.maxDuration)}</p>
                 <p className="text-xs text-slate-300">Observation la plus longue</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-800/80 p-4 shadow-lg shadow-black/40">
+              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-slate-800/90 to-slate-900 p-4 shadow-lg shadow-black/40">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">Horaires actifs</p>
                 <p className="text-3xl font-bold text-white">{busiestHour ? `${busiestHour.hour}h` : '--'}</p>
                 <p className="text-xs text-slate-300">
@@ -738,7 +738,7 @@ const CallAnalysisPage: React.FC = () => {
                       <div key={day.day} className="space-y-1 rounded-xl border border-white/5 bg-slate-900/70 p-2">
                         <div className="h-16 w-full overflow-hidden rounded-lg bg-slate-800">
                           <div
-                            className="w-full bg-gradient-to-t from-cyan-400 via-blue-500 to-indigo-600"
+                            className="w-full bg-gradient-to-t from-emerald-400 via-teal-400 to-sky-400"
                             style={{ height: `${maxRecentVolume === 0 ? 0 : Math.min(100, Math.max(12, (day.count / maxRecentVolume) * 100))}%` }}
                           />
                         </div>
@@ -762,7 +762,7 @@ const CallAnalysisPage: React.FC = () => {
                         </div>
                         <div className="mt-2 h-1.5 rounded-full bg-slate-700">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-300"
+                            className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400"
                             style={{ width: `${maxHourlyDistribution === 0 ? 0 : Math.min(100, (hour.count / maxHourlyDistribution) * 100)}%` }}
                           />
                         </div>
