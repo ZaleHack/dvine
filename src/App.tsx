@@ -7147,31 +7147,31 @@ const App: React.FC = () => {
                             onDragOver={handleCardDragOver}
                             onDrop={handleCardDrop(card.id)}
                             onDragEnd={handleCardDragEnd}
-                            className={`relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-slate-900 p-6 text-white shadow-xl shadow-cyan-900/40 transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-cyan-300/70 scale-[1.02]' : 'hover:-translate-y-1'}`}
+                            className={`relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 text-gray-900 shadow-lg shadow-gray-200 transition-transform duration-200 cursor-grab active:cursor-grabbing ${draggedCard === card.id ? 'ring-2 ring-cyan-200 scale-[1.02]' : 'hover:-translate-y-1'}`}
                           >
-                          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/15 via-slate-900/40 to-amber-400/10"></div>
-                          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-                            <div className="relative z-10 flex flex-col h-full text-white">
+                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-white to-amber-50"></div>
+                            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                            <div className="relative z-10 flex flex-col h-full text-gray-900">
                               <div className="flex items-start justify-between gap-4">
                                 <div>
-                                  <p className="text-sm font-medium text-white/80">{card.title}</p>
+                                  <p className="text-sm font-medium text-gray-600">{card.title}</p>
                                   <p className="mt-2 text-3xl font-bold">{card.value}</p>
                                   {card.description && (
-                                    <p className="mt-3 text-sm text-white/70 leading-relaxed">
+                                    <p className="mt-3 text-sm text-gray-600 leading-relaxed">
                                       {card.description}
                                     </p>
                                   )}
                                 </div>
                                 <div className="flex flex-col items-end gap-3">
-                                  <span className="inline-flex items-center justify-center p-3 rounded-full bg-white/20 backdrop-blur-sm">
+                                  <span className="inline-flex items-center justify-center p-3 rounded-full bg-gray-100">
                                     <Icon className="h-7 w-7" />
                                   </span>
-                                  <GripVertical className="h-5 w-5 text-white/70" />
+                                  <GripVertical className="h-5 w-5 text-gray-500" />
                                 </div>
                               </div>
                               {card.badge && (
                                 <div className="mt-auto pt-6">
-                                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm border border-cyan-200/50 text-white ${card.badge.tone}`}>
+                                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border border-cyan-100 text-gray-800 ${card.badge.tone}`}>
                                     {card.badge.label}
                                   </span>
                                 </div>
@@ -7186,9 +7186,9 @@ const App: React.FC = () => {
                   {/* Graphiques */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Graphique des recherches par jour */}
-                    <div className="rounded-3xl border border-cyan-500/20 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-cyan-900/40">
-                      <h3 className="text-xl font-bold mb-4 flex items-center text-white">
-                        <BarChart3 className="h-6 w-6 mr-2 text-cyan-400" />
+                    <div className="rounded-3xl border border-cyan-100 bg-white p-6 text-gray-900 shadow-lg shadow-cyan-100/50">
+                      <h3 className="text-xl font-bold mb-4 flex items-center text-gray-900">
+                        <BarChart3 className="h-6 w-6 mr-2 text-cyan-500" />
                         Recherches des 7 derniers jours
                       </h3>
                       <div className="h-80">
@@ -7233,9 +7233,9 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Graphique des temps de réponse */}
-                    <div className="rounded-3xl border border-amber-300/20 bg-slate-950/95 p-6 text-slate-100 shadow-lg shadow-amber-900/30">
-                      <h3 className="text-xl font-bold mb-4 flex items-center text-white">
-                        <Timer className="h-6 w-6 mr-2 text-amber-300" />
+                    <div className="rounded-3xl border border-amber-100 bg-white p-6 text-gray-900 shadow-lg shadow-amber-100/50">
+                      <h3 className="text-xl font-bold mb-4 flex items-center text-gray-900">
+                        <Timer className="h-6 w-6 mr-2 text-amber-400" />
                         Temps de réponse (ms)
                       </h3>
                       <div className="h-80">
@@ -7283,9 +7283,9 @@ const App: React.FC = () => {
                   {/* Activité opérationnelle */}
                   <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-6">
-                      <div className="rounded-3xl border border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-sky-50 p-6 text-slate-900 shadow-lg shadow-cyan-100/60 dark:border-cyan-800/50 dark:from-slate-900 dark:via-slate-950 dark:to-cyan-950 dark:text-slate-50">
-                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900 dark:text-white">
-                          <ClipboardList className="mr-2 h-6 w-6 text-cyan-500 dark:text-cyan-300" />
+                      <div className="rounded-3xl border border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-sky-50 p-6 text-slate-900 shadow-lg shadow-cyan-100/60">
+                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900">
+                          <ClipboardList className="mr-2 h-6 w-6 text-cyan-500" />
                           Activité des demandes
                         </h3>
                         <div className="space-y-4">
@@ -7294,27 +7294,27 @@ const App: React.FC = () => {
                             return (
                               <div
                                 key={item.key}
-                                className="rounded-2xl border border-white/80 bg-white/80 px-4 py-4 shadow-inner shadow-cyan-100/40 dark:border-cyan-800/50 dark:bg-slate-900/70"
+                                className="rounded-2xl border border-white/80 bg-white px-4 py-4 shadow-inner shadow-cyan-100/40"
                               >
                                 <div className="flex items-center justify-between gap-3">
                                   <div className="flex items-center gap-3">
-                                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-100">
+                                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-100 text-cyan-700">
                                       <Icon className="h-5 w-5" />
                                     </span>
                                     <div>
-                                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.label}</p>
-                                      <p className="text-xs text-slate-500 dark:text-slate-300">{item.caption}</p>
+                                      <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                                      <p className="text-xs text-slate-500">{item.caption}</p>
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <p className="text-xl font-bold text-slate-900 dark:text-white">{numberFormatter.format(item.value)}</p>
+                                    <p className="text-xl font-bold text-slate-900">{numberFormatter.format(item.value)}</p>
                                     {item.progress !== undefined && (
-                                      <p className="text-xs text-slate-500 dark:text-slate-300">{item.progress}% du total</p>
+                                      <p className="text-xs text-slate-500">{item.progress}% du total</p>
                                     )}
                                   </div>
                                 </div>
                                 {item.progress !== undefined && (
-                                  <div className="mt-3 h-2 rounded-full bg-sky-100 dark:bg-slate-800">
+                                  <div className="mt-3 h-2 rounded-full bg-sky-100">
                                     <div
                                       className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-emerald-400 to-amber-300"
                                       style={{ width: `${item.progress}%` }}
@@ -7327,90 +7327,90 @@ const App: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-lg shadow-slate-100/70 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-                        <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-800 dark:text-slate-100">Types de recherche</h4>
+                      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-lg shadow-slate-100/70">
+                        <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-800">Types de recherche</h4>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {searchTypeChips.length > 0 ? (
                             searchTypeChips.map(type => (
                               <span
                                 key={type.key}
-                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 shadow-sm dark:border-cyan-700/40 dark:bg-slate-800 dark:text-cyan-50"
+                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 shadow-sm"
                               >
                                 <span className="inline-flex h-2 w-2 rounded-full bg-amber-400"></span>
                                 <span className="capitalize">{type.label}</span>
-                                <span className="text-cyan-600 dark:text-cyan-200">• {type.value}</span>
+                                <span className="text-cyan-600">• {type.value}</span>
                               </span>
                             ))
                           ) : (
-                            <p className="text-sm text-slate-600 dark:text-cyan-100">Aucun historique de type de recherche disponible.</p>
+                            <p className="text-sm text-slate-600">Aucun historique de type de recherche disponible.</p>
                           )}
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-6">
-                      <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 text-slate-900 shadow-lg shadow-emerald-100/60 dark:border-emerald-800/60 dark:from-slate-900 dark:via-slate-950 dark:to-emerald-950 dark:text-slate-50">
-                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900 dark:text-white">
-                          <BarChart3 className="mr-2 h-6 w-6 text-emerald-500 dark:text-emerald-300" />
+                      <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 text-slate-900 shadow-lg shadow-emerald-100/60">
+                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900">
+                          <BarChart3 className="mr-2 h-6 w-6 text-emerald-500" />
                           Transactions & appels
                         </h3>
                         <div className="grid gap-4 md:grid-cols-2">
-                          <div className="rounded-2xl border border-emerald-100 bg-white/80 p-4 shadow-inner shadow-emerald-100/50 dark:border-emerald-800/60 dark:bg-emerald-950/40">
+                          <div className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-inner shadow-emerald-100/50">
                             <div className="flex items-start justify-between gap-3">
                               <div>
-                                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-100">Transactions</p>
-                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
+                                <p className="text-sm font-semibold text-emerald-800">Transactions</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">
                                   {numberFormatter.format(financialStats?.totalTransactions ?? 0)}
                                 </p>
-                                <p className="text-sm text-slate-600 dark:text-slate-300">
+                                <p className="text-sm text-slate-600">
                                   Montant total : {numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA
                                 </p>
                               </div>
-                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-100">
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                                 <Banknote className="h-5 w-5" />
                               </span>
                             </div>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-100">
-                              <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60 dark:bg-emerald-900/50">
-                                <p className="font-semibold text-emerald-800 dark:text-emerald-200">Moyenne</p>
-                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-700">
+                              <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60">
+                                <p className="font-semibold text-emerald-800">Moyenne</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
                                   {numberFormatter.format(financialStats?.averageAmount ?? 0)} FCFA
                                 </p>
                               </div>
-                              <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60 dark:bg-emerald-900/50">
-                                <p className="font-semibold text-emerald-800 dark:text-emerald-200">Max</p>
-                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                              <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60">
+                                <p className="font-semibold text-emerald-800">Max</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
                                   {numberFormatter.format(financialStats?.maxAmount ?? 0)} FCFA
                                 </p>
                               </div>
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-cyan-100 bg-white/80 p-4 shadow-inner shadow-cyan-100/50 dark:border-cyan-800/60 dark:bg-cyan-950/40">
+                          <div className="rounded-2xl border border-cyan-100 bg-white p-4 shadow-inner shadow-cyan-100/50">
                             <div className="flex items-start justify-between gap-3">
                               <div>
-                                <p className="text-sm font-semibold text-cyan-800 dark:text-cyan-100">Appels</p>
-                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
+                                <p className="text-sm font-semibold text-cyan-800">Appels</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">
                                   {numberFormatter.format(callStats?.total ?? 0)}
                                 </p>
-                                <p className="text-sm text-slate-600 dark:text-slate-300">
+                                <p className="text-sm text-slate-600">
                                   Durée moyenne : {formatSessionDuration(callStats?.averageDuration ?? 0)}
                                 </p>
                               </div>
-                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-100">
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-cyan-100 text-cyan-700">
                                 <Phone className="h-5 w-5" />
                               </span>
                             </div>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-100">
-                              <div className="rounded-xl bg-cyan-50 p-3 shadow-sm shadow-cyan-100/60 dark:bg-cyan-900/50">
-                                <p className="font-semibold text-cyan-800 dark:text-cyan-200">Durée max</p>
-                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-700">
+                              <div className="rounded-xl bg-cyan-50 p-3 shadow-sm shadow-cyan-100/60">
+                                <p className="font-semibold text-cyan-800">Durée max</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
                                   {formatSessionDuration(callStats?.maxDuration ?? 0)}
                                 </p>
                               </div>
-                              <div className="rounded-xl bg-cyan-50 p-3 shadow-sm shadow-cyan-100/60 dark:bg-cyan-900/50">
-                                <p className="font-semibold text-cyan-800 dark:text-cyan-200">Dernier appel</p>
-                                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                              <div className="rounded-xl bg-cyan-50 p-3 shadow-sm shadow-cyan-100/60">
+                                <p className="font-semibold text-cyan-800">Dernier appel</p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
                                   {callStats?.lastCallAt ? format(parseISO(callStats.lastCallAt), 'dd MMM yyyy', { locale: fr }) : 'Aucune donnée'}
                                 </p>
                               </div>
@@ -7421,31 +7421,31 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="space-y-6">
-                      <div className="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-6 text-slate-900 shadow-lg shadow-amber-100/60 dark:border-amber-800/60 dark:from-slate-900 dark:via-slate-950 dark:to-amber-950 dark:text-slate-50">
-                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900 dark:text-white">
-                          <Activity className="mr-2 h-6 w-6 text-amber-500 dark:text-amber-300" />
+                      <div className="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-6 text-slate-900 shadow-lg shadow-amber-100/60">
+                        <h3 className="mb-4 flex items-center text-xl font-bold text-slate-900">
+                          <Activity className="mr-2 h-6 w-6 text-amber-500" />
                           Profils & opérations
                         </h3>
                         <div className="space-y-6">
-                          <div className="rounded-2xl border border-cyan-100 p-5 bg-white/80 shadow-inner shadow-cyan-100/50 dark:border-cyan-800/60 dark:bg-cyan-950/40">
+                          <div className="rounded-2xl border border-cyan-100 p-5 bg-white shadow-inner shadow-cyan-100/50">
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <p className="text-sm font-semibold text-cyan-800 dark:text-cyan-100">Profils enregistrés</p>
-                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{numberFormatter.format(profilesTotal)}</p>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-cyan-700 dark:text-cyan-100">
-                                  <span className="inline-flex items-center rounded-full bg-cyan-50 px-3 py-1 dark:bg-slate-900/60">
+                                <p className="text-sm font-semibold text-cyan-800">Profils enregistrés</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">{numberFormatter.format(profilesTotal)}</p>
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-cyan-700">
+                                  <span className="inline-flex items-center rounded-full bg-cyan-50 px-3 py-1">
                                     Aujourd'hui : {numberFormatter.format(profileStats?.today ?? 0)}
                                   </span>
-                                  <span className="inline-flex items-center rounded-full bg-cyan-50 px-3 py-1 dark:bg-slate-900/60">
+                                  <span className="inline-flex items-center rounded-full bg-cyan-50 px-3 py-1">
                                     30 derniers jours : {numberFormatter.format(profilesRecent)}
                                   </span>
                                 </div>
                               </div>
-                              <span className="inline-flex items-center justify-center rounded-full bg-cyan-100 p-3 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-100">
+                              <span className="inline-flex items-center justify-center rounded-full bg-cyan-100 p-3 text-cyan-700">
                                 <UserCircle className="h-6 w-6" />
                               </span>
                             </div>
-                            <div className="mt-4 h-2 rounded-full bg-cyan-100 dark:bg-slate-800">
+                            <div className="mt-4 h-2 rounded-full bg-cyan-100">
                               <div
                                 className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-emerald-400 to-amber-300"
                                 style={{ width: `${profileProgress}%` }}
@@ -7453,25 +7453,25 @@ const App: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="rounded-2xl border border-amber-100 p-5 bg-white/80 shadow-inner shadow-amber-100/60 dark:border-amber-800/60 dark:bg-amber-950/40">
+                          <div className="rounded-2xl border border-amber-100 p-5 bg-white shadow-inner shadow-amber-100/60">
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-100">Géolocalisation</p>
-                                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{numberFormatter.format(operationsTotal)}</p>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-amber-700 dark:text-amber-100">
-                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 dark:bg-slate-900/60">
+                                <p className="text-sm font-semibold text-amber-800">Géolocalisation</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">{numberFormatter.format(operationsTotal)}</p>
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-amber-700">
+                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1">
                                     Aujourd'hui : {numberFormatter.format(operationStats?.today ?? 0)}
                                   </span>
-                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 dark:bg-slate-900/60">
+                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1">
                                     30 derniers jours : {numberFormatter.format(operationsRecent)}
                                   </span>
                                 </div>
                               </div>
-                              <span className="inline-flex items-center justify-center rounded-full bg-amber-100 p-3 text-amber-700 dark:bg-amber-500/20 dark:text-amber-100">
+                              <span className="inline-flex items-center justify-center rounded-full bg-amber-100 p-3 text-amber-700">
                                 <Activity className="h-6 w-6" />
                               </span>
                             </div>
-                            <div className="mt-4 h-2 rounded-full bg-amber-100 dark:bg-slate-800">
+                            <div className="mt-4 h-2 rounded-full bg-amber-100">
                               <div
                                 className="h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-emerald-400"
                                 style={{ width: `${operationsProgress}%` }}
@@ -7486,7 +7486,7 @@ const App: React.FC = () => {
                   {/* Logs de recherche récents */}
                   <div className="lg:col-span-2">
                     <div className="bg-white rounded-2xl shadow-xl p-6">
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                             <FileText className="h-6 w-6 mr-2 text-rose-600" />
                             Logs de recherche
                           </h3>
@@ -7521,7 +7521,7 @@ const App: React.FC = () => {
                                           <User className="h-4 w-4 text-rose-600" />
                                         </div>
                                         <div>
-                                          <p className="font-medium text-gray-900 dark:text-gray-100">
+                                          <p className="font-medium text-gray-900">
                                             {log.username || 'Utilisateur inconnu'}
                                           </p>
                                           <p className="text-sm text-gray-500 truncate max-w-xs">"{log.search_term}"</p>
@@ -7552,13 +7552,13 @@ const App: React.FC = () => {
                             </div>
                           </div>
                           {isAdmin && (
-                            <div className="mt-6 rounded-2xl border border-rose-200/60 bg-rose-50/70 p-4 shadow-inner dark:border-rose-500/40 dark:bg-rose-500/10">
+                            <div className="mt-6 rounded-2xl border border-rose-200/60 bg-rose-50/70 p-4 shadow-inner">
                               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <h4 className="flex items-center text-sm font-semibold uppercase tracking-[0.25em] text-rose-600 dark:text-rose-200">
+                                <h4 className="flex items-center text-sm font-semibold uppercase tracking-[0.25em] text-rose-600">
                                   <AlertTriangle className="mr-2 h-4 w-4" />
                                   Alertes blacklist
                                 </h4>
-                                <span className="inline-flex items-center rounded-full border border-rose-300/60 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-rose-600 dark:border-rose-400/40 dark:bg-rose-500/20 dark:text-rose-100">
+                                <span className="inline-flex items-center rounded-full border border-rose-300/60 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-rose-600">
                                   {blacklistAlerts.length} alerte{blacklistAlerts.length > 1 ? 's' : ''}
                                 </span>
                               </div>
@@ -7646,7 +7646,7 @@ const App: React.FC = () => {
                                     return (
                                       <div
                                         key={alertLog?.id ?? `${alertLog?.created_at ?? 'alert'}-${index}`}
-                                        className="flex items-start gap-3 rounded-2xl border border-rose-400/60 bg-white/90 px-4 py-3 text-sm text-rose-700 shadow-sm shadow-rose-200/40 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-100"
+                                        className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-white px-4 py-3 text-sm text-rose-700 shadow-sm shadow-rose-100/60"
                                       >
                                         <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-sm shadow-rose-500/40">
                                           <AlertTriangle className="h-4 w-4" />
@@ -7654,34 +7654,34 @@ const App: React.FC = () => {
                                         <div className="flex-1 space-y-2">
                                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <div className="flex flex-wrap items-center gap-2">
-                                              <span className="inline-flex items-center gap-2 rounded-full border border-rose-400/60 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-rose-600 dark:border-rose-400/40 dark:bg-rose-500/20 dark:text-rose-200">
+                                              <span className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-rose-700">
                                                 {alertLog?.action || 'blacklist_alert'}
                                               </span>
                                               {pageName && (
-                                                <span className="inline-flex items-center rounded-full border border-rose-200/60 bg-rose-50/70 px-3 py-1 text-xs font-medium text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
+                                                <span className="inline-flex items-center rounded-full border border-rose-200/60 bg-rose-50/70 px-3 py-1 text-xs font-medium text-rose-600">
                                                   {pageName}
                                                 </span>
                                               )}
                                             </div>
-                                            <span className="text-xs text-rose-600/80 dark:text-rose-200/80">{createdAtLabel}</span>
+                                            <span className="text-xs text-rose-600/80">{createdAtLabel}</span>
                                           </div>
-                                          <p className="text-sm font-semibold text-rose-700 dark:text-rose-100">{baseMessage}</p>
+                                          <p className="text-sm font-semibold text-rose-700">{baseMessage}</p>
                                           {numbersLabel && (
-                                            <p className="text-xs font-medium text-rose-600/80 dark:text-rose-200/70">
+                                            <p className="text-xs font-medium text-rose-600/80">
                                               Numéro(s) : <span className="font-semibold">{numbersLabel}</span>
                                             </p>
                                           )}
-                                          <p className="text-xs text-rose-600/70 dark:text-rose-200/70">
+                                          <p className="text-xs text-rose-600/70">
                                             Déclenché par{' '}
                                             <span className="font-semibold">{alertLog?.username || 'Utilisateur inconnu'}</span>
                                           </p>
                                           {contextText && (
-                                            <p className="text-xs text-rose-600/70 dark:text-rose-200/70">Contexte : {contextText}</p>
+                                            <p className="text-xs text-rose-600/70">Contexte : {contextText}</p>
                                           )}
                                           {profileId !== null && (
                                             <button
                                               onClick={() => openEditProfile(profileId!)}
-                                              className="inline-flex w-max items-center gap-2 rounded-full border border-rose-400/50 bg-white/80 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-white dark:border-rose-400/40 dark:bg-rose-500/20 dark:text-rose-100 dark:hover:bg-rose-500/30"
+                                              className="inline-flex w-max items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
                                             >
                                               Voir le profil
                                             </button>
@@ -7691,7 +7691,7 @@ const App: React.FC = () => {
                                     );
                                   })
                                 ) : (
-                                  <p className="rounded-2xl border border-dashed border-rose-300/70 bg-white/80 px-4 py-3 text-sm text-rose-600/80 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200/80">
+                                  <p className="rounded-2xl border border-dashed border-rose-300/70 bg-white px-4 py-3 text-sm text-rose-600/80">
                                     Aucune alerte blacklist récente.
                                   </p>
                                 )}
@@ -7701,9 +7701,9 @@ const App: React.FC = () => {
                         </div>
                       </div>
                         {/* Termes de recherche populaires */}
-                        <div className="bg-white rounded-2xl shadow-xl p-6 dark:bg-gray-800">
-                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center dark:text-gray-100">
-                            <TrendingUp className="h-6 w-6 mr-2 text-orange-600 dark:text-orange-400" />
+                        <div className="bg-white rounded-2xl shadow-xl p-6">
+                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                            <TrendingUp className="h-6 w-6 mr-2 text-orange-600" />
                             Termes de recherche populaires
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -7711,23 +7711,23 @@ const App: React.FC = () => {
                               topSearchTerms.slice(0, 9).map((term, index) => (
                                 <div
                                   key={index}
-                                  className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-rose-50 hover:to-rose-100 transition-all dark:from-gray-800 dark:to-gray-700 dark:hover:from-rose-900 dark:hover:to-rose-800"
+                                  className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-rose-50 hover:to-rose-100 transition-all"
                                 >
                                   <div className="flex items-center space-x-3">
-                                    <div className="flex items-center justify-center w-8 h-8 bg-rose-100 rounded-full text-rose-600 font-bold text-sm dark:bg-rose-900 dark:text-rose-200">
+                                    <div className="flex items-center justify-center w-8 h-8 bg-rose-100 rounded-full text-rose-600 font-bold text-sm">
                                       {index + 1}
                                     </div>
-                                    <span className="font-medium text-gray-900 truncate max-w-xs dark:text-gray-100">"{term.search_term}"</span>
+                                    <span className="font-medium text-gray-900 truncate max-w-xs">"{term.search_term}"</span>
                                   </div>
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-rose-100 text-rose-800">
                                     {term.search_count} fois
                                   </span>
                                 </div>
                               ))
                             ) : (
                               <div className="col-span-full text-center py-8">
-                                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4 dark:text-gray-500" />
-                                <p className="text-gray-500 dark:text-gray-400">Aucun terme de recherche populaire</p>
+                                <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                <p className="text-gray-500">Aucun terme de recherche populaire</p>
                               </div>
                             )}
                           </div>
