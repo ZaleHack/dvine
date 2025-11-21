@@ -21,8 +21,6 @@ import {
   Timer,
   TrendingUp,
   BarChart3,
-  Sun,
-  Moon,
   FileText,
   Upload,
   UploadCloud,
@@ -998,14 +996,6 @@ const App: React.FC = () => {
   const [logoutReason, setLogoutReason] = useState<'inactivity' | null>(null);
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
-      return storedTheme === 'dark';
-    }
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-  });
   const mainContentRef = useRef<HTMLDivElement | null>(null);
   const inactivityTimerRef = useRef<number | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -1024,14 +1014,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode]);
+    root.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -1063,10 +1048,6 @@ const App: React.FC = () => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setIsDarkMode((prev) => !prev);
   }, []);
 
   // États de recherche
@@ -4942,15 +4923,6 @@ const App: React.FC = () => {
         <div ref={mainContentRef} className="flex-1 overflow-auto scroll-smooth bg-white/80 dark:bg-slate-950/70">
           <div className="p-8">
               <div className="flex items-center justify-end gap-3 mb-4 relative">
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:text-rose-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:text-white"
-                  title={isDarkMode ? 'Basculer en mode clair' : 'Basculer en mode sombre'}
-                >
-                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  <span className="hidden sm:inline">{isDarkMode ? 'Mode clair' : 'Mode sombre'}</span>
-                </button>
                 <button
                   onClick={handleNotificationClick}
                   className="relative p-2 rounded-full bg-white shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 text-gray-600 hover:text-rose-600 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 dark:hover:text-white"
