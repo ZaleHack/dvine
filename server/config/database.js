@@ -1148,49 +1148,6 @@ class DatabaseManager {
     }
   }
 
-  static #countPlaceholders(sql) {
-    let count = 0;
-    let inSingle = false;
-    let inDouble = false;
-    let inBacktick = false;
-    let escaped = false;
-
-    for (let i = 0; i < sql.length; i += 1) {
-      const char = sql[i];
-
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-
-      if (char === '\\') {
-        escaped = true;
-        continue;
-      }
-
-      if (!inDouble && !inBacktick && char === "'") {
-        inSingle = !inSingle;
-        continue;
-      }
-
-      if (!inSingle && !inBacktick && char === '"') {
-        inDouble = !inDouble;
-        continue;
-      }
-
-      if (!inSingle && !inDouble && char === '`') {
-        inBacktick = !inBacktick;
-        continue;
-      }
-
-      if (!inSingle && !inDouble && !inBacktick && char === '?') {
-        count += 1;
-      }
-    }
-
-    return count;
-  }
-
   async query(sql, params = [], options = {}) {
     try {
       const skipInitWait = Boolean(options.skipInitWait);
@@ -1202,22 +1159,7 @@ class DatabaseManager {
       if (!skipInitWait && !this.isInitialized) {
         await this.ensureInitialized();
       }
-
-      const normalizedParams = Array.isArray(params)
-        ? params
-        : params === null || params === undefined
-          ? []
-          : [params];
-      const sanitizedParams = normalizedParams.map((value) => (value === undefined ? null : value));
-      const placeholderCount = DatabaseManager.#countPlaceholders(sql);
-
-      if (placeholderCount !== sanitizedParams.length) {
-        throw new Error(
-          `Nombre de paramètres (${sanitizedParams.length}) différent du nombre d'emplacements (${placeholderCount})`
-        );
-      }
-
-      const [rows] = await this.pool.execute(sql, sanitizedParams);
+      const [rows] = await this.pool.execute(sql, params);
       return DatabaseManager.#normalizeRows(rows);
     } catch (error) {
       const suppressErrorCodes = options.suppressErrorCodes || [];
@@ -1237,8 +1179,18 @@ class DatabaseManager {
 
   async queryOne(sql, params = [], options = {}) {
     try {
-      const rows = await this.query(sql, params, options);
-      const [row] = Array.isArray(rows) ? rows : [];
+      const skipInitWait = Boolean(options.skipInitWait);
+
+      if (!this.pool) {
+        await this.ensureInitialized();
+      }
+
+      if (!skipInitWait && !this.isInitialized) {
+        await this.ensureInitialized();
+      }
+
+      const [rows] = await this.pool.execute(sql, params);
+      const [row] = DatabaseManager.#normalizeRows(rows);
       return row || null;
     } catch (error) {
       const suppressErrorCodes = options.suppressErrorCodes || [];
