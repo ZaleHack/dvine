@@ -2965,7 +2965,7 @@ const App: React.FC = () => {
       {
         id: 'financial',
         title: 'Transactions financières',
-        value: `${numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA`,
+        value: `${numberFormatter.format(financialStats?.totalAmount ?? 0)} XAF`,
         icon: Banknote,
         color: 'bg-emerald-600',
         background: 'from-emerald-50 via-white to-lime-50',
@@ -7343,7 +7343,7 @@ const App: React.FC = () => {
                                   {numberFormatter.format(financialStats?.totalTransactions ?? 0)}
                                 </p>
                                 <p className="text-sm text-slate-600">
-                                  Montant total : {numberFormatter.format(financialStats?.totalAmount ?? 0)} FCFA
+                                  Montant total : {numberFormatter.format(financialStats?.totalAmount ?? 0)} XAF
                                 </p>
                               </div>
                               <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
@@ -7354,13 +7354,13 @@ const App: React.FC = () => {
                               <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60">
                                 <p className="font-semibold text-emerald-800">Moyenne</p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
-                                  {numberFormatter.format(financialStats?.averageAmount ?? 0)} FCFA
+                                  {numberFormatter.format(financialStats?.averageAmount ?? 0)} XAF
                                 </p>
                               </div>
                               <div className="rounded-xl bg-emerald-50 p-3 shadow-sm shadow-emerald-100/60">
                                 <p className="font-semibold text-emerald-800">Max</p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
-                                  {numberFormatter.format(financialStats?.maxAmount ?? 0)} FCFA
+                                  {numberFormatter.format(financialStats?.maxAmount ?? 0)} XAF
                                 </p>
                               </div>
                             </div>
