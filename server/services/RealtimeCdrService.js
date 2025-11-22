@@ -629,8 +629,7 @@ class RealtimeCdrService {
 
   async #searchDatabase(identifierVariants, filters) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
-    const seqNumberSelect = await this.#getSeqNumberSelectClause();
-    const statutAppelSelect = await this.#getStatutAppelSelectClause();
+    const columnSelects = await this.#getRealtimeColumnSelects();
     const btsSegments = await this.#getBtsLookupSegments();
     const unionSegments = btsSegments.length
       ? btsSegments.join('\n        UNION ALL\n        ')
@@ -644,38 +643,91 @@ class RealtimeCdrService {
     const variantList = Array.from(identifierVariants);
     if (variantList.length > 0) {
       if (searchType === 'imei') {
-        const imeiConditions = variantList.map(() => 'c.imei_appelant = ?');
-        conditions.push(`(${imeiConditions.join(' OR ')})`);
-        variantList.forEach((variant) => {
-          params.push(variant);
-        });
+        if (columnSelects.imeiAppelant.available) {
+          const imeiConditions = variantList.map(() => 'c.imei_appelant = ?');
+          conditions.push(`(${imeiConditions.join(' OR ')})`);
+          variantList.forEach((variant) => {
+            params.push(variant);
+          });
+        } else {
+          console.warn(
+            '⚠️ Colonne imei_appelant absente, la recherche IMEI ne retournera aucun résultat.'
+          );
+          conditions.push('1 = 0');
+        }
       } else {
-        const numberConditions = variantList.map(
-          () => '(c.numero_appelant = ? OR c.numero_appele = ?)'
-        );
-        conditions.push(`(${numberConditions.join(' OR ')})`);
-        variantList.forEach((variant) => {
-          params.push(variant, variant);
-        });
+        const numberParts = [];
+        if (columnSelects.numeroAppelant.available) {
+          numberParts.push('c.numero_appelant = ?');
+        }
+        if (columnSelects.numeroAppele.available) {
+          numberParts.push('c.numero_appele = ?');
+        }
+
+        if (numberParts.length === 0) {
+          console.warn(
+            '⚠️ Colonnes numero_appelant et numero_appele absentes, la recherche par numéro ne retournera aucun résultat.'
+          );
+          conditions.push('1 = 0');
+        } else {
+          const numberConditions = variantList.map(() => `(${numberParts.join(' OR ')})`);
+          conditions.push(`(${numberConditions.join(' OR ')})`);
+          variantList.forEach((variant) => {
+            if (columnSelects.numeroAppelant.available) {
+              params.push(variant);
+            }
+            if (columnSelects.numeroAppele.available) {
+              params.push(variant);
+            }
+          });
+        }
       }
     }
 
     if (filters.startDate) {
-      conditions.push('c.date_debut >= ?');
-      params.push(filters.startDate);
+      if (!columnSelects.dateDebut.available) {
+        console.warn(
+          '⚠️ Colonne date_debut absente, le filtre startDate ne peut pas être appliqué.'
+        );
+        conditions.push('1 = 0');
+      } else {
+        conditions.push('c.date_debut >= ?');
+        params.push(filters.startDate);
+      }
     }
     if (filters.endDate) {
-      conditions.push('c.date_debut <= ?');
-      params.push(filters.endDate);
+      if (!columnSelects.dateDebut.available) {
+        console.warn(
+          '⚠️ Colonne date_debut absente, le filtre endDate ne peut pas être appliqué.'
+        );
+        conditions.push('1 = 0');
+      } else {
+        conditions.push('c.date_debut <= ?');
+        params.push(filters.endDate);
+      }
     }
 
     if (filters.startTimeBound) {
-      conditions.push('c.heure_debut >= ?');
-      params.push(filters.startTimeBound);
+      if (!columnSelects.heureDebut.available) {
+        console.warn(
+          '⚠️ Colonne heure_debut absente, le filtre startTimeBound ne peut pas être appliqué.'
+        );
+        conditions.push('1 = 0');
+      } else {
+        conditions.push('c.heure_debut >= ?');
+        params.push(filters.startTimeBound);
+      }
     }
     if (filters.endTimeBound) {
-      conditions.push('c.heure_debut <= ?');
-      params.push(filters.endTimeBound);
+      if (!columnSelects.heureDebut.available) {
+        console.warn(
+          '⚠️ Colonne heure_debut absente, le filtre endTimeBound ne peut pas être appliqué.'
+        );
+        conditions.push('1 = 0');
+      } else {
+        conditions.push('c.heure_debut <= ?');
+        params.push(filters.endTimeBound);
+      }
     }
 
     params.push(filters.limit);
@@ -702,30 +754,36 @@ class RealtimeCdrService {
       )
       SELECT
         c.id,
-        ${seqNumberSelect}
-        c.type_appel,
-        ${statutAppelSelect}
-        c.cause_liberation,
-        c.facturation,
-        c.date_debut AS date_debut_appel,
-        c.date_fin AS date_fin_appel,
-        c.heure_debut AS heure_debut_appel,
-        c.heure_fin AS heure_fin_appel,
-        c.duree_sec AS duree_appel,
-        c.numero_appelant,
-        c.imei_appelant,
-        c.numero_appele,
-        c.imsi_appelant,
-        c.cgi,
-        c.route_reseau,
-        c.device_id,
+        ${columnSelects.seqNumber.clause}
+        ${columnSelects.typeAppel.clause}
+        ${columnSelects.statutAppel.clause}
+        ${columnSelects.causeLiberation.clause}
+        ${columnSelects.facturation.clause}
+        ${columnSelects.dateDebut.clause}
+        ${columnSelects.dateFin.clause}
+        ${columnSelects.heureDebut.clause}
+        ${columnSelects.heureFin.clause}
+        ${columnSelects.dureeSec.clause}
+        ${columnSelects.numeroAppelant.clause}
+        ${columnSelects.imeiAppelant.clause}
+        ${columnSelects.numeroAppele.clause}
+        ${columnSelects.imsiAppelant.clause}
+        ${columnSelects.cgi.clause}
+        ${columnSelects.routeReseau.clause}
+        ${columnSelects.deviceId.clause}
         ${coordinateSelect},
-        c.fichier_source AS source_file,
-        c.inserted_at
+        ${columnSelects.fichierSource.clause}
+        ${columnSelects.insertedAt.clause}
       FROM ${REALTIME_CDR_TABLE_SQL} AS c
       LEFT JOIN best_bts AS coords ON coords.cgi = c.cgi
       ${whereClause}
-      ORDER BY c.date_debut ASC, c.heure_debut ASC, c.id ASC
+      ORDER BY ${[
+        columnSelects.dateDebut.available ? 'c.date_debut ASC' : null,
+        columnSelects.heureDebut.available ? 'c.heure_debut ASC' : null,
+        'c.id ASC'
+      ]
+        .filter(Boolean)
+        .join(', ')}
       LIMIT ?
     `;
 
@@ -748,14 +806,62 @@ class RealtimeCdrService {
     return this.coordinateSelectClausePromise;
   }
 
-  async #getSeqNumberSelectClause() {
-    const hasSeqNumber = await this.#hasSeqNumberColumn();
-    return hasSeqNumber ? 'c.seq_number,' : 'NULL AS seq_number,';
+  async #getRealtimeColumnSelects() {
+    const columnConfigs = [
+      { key: 'seqNumber', name: 'seq_number' },
+      { key: 'typeAppel', name: 'type_appel' },
+      { key: 'statutAppel', name: 'statut_appel' },
+      { key: 'causeLiberation', name: 'cause_liberation' },
+      { key: 'facturation', name: 'facturation' },
+      { key: 'dateDebut', name: 'date_debut', alias: 'date_debut_appel' },
+      { key: 'dateFin', name: 'date_fin', alias: 'date_fin_appel' },
+      { key: 'heureDebut', name: 'heure_debut', alias: 'heure_debut_appel' },
+      { key: 'heureFin', name: 'heure_fin', alias: 'heure_fin_appel' },
+      { key: 'dureeSec', name: 'duree_sec', alias: 'duree_appel' },
+      { key: 'numeroAppelant', name: 'numero_appelant' },
+      { key: 'imeiAppelant', name: 'imei_appelant' },
+      { key: 'numeroAppele', name: 'numero_appele' },
+      { key: 'imsiAppelant', name: 'imsi_appelant' },
+      { key: 'cgi', name: 'cgi' },
+      { key: 'routeReseau', name: 'route_reseau' },
+      { key: 'deviceId', name: 'device_id' },
+      { key: 'fichierSource', name: 'fichier_source', alias: 'source_file' },
+      { key: 'insertedAt', name: 'inserted_at', trailingComma: false }
+    ];
+
+    const entries = await Promise.all(
+      columnConfigs.map(async (config) => {
+        const { clause, available } = await this.#getNullableColumnSelect(config.name, config);
+        return [config.key, { clause, available }];
+      })
+    );
+
+    return Object.fromEntries(entries);
   }
 
-  async #getStatutAppelSelectClause() {
-    const hasStatutAppel = await this.#hasStatutAppelColumn();
-    return hasStatutAppel ? 'c.statut_appel,' : 'NULL AS statut_appel,';
+  async #getNullableColumnSelect(columnName, options = {}) {
+    const {
+      alias = null,
+      defaultValue = 'NULL',
+      trailingComma = true,
+      onErrorMessage = null
+    } = options;
+
+    const warningMessage =
+      onErrorMessage ||
+      `⚠️ Impossible de vérifier la présence de la colonne ${columnName}, valeur remplacée par ${defaultValue}.`;
+
+    const available = await this.#hasColumn(columnName, { onErrorMessage: warningMessage });
+
+    const selectAlias = alias || columnName;
+    const clause = available
+      ? `c.${columnName}${alias && alias !== columnName ? ` AS ${alias}` : ''}`
+      : `${defaultValue} AS ${selectAlias}`;
+
+    return {
+      available,
+      clause: trailingComma ? `${clause},` : clause
+    };
   }
 
   async #resolveCoordinateSelectClause() {
@@ -808,20 +914,6 @@ class RealtimeCdrService {
 
     this.coordinateFallbackColumns = availableColumns;
     return availableColumns;
-  }
-
-  async #hasSeqNumberColumn() {
-    return this.#hasColumn('seq_number', {
-      onErrorMessage:
-        '⚠️ Impossible de vérifier la présence de la colonne seq_number, valeur remplacée par NULL.'
-    });
-  }
-
-  async #hasStatutAppelColumn() {
-    return this.#hasColumn('statut_appel', {
-      onErrorMessage:
-        '⚠️ Impossible de vérifier la présence de la colonne statut_appel, valeur remplacée par NULL.'
-    });
   }
 
   async #hasColumn(columnName, options = {}) {
@@ -1234,8 +1326,7 @@ class RealtimeCdrService {
 
   async #fetchRows(afterId, limit) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
-    const seqNumberSelect = await this.#getSeqNumberSelectClause();
-    const statutAppelSelect = await this.#getStatutAppelSelectClause();
+    const columnSelects = await this.#getRealtimeColumnSelects();
     const numericAfterId = Number(afterId);
     const startId = Number.isFinite(numericAfterId)
       ? Math.max(0, Math.floor(numericAfterId))
@@ -1247,26 +1338,26 @@ class RealtimeCdrService {
       `
         SELECT
           c.id,
-          ${seqNumberSelect}
-          c.type_appel,
-          ${statutAppelSelect}
-          c.cause_liberation,
-          c.facturation,
-          c.date_debut AS date_debut_appel,
-          c.date_fin AS date_fin_appel,
-          c.heure_debut AS heure_debut_appel,
-          c.heure_fin AS heure_fin_appel,
-          c.duree_sec AS duree_appel,
-          c.numero_appelant,
-          c.imei_appelant,
-          c.numero_appele,
-          c.imsi_appelant,
-          c.cgi,
-          c.route_reseau,
-          c.device_id,
+          ${columnSelects.seqNumber.clause}
+          ${columnSelects.typeAppel.clause}
+          ${columnSelects.statutAppel.clause}
+          ${columnSelects.causeLiberation.clause}
+          ${columnSelects.facturation.clause}
+          ${columnSelects.dateDebut.clause}
+          ${columnSelects.dateFin.clause}
+          ${columnSelects.heureDebut.clause}
+          ${columnSelects.heureFin.clause}
+          ${columnSelects.dureeSec.clause}
+          ${columnSelects.numeroAppelant.clause}
+          ${columnSelects.imeiAppelant.clause}
+          ${columnSelects.numeroAppele.clause}
+          ${columnSelects.imsiAppelant.clause}
+          ${columnSelects.cgi.clause}
+          ${columnSelects.routeReseau.clause}
+          ${columnSelects.deviceId.clause}
           ${coordinateSelect},
-          c.fichier_source AS source_file,
-          c.inserted_at
+          ${columnSelects.fichierSource.clause}
+          ${columnSelects.insertedAt.clause}
         FROM ${REALTIME_CDR_TABLE_SQL} AS c
         WHERE c.id > ?
         ORDER BY c.id ASC
