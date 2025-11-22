@@ -503,6 +503,7 @@ class RealtimeCdrService {
     this.coordinateFallbackColumns = null;
     this.btsLookupSegmentsPromise = null;
     this.seqNumberColumnAvailable = null;
+    this.columnAvailabilityCache = new Map();
 
     this.initializationPromise = this.elasticEnabled && this.autoStart
       ? this.#initializeElasticsearch().catch((error) => {
@@ -629,6 +630,7 @@ class RealtimeCdrService {
   async #searchDatabase(identifierVariants, filters) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
     const seqNumberSelect = await this.#getSeqNumberSelectClause();
+    const statutAppelSelect = await this.#getStatutAppelSelectClause();
     const btsSegments = await this.#getBtsLookupSegments();
     const unionSegments = btsSegments.length
       ? btsSegments.join('\n        UNION ALL\n        ')
@@ -702,7 +704,7 @@ class RealtimeCdrService {
         c.id,
         ${seqNumberSelect}
         c.type_appel,
-        c.statut_appel,
+        ${statutAppelSelect}
         c.cause_liberation,
         c.facturation,
         c.date_debut AS date_debut_appel,
@@ -749,6 +751,11 @@ class RealtimeCdrService {
   async #getSeqNumberSelectClause() {
     const hasSeqNumber = await this.#hasSeqNumberColumn();
     return hasSeqNumber ? 'c.seq_number,' : 'NULL AS seq_number,';
+  }
+
+  async #getStatutAppelSelectClause() {
+    const hasStatutAppel = await this.#hasStatutAppelColumn();
+    return hasStatutAppel ? 'c.statut_appel,' : 'NULL AS statut_appel,';
   }
 
   async #resolveCoordinateSelectClause() {
@@ -804,8 +811,29 @@ class RealtimeCdrService {
   }
 
   async #hasSeqNumberColumn() {
-    if (typeof this.seqNumberColumnAvailable === 'boolean') {
-      return this.seqNumberColumnAvailable;
+    return this.#hasColumn('seq_number', {
+      onErrorMessage:
+        '⚠️ Impossible de vérifier la présence de la colonne seq_number, valeur remplacée par NULL.'
+    });
+  }
+
+  async #hasStatutAppelColumn() {
+    return this.#hasColumn('statut_appel', {
+      onErrorMessage:
+        '⚠️ Impossible de vérifier la présence de la colonne statut_appel, valeur remplacée par NULL.'
+    });
+  }
+
+  async #hasColumn(columnName, options = {}) {
+    const { onErrorMessage = null } = options;
+
+    if (!columnName) {
+      return false;
+    }
+
+    const normalized = String(columnName).toLowerCase();
+    if (this.columnAvailabilityCache.has(normalized)) {
+      return this.columnAvailabilityCache.get(normalized);
     }
 
     const schemaCondition = REALTIME_CDR_TABLE_SCHEMA
@@ -817,29 +845,30 @@ class RealtimeCdrService {
       FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_NAME = ?
         ${schemaCondition}
-        AND LOWER(COLUMN_NAME) = 'seq_number'
+        AND LOWER(COLUMN_NAME) = ?
       LIMIT 1
     `;
 
     const params = REALTIME_CDR_TABLE_SCHEMA
-      ? [REALTIME_CDR_TABLE_NAME, REALTIME_CDR_TABLE_SCHEMA]
-      : [REALTIME_CDR_TABLE_NAME];
+      ? [REALTIME_CDR_TABLE_NAME, REALTIME_CDR_TABLE_SCHEMA, normalized]
+      : [REALTIME_CDR_TABLE_NAME, normalized];
 
+    let available = false;
     try {
       const rows = await this.database.query(sql, params, {
         suppressErrorCodes: ['ER_NO_SUCH_TABLE', '42S02'],
         suppressErrorLog: true
       });
-      this.seqNumberColumnAvailable = Array.isArray(rows) && rows.length > 0;
+      available = Array.isArray(rows) && rows.length > 0;
     } catch (error) {
-      console.warn(
-        '⚠️ Impossible de vérifier la présence de la colonne seq_number, valeur remplacée par NULL.',
-        error?.message || error
-      );
-      this.seqNumberColumnAvailable = false;
+      if (onErrorMessage) {
+        console.warn(onErrorMessage, error?.message || error);
+      }
+      available = false;
     }
 
-    return this.seqNumberColumnAvailable;
+    this.columnAvailabilityCache.set(normalized, available);
+    return available;
   }
 
   async #getBtsLookupSegments() {
@@ -1206,6 +1235,7 @@ class RealtimeCdrService {
   async #fetchRows(afterId, limit) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
     const seqNumberSelect = await this.#getSeqNumberSelectClause();
+    const statutAppelSelect = await this.#getStatutAppelSelectClause();
     const numericAfterId = Number(afterId);
     const startId = Number.isFinite(numericAfterId)
       ? Math.max(0, Math.floor(numericAfterId))
@@ -1219,7 +1249,7 @@ class RealtimeCdrService {
           c.id,
           ${seqNumberSelect}
           c.type_appel,
-          c.statut_appel,
+          ${statutAppelSelect}
           c.cause_liberation,
           c.facturation,
           c.date_debut AS date_debut_appel,
