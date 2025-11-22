@@ -788,6 +788,23 @@ class RealtimeCdrService {
       LIMIT ?
     `;
 
+    const placeholderCount = (sql.match(/\?/g) || []).length;
+    const paramsCount = params.length;
+
+    if (placeholderCount !== paramsCount) {
+      console.warn(
+        `⚠️ Mismatch entre le nombre de paramètres (${paramsCount}) et les emplacements (${placeholderCount}) pour la recherche CDR temps réel. ` +
+          'Les valeurs manquantes seront complétées par null.'
+      );
+
+      while (params.length < placeholderCount) {
+        params.push(null);
+      }
+      if (params.length > placeholderCount) {
+        params.length = placeholderCount;
+      }
+    }
+
     return this.database.query(sql, params);
   }
 
