@@ -736,24 +736,23 @@ class RealtimeCdrService {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
+    const prioritizedBtsSql = `(${unionSegments})`;
+    const bestBtsSql = `
+      SELECT
+        p.CGI AS cgi,
+        p.NOM_BTS AS nom_bts,
+        p.LONGITUDE AS longitude,
+        p.LATITUDE AS latitude,
+        p.AZIMUT AS azimut
+      FROM ${prioritizedBtsSql} AS p
+      INNER JOIN (
+        SELECT CGI, MIN(priority) AS min_priority
+        FROM ${prioritizedBtsSql} AS prioritized_bts
+        GROUP BY CGI
+      ) AS ranked ON ranked.CGI = p.CGI AND ranked.min_priority = p.priority
+    `;
+
     const sql = `
-      WITH prioritized_bts AS (
-        ${unionSegments}
-      ),
-      best_bts AS (
-        SELECT
-          p.CGI AS cgi,
-          p.NOM_BTS AS nom_bts,
-          p.LONGITUDE AS longitude,
-          p.LATITUDE AS latitude,
-          p.AZIMUT AS azimut
-        FROM prioritized_bts p
-        INNER JOIN (
-          SELECT CGI, MIN(priority) AS min_priority
-          FROM prioritized_bts
-          GROUP BY CGI
-        ) ranked ON ranked.CGI = p.CGI AND ranked.min_priority = p.priority
-      )
       SELECT
         c.id,
         ${columnSelects.seqNumber.clause}
@@ -777,7 +776,7 @@ class RealtimeCdrService {
         ${columnSelects.fichierSource.clause}
         ${columnSelects.insertedAt.clause}
       FROM ${REALTIME_CDR_TABLE_SQL} AS c
-      LEFT JOIN best_bts AS coords ON coords.cgi = c.cgi COLLATE ${CGI_COLLATION}
+      LEFT JOIN (${bestBtsSql}) AS coords ON coords.cgi = c.cgi COLLATE ${CGI_COLLATION}
       ${whereClause}
       ORDER BY ${[
         columnSelects.dateDebut.available ? 'c.date_debut ASC' : null,
