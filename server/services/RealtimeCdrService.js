@@ -788,8 +788,10 @@ class RealtimeCdrService {
       LIMIT ?
     `;
 
+    const sanitizedParams = params.map((value) => (value === undefined ? null : value));
+
     const placeholderCount = (sql.match(/\?/g) || []).length;
-    const paramsCount = params.length;
+    const paramsCount = sanitizedParams.length;
 
     if (placeholderCount !== paramsCount) {
       console.warn(
@@ -797,15 +799,15 @@ class RealtimeCdrService {
           'Les valeurs manquantes seront complétées par null.'
       );
 
-      while (params.length < placeholderCount) {
-        params.push(null);
+      while (sanitizedParams.length < placeholderCount) {
+        sanitizedParams.push(null);
       }
-      if (params.length > placeholderCount) {
-        params.length = placeholderCount;
+      if (sanitizedParams.length > placeholderCount) {
+        sanitizedParams.length = placeholderCount;
       }
     }
 
-    return this.database.query(sql, params);
+    return this.database.query(sql, sanitizedParams);
   }
 
   async #getCoordinateSelectClause() {
