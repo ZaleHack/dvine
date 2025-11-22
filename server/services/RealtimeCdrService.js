@@ -21,6 +21,7 @@ const EMPTY_RESULT = {
 const REALTIME_INDEX = process.env.ELASTICSEARCH_CDR_REALTIME_INDEX || 'cdr-realtime-events';
 const MAX_BATCH_SIZE = 5000;
 const DEFAULT_RECONNECT_DELAY_MS = 15000;
+const CGI_COLLATION = 'utf8mb4_general_ci';
 
 const parseNonNegativeInteger = (value, fallback) => {
   const parsed = Number(value);
@@ -633,7 +634,7 @@ class RealtimeCdrService {
     const btsSegments = await this.#getBtsLookupSegments();
     const unionSegments = btsSegments.length
       ? btsSegments.join('\n        UNION ALL\n        ')
-      : 'SELECT NULL AS CGI, NULL AS NOM_BTS, NULL AS LONGITUDE, NULL AS LATITUDE, NULL AS AZIMUT, 1 AS priority FROM (SELECT 1) AS empty WHERE 1 = 0';
+      : `SELECT CAST(NULL AS CHAR) COLLATE ${CGI_COLLATION} AS CGI, CAST(NULL AS CHAR) COLLATE ${CGI_COLLATION} AS NOM_BTS, NULL AS LONGITUDE, NULL AS LATITUDE, NULL AS AZIMUT, 1 AS priority FROM (SELECT 1) AS empty WHERE 1 = 0`;
     const conditions = [];
     const params = [];
 
@@ -775,7 +776,7 @@ class RealtimeCdrService {
         ${columnSelects.fichierSource.clause}
         ${columnSelects.insertedAt.clause}
       FROM ${REALTIME_CDR_TABLE_SQL} AS c
-      LEFT JOIN best_bts AS coords ON coords.cgi = c.cgi
+      LEFT JOIN best_bts AS coords ON coords.cgi = c.cgi COLLATE ${CGI_COLLATION}
       ${whereClause}
       ORDER BY ${[
         columnSelects.dateDebut.available ? 'c.date_debut ASC' : null,
@@ -990,7 +991,7 @@ class RealtimeCdrService {
             ? Math.floor(source.priority)
             : index + 1;
           segments.push(
-            `SELECT CGI, NOM_BTS, LONGITUDE, LATITUDE, AZIMUT, ${priority} AS priority FROM ${source.tableSql}`
+            `SELECT CONVERT(CGI USING utf8mb4) COLLATE ${CGI_COLLATION} AS CGI, CONVERT(NOM_BTS USING utf8mb4) COLLATE ${CGI_COLLATION} AS NOM_BTS, LONGITUDE, LATITUDE, AZIMUT, ${priority} AS priority FROM ${source.tableSql}`
           );
         });
 
