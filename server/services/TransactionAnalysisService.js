@@ -130,6 +130,7 @@ class TransactionAnalysisService {
     }
 
     const limit = sanitizeLimit(params.limit, { defaultValue: 120, min: 1, max: 300 });
+    const safeLimit = Number(limit);
 
     const transactions = await database.query(
       `
@@ -169,9 +170,9 @@ class TransactionAnalysisService {
         FROM ${TABLE_NAME}
         ${whereClause}
         ORDER BY DateTime DESC
-        LIMIT ?
+        LIMIT ${safeLimit}
       `,
-      [...queryParams, Number(limit)]
+      queryParams
     );
 
     const totalRow = await database.queryOne(`SELECT COUNT(*) AS total FROM ${TABLE_NAME} ${whereClause}`, queryParams);
