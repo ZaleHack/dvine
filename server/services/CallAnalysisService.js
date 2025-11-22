@@ -235,11 +235,14 @@ class CallAnalysisService {
     const hourlyDistribution = await database.query(
       `
         SELECT
-          LPAD(HOUR(start_time), 2, '0') as hour,
+          hour,
           COUNT(*) as count,
           AVG(duration) as averageDuration
-        FROM ${TABLE_NAME}
-        GROUP BY HOUR(start_time)
+        FROM (
+          SELECT LPAD(HOUR(start_time), 2, '0') as hour, duration
+          FROM ${TABLE_NAME}
+        ) as hourly_calls
+        GROUP BY hour
         ORDER BY hour
       `
     );

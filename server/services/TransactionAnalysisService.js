@@ -1,5 +1,6 @@
 import database from '../config/database.js';
 import { PassThrough } from 'stream';
+import { sanitizeLimit } from '../utils/number-utils.js';
 
 const TABLE_NAME = '`di_autres`.`transactions`';
 
@@ -71,8 +72,10 @@ class TransactionAnalysisService {
         queryParams
       )) || {};
 
-    const groupedQuery = async (field, limit = 8) =>
-      database.query(
+    const groupedQuery = async (field, limit = 8) => {
+      const safeLimit = sanitizeLimit(limit, { defaultValue: 8, min: 1, max: 100 });
+
+      return database.query(
         `
         SELECT
           ${field} AS label,
@@ -83,10 +86,11 @@ class TransactionAnalysisService {
         ${whereClause}
         GROUP BY ${field}
         ORDER BY count DESC
-        LIMIT ?
+        LIMIT ${safeLimit}
       `,
-        [...queryParams, limit]
+        queryParams
       );
+    };
 
     const dailyVolume = await database.query(
       `
