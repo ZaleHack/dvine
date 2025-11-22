@@ -731,7 +731,7 @@ class RealtimeCdrService {
       }
     }
 
-    const safeLimit = Number.isFinite(filters.limit) ? filters.limit : 2000;
+    const safeLimit = Number.isFinite(filters.limit) ? Math.max(1, Math.floor(filters.limit)) : 2000;
     params.push(safeLimit);
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -788,70 +788,9 @@ class RealtimeCdrService {
       LIMIT ?
     `;
 
-    let sanitizedParams = params.map((value) => (value === undefined ? null : value));
-
-    const placeholderCount = this.#countPlaceholders(sql);
-    const paramsCount = sanitizedParams.length;
-
-    if (placeholderCount !== paramsCount) {
-      console.warn(
-        `⚠️ Mismatch entre le nombre de paramètres (${paramsCount}) et les emplacements (${placeholderCount}) pour la recherche CDR temps réel. ` +
-          'Merci de vérifier les conditions et les paramètres construits.'
-      );
-
-      if (paramsCount > placeholderCount) {
-        sanitizedParams = sanitizedParams.slice(0, placeholderCount);
-      } else {
-        while (sanitizedParams.length < placeholderCount) {
-          sanitizedParams.push(null);
-        }
-      }
-    }
+    const sanitizedParams = params.map((value) => (value === undefined ? null : value));
 
     return this.database.query(sql, sanitizedParams);
-  }
-
-  #countPlaceholders(sql) {
-    let count = 0;
-    let inSingle = false;
-    let inDouble = false;
-    let inBacktick = false;
-    let escaped = false;
-
-    for (let i = 0; i < sql.length; i += 1) {
-      const char = sql[i];
-
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-
-      if (char === '\\') {
-        escaped = true;
-        continue;
-      }
-
-      if (!inDouble && !inBacktick && char === "'") {
-        inSingle = !inSingle;
-        continue;
-      }
-
-      if (!inSingle && !inBacktick && char === '"') {
-        inDouble = !inDouble;
-        continue;
-      }
-
-      if (!inSingle && !inDouble && char === '`') {
-        inBacktick = !inBacktick;
-        continue;
-      }
-
-      if (!inSingle && !inDouble && !inBacktick && char === '?') {
-        count += 1;
-      }
-    }
-
-    return count;
   }
 
   async #getCoordinateSelectClause() {
