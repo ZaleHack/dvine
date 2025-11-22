@@ -13,7 +13,7 @@ import TransactionAnalysisService from './TransactionAnalysisService.js';
 import CallAnalysisService from './CallAnalysisService.js';
 
 const EXCLUDED_DATA_TABLES = new Set(
-  ['di_autres.cdr_temps_reel', 'cdr_temps_reel'].map((name) => name.toLowerCase())
+  ['autres.cdr_temps_reel', 'cdr_temps_reel'].map((name) => name.toLowerCase())
 );
 
 const realtimeDataExclusions = getRealtimeCdrTableIdentifiers();
