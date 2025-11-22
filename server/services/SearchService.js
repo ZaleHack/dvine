@@ -63,8 +63,12 @@ const EXCLUDED_SEARCH_TABLES = new Set(
   ].map((name) => name.toLowerCase())
 );
 
+// Exclure par défaut la table temps réel de la recherche unifiée pour éviter
+// les requêtes lourdes sur de grands volumes de données. Les environnements
+// qui souhaitent l'inclure explicitement peuvent définir
+// EXCLUDE_REALTIME_CDR_FROM_SEARCH="false".
 const shouldExcludeRealtimeCdr =
-  process.env.EXCLUDE_REALTIME_CDR_FROM_SEARCH === 'true';
+  process.env.EXCLUDE_REALTIME_CDR_FROM_SEARCH !== 'false';
 
 if (shouldExcludeRealtimeCdr) {
   const realtimeExclusions = getRealtimeCdrTableIdentifiers();
