@@ -129,7 +129,7 @@ class TransactionAnalysisService {
       throw new Error('MSISDN_REQUIS');
     }
 
-    const limit = Math.min(Math.max(parseInt(params.limit, 10) || 120, 1), 300);
+    const limit = sanitizeLimit(params.limit, { defaultValue: 120, min: 1, max: 300 });
 
     const transactions = await database.query(
       `
@@ -171,7 +171,7 @@ class TransactionAnalysisService {
         ORDER BY DateTime DESC
         LIMIT ?
       `,
-      [...queryParams, limit]
+      [...queryParams, Number(limit)]
     );
 
     const totalRow = await database.queryOne(`SELECT COUNT(*) AS total FROM ${TABLE_NAME} ${whereClause}`, queryParams);
