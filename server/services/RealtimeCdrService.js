@@ -674,7 +674,7 @@ class RealtimeCdrService {
       params.push(filters.endTimeBound);
     }
 
-    params.push(filters.limit);
+    const safeLimit = Number.isFinite(filters.limit) ? Math.floor(filters.limit) : 2000;
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
@@ -722,7 +722,7 @@ class RealtimeCdrService {
       LEFT JOIN best_bts AS coords ON coords.cgi = c.cgi
       ${whereClause}
       ORDER BY c.date_debut ASC, c.heure_debut ASC, c.id ASC
-      LIMIT ?
+      LIMIT ${safeLimit}
     `;
 
     return this.database.query(sql, params);
