@@ -788,7 +788,7 @@ class RealtimeCdrService {
       LIMIT ?
     `;
 
-    const sanitizedParams = params.map((value) => (value === undefined ? null : value));
+    let sanitizedParams = params.map((value) => (value === undefined ? null : value));
 
     const placeholderCount = this.#countPlaceholders(sql);
     const paramsCount = sanitizedParams.length;
@@ -798,6 +798,14 @@ class RealtimeCdrService {
         `⚠️ Mismatch entre le nombre de paramètres (${paramsCount}) et les emplacements (${placeholderCount}) pour la recherche CDR temps réel. ` +
           'Merci de vérifier les conditions et les paramètres construits.'
       );
+
+      if (paramsCount > placeholderCount) {
+        sanitizedParams = sanitizedParams.slice(0, placeholderCount);
+      } else {
+        while (sanitizedParams.length < placeholderCount) {
+          sanitizedParams.push(null);
+        }
+      }
     }
 
     return this.database.query(sql, sanitizedParams);
