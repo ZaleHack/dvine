@@ -118,26 +118,25 @@ class CallAnalysisService {
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const limit = Math.min(Math.max(parseInt(params.limit, 10) || 200, 1), 500);
 
-    const calls = await database.query(
-      `
-        SELECT
-          calling_id,
-          called_id,
-          duration,
-          start_time,
-          end_time,
-          org_pcip,
-          dst_pcip,
-          release_cause,
-          client,
-          provider
-        FROM ${TABLE_NAME}
-        ${whereClause}
-        ORDER BY start_time DESC
-        LIMIT ?
-      `,
-      [...queryParams, limit]
-    );
+    const callsQuery = `
+      SELECT
+        calling_id,
+        called_id,
+        duration,
+        start_time,
+        end_time,
+        org_pcip,
+        dst_pcip,
+        release_cause,
+        client,
+        provider
+      FROM ${TABLE_NAME}
+      ${whereClause}
+      ORDER BY start_time DESC
+      LIMIT ${limit}
+    `;
+
+    const calls = await database.query(callsQuery, queryParams);
 
     const processedCalls = calls.map((call) => ({
       ...call,
