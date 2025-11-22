@@ -232,14 +232,16 @@ class CallAnalysisService {
       label: describeReleaseCause(entry.label)
     }));
 
+    const hourExpression = "LPAD(HOUR(start_time), 2, '0')";
+
     const hourlyDistribution = await database.query(
       `
         SELECT
-          LPAD(HOUR(start_time), 2, '0') as hour,
+          ${hourExpression} AS hour,
           COUNT(*) as count,
           AVG(duration) as averageDuration
         FROM ${TABLE_NAME}
-        GROUP BY HOUR(start_time)
+        GROUP BY ${hourExpression}
         ORDER BY hour
       `
     );
