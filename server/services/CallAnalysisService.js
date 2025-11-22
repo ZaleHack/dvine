@@ -134,9 +134,9 @@ class CallAnalysisService {
         FROM ${TABLE_NAME}
         ${whereClause}
         ORDER BY start_time DESC
-        LIMIT ?
+        LIMIT ${limit}
       `,
-      [...queryParams, limit]
+      queryParams
     );
 
     const processedCalls = calls.map((call) => ({
