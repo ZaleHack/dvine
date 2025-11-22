@@ -731,7 +731,8 @@ class RealtimeCdrService {
       }
     }
 
-    params.push(filters.limit);
+    const safeLimit = Number.isFinite(filters.limit) ? filters.limit : limitValue;
+    params.push(safeLimit);
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
@@ -798,16 +799,14 @@ class RealtimeCdrService {
         `⚠️ Mismatch entre le nombre de paramètres (${paramsCount}) et les emplacements (${placeholderCount}) pour la recherche CDR temps réel. ` +
           'Les valeurs manquantes seront complétées par null.'
       );
-
-      while (sanitizedParams.length < placeholderCount) {
-        sanitizedParams.push(null);
-      }
-      if (sanitizedParams.length > placeholderCount) {
-        sanitizedParams.length = placeholderCount;
-      }
     }
 
-    return this.database.query(sql, sanitizedParams);
+    const finalParams = sanitizedParams.slice(0, placeholderCount);
+    while (finalParams.length < placeholderCount) {
+      finalParams.push(null);
+    }
+
+    return this.database.query(sql, finalParams);
   }
 
   async #getCoordinateSelectClause() {
