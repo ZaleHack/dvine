@@ -502,6 +502,7 @@ class RealtimeCdrService {
     this.coordinateSelectClausePromise = null;
     this.coordinateFallbackColumns = null;
     this.btsLookupSegmentsPromise = null;
+    this.seqNumberColumnAvailable = null;
 
     this.initializationPromise = this.elasticEnabled && this.autoStart
       ? this.#initializeElasticsearch().catch((error) => {
@@ -627,6 +628,7 @@ class RealtimeCdrService {
 
   async #searchDatabase(identifierVariants, filters) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
+    const seqNumberSelect = await this.#getSeqNumberSelectClause();
     const btsSegments = await this.#getBtsLookupSegments();
     const unionSegments = btsSegments.length
       ? btsSegments.join('\n        UNION ALL\n        ')
@@ -698,7 +700,7 @@ class RealtimeCdrService {
       )
       SELECT
         c.id,
-        c.seq_number,
+        ${seqNumberSelect}
         c.type_appel,
         c.statut_appel,
         c.cause_liberation,
@@ -742,6 +744,11 @@ class RealtimeCdrService {
     }
 
     return this.coordinateSelectClausePromise;
+  }
+
+  async #getSeqNumberSelectClause() {
+    const hasSeqNumber = await this.#hasSeqNumberColumn();
+    return hasSeqNumber ? 'c.seq_number,' : 'NULL AS seq_number,';
   }
 
   async #resolveCoordinateSelectClause() {
@@ -794,6 +801,45 @@ class RealtimeCdrService {
 
     this.coordinateFallbackColumns = availableColumns;
     return availableColumns;
+  }
+
+  async #hasSeqNumberColumn() {
+    if (typeof this.seqNumberColumnAvailable === 'boolean') {
+      return this.seqNumberColumnAvailable;
+    }
+
+    const schemaCondition = REALTIME_CDR_TABLE_SCHEMA
+      ? 'AND TABLE_SCHEMA = ?'
+      : 'AND TABLE_SCHEMA = DATABASE()';
+
+    const sql = `
+      SELECT 1
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_NAME = ?
+        ${schemaCondition}
+        AND LOWER(COLUMN_NAME) = 'seq_number'
+      LIMIT 1
+    `;
+
+    const params = REALTIME_CDR_TABLE_SCHEMA
+      ? [REALTIME_CDR_TABLE_NAME, REALTIME_CDR_TABLE_SCHEMA]
+      : [REALTIME_CDR_TABLE_NAME];
+
+    try {
+      const rows = await this.database.query(sql, params, {
+        suppressErrorCodes: ['ER_NO_SUCH_TABLE', '42S02'],
+        suppressErrorLog: true
+      });
+      this.seqNumberColumnAvailable = Array.isArray(rows) && rows.length > 0;
+    } catch (error) {
+      console.warn(
+        '⚠️ Impossible de vérifier la présence de la colonne seq_number, valeur remplacée par NULL.',
+        error?.message || error
+      );
+      this.seqNumberColumnAvailable = false;
+    }
+
+    return this.seqNumberColumnAvailable;
   }
 
   async #getBtsLookupSegments() {
@@ -1159,6 +1205,7 @@ class RealtimeCdrService {
 
   async #fetchRows(afterId, limit) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
+    const seqNumberSelect = await this.#getSeqNumberSelectClause();
     const numericAfterId = Number(afterId);
     const startId = Number.isFinite(numericAfterId)
       ? Math.max(0, Math.floor(numericAfterId))
@@ -1170,7 +1217,7 @@ class RealtimeCdrService {
       `
         SELECT
           c.id,
-          c.seq_number,
+          ${seqNumberSelect}
           c.type_appel,
           c.statut_appel,
           c.cause_liberation,
