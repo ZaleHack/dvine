@@ -71,8 +71,10 @@ class TransactionAnalysisService {
         queryParams
       )) || {};
 
-    const groupedQuery = async (field, limit = 8) =>
-      database.query(
+    const groupedQuery = async (field, limit = 8) => {
+      const safeLimit = Number.isFinite(limit) ? limit : 8;
+
+      return database.query(
         `
         SELECT
           ${field} AS label,
@@ -83,10 +85,11 @@ class TransactionAnalysisService {
         ${whereClause}
         GROUP BY ${field}
         ORDER BY count DESC
-        LIMIT ?
+        LIMIT ${safeLimit}
       `,
-        [...queryParams, limit]
+        queryParams
       );
+    };
 
     const dailyVolume = await database.query(
       `
@@ -126,6 +129,7 @@ class TransactionAnalysisService {
     }
 
     const limit = Math.min(Math.max(parseInt(params.limit, 10) || 120, 1), 300);
+    const safeLimit = Number.isFinite(limit) ? limit : 120;
 
     const transactions = await database.query(
       `
@@ -165,9 +169,9 @@ class TransactionAnalysisService {
         FROM ${TABLE_NAME}
         ${whereClause}
         ORDER BY DateTime DESC
-        LIMIT ?
+        LIMIT ${safeLimit}
       `,
-      [...queryParams, limit]
+      queryParams
     );
 
     const totalRow = await database.queryOne(`SELECT COUNT(*) AS total FROM ${TABLE_NAME} ${whereClause}`, queryParams);
