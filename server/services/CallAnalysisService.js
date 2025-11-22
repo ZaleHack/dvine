@@ -118,25 +118,26 @@ class CallAnalysisService {
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const limit = Math.min(Math.max(parseInt(params.limit, 10) || 200, 1), 500);
 
-    const callsQuery = `
-      SELECT
-        calling_id,
-        called_id,
-        duration,
-        start_time,
-        end_time,
-        org_pcip,
-        dst_pcip,
-        release_cause,
-        client,
-        provider
-      FROM ${TABLE_NAME}
-      ${whereClause}
-      ORDER BY start_time DESC
-      LIMIT ${limit}
-    `;
-
-    const calls = await database.query(callsQuery, queryParams);
+    const calls = await database.query(
+      `
+        SELECT
+          calling_id,
+          called_id,
+          duration,
+          start_time,
+          end_time,
+          org_pcip,
+          dst_pcip,
+          release_cause,
+          client,
+          provider
+        FROM ${TABLE_NAME}
+        ${whereClause}
+        ORDER BY start_time DESC
+        LIMIT ?
+      `,
+      [...queryParams, limit]
+    );
 
     const processedCalls = calls.map((call) => ({
       ...call,
@@ -231,16 +232,14 @@ class CallAnalysisService {
       label: describeReleaseCause(entry.label)
     }));
 
-    const hourExpression = "LPAD(HOUR(start_time), 2, '0')";
-
     const hourlyDistribution = await database.query(
       `
         SELECT
-          ${hourExpression} AS hour,
+          LPAD(HOUR(start_time), 2, '0') as hour,
           COUNT(*) as count,
           AVG(duration) as averageDuration
         FROM ${TABLE_NAME}
-        GROUP BY ${hourExpression}
+        GROUP BY HOUR(start_time)
         ORDER BY hour
       `
     );

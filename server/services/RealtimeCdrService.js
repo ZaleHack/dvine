@@ -21,7 +21,6 @@ const EMPTY_RESULT = {
 const REALTIME_INDEX = process.env.ELASTICSEARCH_CDR_REALTIME_INDEX || 'cdr-realtime-events';
 const MAX_BATCH_SIZE = 5000;
 const DEFAULT_RECONNECT_DELAY_MS = 15000;
-const CGI_COLLATION = 'utf8mb4_general_ci';
 
 const parseNonNegativeInteger = (value, fallback) => {
   const parsed = Number(value);
@@ -503,8 +502,6 @@ class RealtimeCdrService {
     this.coordinateSelectClausePromise = null;
     this.coordinateFallbackColumns = null;
     this.btsLookupSegmentsPromise = null;
-    this.seqNumberColumnAvailable = null;
-    this.columnAvailabilityCache = new Map();
 
     this.initializationPromise = this.elasticEnabled && this.autoStart
       ? this.#initializeElasticsearch().catch((error) => {
@@ -630,11 +627,10 @@ class RealtimeCdrService {
 
   async #searchDatabase(identifierVariants, filters) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
-    const columnSelects = await this.#getRealtimeColumnSelects();
     const btsSegments = await this.#getBtsLookupSegments();
     const unionSegments = btsSegments.length
       ? btsSegments.join('\n        UNION ALL\n        ')
-      : `SELECT CAST(NULL AS CHAR) COLLATE ${CGI_COLLATION} AS CGI, CAST(NULL AS CHAR) COLLATE ${CGI_COLLATION} AS NOM_BTS, NULL AS LONGITUDE, NULL AS LATITUDE, NULL AS AZIMUT, 1 AS priority FROM (SELECT 1) AS empty WHERE 1 = 0`;
+      : 'SELECT NULL AS CGI, NULL AS NOM_BTS, NULL AS LONGITUDE, NULL AS LATITUDE, NULL AS AZIMUT, 1 AS priority FROM (SELECT 1) AS empty WHERE 1 = 0';
     const conditions = [];
     const params = [];
 
@@ -644,153 +640,92 @@ class RealtimeCdrService {
     const variantList = Array.from(identifierVariants);
     if (variantList.length > 0) {
       if (searchType === 'imei') {
-        if (columnSelects.imeiAppelant.available) {
-          const imeiConditions = variantList.map(() => 'c.imei_appelant = ?');
-          conditions.push(`(${imeiConditions.join(' OR ')})`);
-          variantList.forEach((variant) => {
-            params.push(variant);
-          });
-        } else {
-          console.warn(
-            '⚠️ Colonne imei_appelant absente, la recherche IMEI ne retournera aucun résultat.'
-          );
-          conditions.push('1 = 0');
-        }
+        const imeiConditions = variantList.map(() => 'c.imei_appelant = ?');
+        conditions.push(`(${imeiConditions.join(' OR ')})`);
+        variantList.forEach((variant) => {
+          params.push(variant);
+        });
       } else {
-        const numberParts = [];
-        if (columnSelects.numeroAppelant.available) {
-          numberParts.push('c.numero_appelant = ?');
-        }
-        if (columnSelects.numeroAppele.available) {
-          numberParts.push('c.numero_appele = ?');
-        }
-
-        if (numberParts.length === 0) {
-          console.warn(
-            '⚠️ Colonnes numero_appelant et numero_appele absentes, la recherche par numéro ne retournera aucun résultat.'
-          );
-          conditions.push('1 = 0');
-        } else {
-          const numberConditions = variantList.map(() => `(${numberParts.join(' OR ')})`);
-          conditions.push(`(${numberConditions.join(' OR ')})`);
-          variantList.forEach((variant) => {
-            if (columnSelects.numeroAppelant.available) {
-              params.push(variant);
-            }
-            if (columnSelects.numeroAppele.available) {
-              params.push(variant);
-            }
-          });
-        }
+        const numberConditions = variantList.map(
+          () => '(c.numero_appelant = ? OR c.numero_appele = ?)'
+        );
+        conditions.push(`(${numberConditions.join(' OR ')})`);
+        variantList.forEach((variant) => {
+          params.push(variant, variant);
+        });
       }
     }
 
     if (filters.startDate) {
-      if (!columnSelects.dateDebut.available) {
-        console.warn(
-          '⚠️ Colonne date_debut absente, le filtre startDate ne peut pas être appliqué.'
-        );
-        conditions.push('1 = 0');
-      } else {
-        conditions.push('c.date_debut >= ?');
-        params.push(filters.startDate);
-      }
+      conditions.push('c.date_debut >= ?');
+      params.push(filters.startDate);
     }
     if (filters.endDate) {
-      if (!columnSelects.dateDebut.available) {
-        console.warn(
-          '⚠️ Colonne date_debut absente, le filtre endDate ne peut pas être appliqué.'
-        );
-        conditions.push('1 = 0');
-      } else {
-        conditions.push('c.date_debut <= ?');
-        params.push(filters.endDate);
-      }
+      conditions.push('c.date_debut <= ?');
+      params.push(filters.endDate);
     }
 
     if (filters.startTimeBound) {
-      if (!columnSelects.heureDebut.available) {
-        console.warn(
-          '⚠️ Colonne heure_debut absente, le filtre startTimeBound ne peut pas être appliqué.'
-        );
-        conditions.push('1 = 0');
-      } else {
-        conditions.push('c.heure_debut >= ?');
-        params.push(filters.startTimeBound);
-      }
+      conditions.push('c.heure_debut >= ?');
+      params.push(filters.startTimeBound);
     }
     if (filters.endTimeBound) {
-      if (!columnSelects.heureDebut.available) {
-        console.warn(
-          '⚠️ Colonne heure_debut absente, le filtre endTimeBound ne peut pas être appliqué.'
-        );
-        conditions.push('1 = 0');
-      } else {
-        conditions.push('c.heure_debut <= ?');
-        params.push(filters.endTimeBound);
-      }
+      conditions.push('c.heure_debut <= ?');
+      params.push(filters.endTimeBound);
     }
 
-    const safeLimit = Number.isFinite(filters.limit) ? Math.max(1, Math.floor(filters.limit)) : 2000;
-    params.push(safeLimit);
+    params.push(filters.limit);
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const prioritizedBtsSql = `(${unionSegments})`;
-    const bestBtsSql = `
-      SELECT
-        p.CGI AS cgi,
-        p.NOM_BTS AS nom_bts,
-        p.LONGITUDE AS longitude,
-        p.LATITUDE AS latitude,
-        p.AZIMUT AS azimut
-      FROM ${prioritizedBtsSql} AS p
-      INNER JOIN (
-        SELECT CGI, MIN(priority) AS min_priority
-        FROM ${prioritizedBtsSql} AS prioritized_bts
-        GROUP BY CGI
-      ) AS ranked ON ranked.CGI = p.CGI AND ranked.min_priority = p.priority
-    `;
-
     const sql = `
+      WITH prioritized_bts AS (
+        ${unionSegments}
+      ),
+      best_bts AS (
+        SELECT
+          p.CGI AS cgi,
+          p.NOM_BTS AS nom_bts,
+          p.LONGITUDE AS longitude,
+          p.LATITUDE AS latitude,
+          p.AZIMUT AS azimut
+        FROM prioritized_bts p
+        INNER JOIN (
+          SELECT CGI, MIN(priority) AS min_priority
+          FROM prioritized_bts
+          GROUP BY CGI
+        ) ranked ON ranked.CGI = p.CGI AND ranked.min_priority = p.priority
+      )
       SELECT
         c.id,
-        ${columnSelects.seqNumber.clause}
-        ${columnSelects.typeAppel.clause}
-        ${columnSelects.statutAppel.clause}
-        ${columnSelects.causeLiberation.clause}
-        ${columnSelects.facturation.clause}
-        ${columnSelects.dateDebut.clause}
-        ${columnSelects.dateFin.clause}
-        ${columnSelects.heureDebut.clause}
-        ${columnSelects.heureFin.clause}
-        ${columnSelects.dureeSec.clause}
-        ${columnSelects.numeroAppelant.clause}
-        ${columnSelects.imeiAppelant.clause}
-        ${columnSelects.numeroAppele.clause}
-        ${columnSelects.imsiAppelant.clause}
-        ${columnSelects.cgi.clause}
-        ${columnSelects.routeReseau.clause}
-        ${columnSelects.deviceId.clause}
+        c.seq_number,
+        c.type_appel,
+        c.statut_appel,
+        c.cause_liberation,
+        c.facturation,
+        c.date_debut AS date_debut_appel,
+        c.date_fin AS date_fin_appel,
+        c.heure_debut AS heure_debut_appel,
+        c.heure_fin AS heure_fin_appel,
+        c.duree_sec AS duree_appel,
+        c.numero_appelant,
+        c.imei_appelant,
+        c.numero_appele,
+        c.imsi_appelant,
+        c.cgi,
+        c.route_reseau,
+        c.device_id,
         ${coordinateSelect},
-        ${columnSelects.fichierSource.clause}
-        ${columnSelects.insertedAt.clause}
+        c.fichier_source AS source_file,
+        c.inserted_at
       FROM ${REALTIME_CDR_TABLE_SQL} AS c
-      LEFT JOIN (${bestBtsSql}) AS coords ON coords.cgi = c.cgi COLLATE ${CGI_COLLATION}
+      LEFT JOIN best_bts AS coords ON coords.cgi = c.cgi
       ${whereClause}
-      ORDER BY ${[
-        columnSelects.dateDebut.available ? 'c.date_debut ASC' : null,
-        columnSelects.heureDebut.available ? 'c.heure_debut ASC' : null,
-        'c.id ASC'
-      ]
-        .filter(Boolean)
-        .join(', ')}
+      ORDER BY c.date_debut ASC, c.heure_debut ASC, c.id ASC
       LIMIT ?
     `;
 
-    const sanitizedParams = params.map((value) => (value === undefined ? null : value));
-
-    return this.database.query(sql, sanitizedParams);
+    return this.database.query(sql, params);
   }
 
   async #getCoordinateSelectClause() {
@@ -807,64 +742,6 @@ class RealtimeCdrService {
     }
 
     return this.coordinateSelectClausePromise;
-  }
-
-  async #getRealtimeColumnSelects() {
-    const columnConfigs = [
-      { key: 'seqNumber', name: 'seq_number' },
-      { key: 'typeAppel', name: 'type_appel' },
-      { key: 'statutAppel', name: 'statut_appel' },
-      { key: 'causeLiberation', name: 'cause_liberation' },
-      { key: 'facturation', name: 'facturation' },
-      { key: 'dateDebut', name: 'date_debut', alias: 'date_debut_appel' },
-      { key: 'dateFin', name: 'date_fin', alias: 'date_fin_appel' },
-      { key: 'heureDebut', name: 'heure_debut', alias: 'heure_debut_appel' },
-      { key: 'heureFin', name: 'heure_fin', alias: 'heure_fin_appel' },
-      { key: 'dureeSec', name: 'duree_sec', alias: 'duree_appel' },
-      { key: 'numeroAppelant', name: 'numero_appelant' },
-      { key: 'imeiAppelant', name: 'imei_appelant' },
-      { key: 'numeroAppele', name: 'numero_appele' },
-      { key: 'imsiAppelant', name: 'imsi_appelant' },
-      { key: 'cgi', name: 'cgi' },
-      { key: 'routeReseau', name: 'route_reseau' },
-      { key: 'deviceId', name: 'device_id' },
-      { key: 'fichierSource', name: 'fichier_source', alias: 'source_file' },
-      { key: 'insertedAt', name: 'inserted_at', trailingComma: false }
-    ];
-
-    const entries = await Promise.all(
-      columnConfigs.map(async (config) => {
-        const { clause, available } = await this.#getNullableColumnSelect(config.name, config);
-        return [config.key, { clause, available }];
-      })
-    );
-
-    return Object.fromEntries(entries);
-  }
-
-  async #getNullableColumnSelect(columnName, options = {}) {
-    const {
-      alias = null,
-      defaultValue = 'NULL',
-      trailingComma = true,
-      onErrorMessage = null
-    } = options;
-
-    const warningMessage =
-      onErrorMessage ||
-      `⚠️ Impossible de vérifier la présence de la colonne ${columnName}, valeur remplacée par ${defaultValue}.`;
-
-    const available = await this.#hasColumn(columnName, { onErrorMessage: warningMessage });
-
-    const selectAlias = alias || columnName;
-    const clause = available
-      ? `c.${columnName}${alias && alias !== columnName ? ` AS ${alias}` : ''}`
-      : `${defaultValue} AS ${selectAlias}`;
-
-    return {
-      available,
-      clause: trailingComma ? `${clause},` : clause
-    };
   }
 
   async #resolveCoordinateSelectClause() {
@@ -919,53 +796,6 @@ class RealtimeCdrService {
     return availableColumns;
   }
 
-  async #hasColumn(columnName, options = {}) {
-    const { onErrorMessage = null } = options;
-
-    if (!columnName) {
-      return false;
-    }
-
-    const normalized = String(columnName).toLowerCase();
-    if (this.columnAvailabilityCache.has(normalized)) {
-      return this.columnAvailabilityCache.get(normalized);
-    }
-
-    const schemaCondition = REALTIME_CDR_TABLE_SCHEMA
-      ? 'AND TABLE_SCHEMA = ?'
-      : 'AND TABLE_SCHEMA = DATABASE()';
-
-    const sql = `
-      SELECT 1
-      FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_NAME = ?
-        ${schemaCondition}
-        AND LOWER(COLUMN_NAME) = ?
-      LIMIT 1
-    `;
-
-    const params = REALTIME_CDR_TABLE_SCHEMA
-      ? [REALTIME_CDR_TABLE_NAME, REALTIME_CDR_TABLE_SCHEMA, normalized]
-      : [REALTIME_CDR_TABLE_NAME, normalized];
-
-    let available = false;
-    try {
-      const rows = await this.database.query(sql, params, {
-        suppressErrorCodes: ['ER_NO_SUCH_TABLE', '42S02'],
-        suppressErrorLog: true
-      });
-      available = Array.isArray(rows) && rows.length > 0;
-    } catch (error) {
-      if (onErrorMessage) {
-        console.warn(onErrorMessage, error?.message || error);
-      }
-      available = false;
-    }
-
-    this.columnAvailabilityCache.set(normalized, available);
-    return available;
-  }
-
   async #getBtsLookupSegments() {
     if (!this.btsLookupSegmentsPromise) {
       this.btsLookupSegmentsPromise = this.#resolveBtsLookupSegments().catch((error) => {
@@ -993,7 +823,7 @@ class RealtimeCdrService {
             ? Math.floor(source.priority)
             : index + 1;
           segments.push(
-            `SELECT CONVERT(CGI USING utf8mb4) COLLATE ${CGI_COLLATION} AS CGI, CONVERT(NOM_BTS USING utf8mb4) COLLATE ${CGI_COLLATION} AS NOM_BTS, LONGITUDE, LATITUDE, AZIMUT, ${priority} AS priority FROM ${source.tableSql}`
+            `SELECT CGI, NOM_BTS, LONGITUDE, LATITUDE, AZIMUT, ${priority} AS priority FROM ${source.tableSql}`
           );
         });
 
@@ -1329,7 +1159,6 @@ class RealtimeCdrService {
 
   async #fetchRows(afterId, limit) {
     const coordinateSelect = await this.#getCoordinateSelectClause();
-    const columnSelects = await this.#getRealtimeColumnSelects();
     const numericAfterId = Number(afterId);
     const startId = Number.isFinite(numericAfterId)
       ? Math.max(0, Math.floor(numericAfterId))
@@ -1341,26 +1170,26 @@ class RealtimeCdrService {
       `
         SELECT
           c.id,
-          ${columnSelects.seqNumber.clause}
-          ${columnSelects.typeAppel.clause}
-          ${columnSelects.statutAppel.clause}
-          ${columnSelects.causeLiberation.clause}
-          ${columnSelects.facturation.clause}
-          ${columnSelects.dateDebut.clause}
-          ${columnSelects.dateFin.clause}
-          ${columnSelects.heureDebut.clause}
-          ${columnSelects.heureFin.clause}
-          ${columnSelects.dureeSec.clause}
-          ${columnSelects.numeroAppelant.clause}
-          ${columnSelects.imeiAppelant.clause}
-          ${columnSelects.numeroAppele.clause}
-          ${columnSelects.imsiAppelant.clause}
-          ${columnSelects.cgi.clause}
-          ${columnSelects.routeReseau.clause}
-          ${columnSelects.deviceId.clause}
+          c.seq_number,
+          c.type_appel,
+          c.statut_appel,
+          c.cause_liberation,
+          c.facturation,
+          c.date_debut AS date_debut_appel,
+          c.date_fin AS date_fin_appel,
+          c.heure_debut AS heure_debut_appel,
+          c.heure_fin AS heure_fin_appel,
+          c.duree_sec AS duree_appel,
+          c.numero_appelant,
+          c.imei_appelant,
+          c.numero_appele,
+          c.imsi_appelant,
+          c.cgi,
+          c.route_reseau,
+          c.device_id,
           ${coordinateSelect},
-          ${columnSelects.fichierSource.clause}
-          ${columnSelects.insertedAt.clause}
+          c.fichier_source AS source_file,
+          c.inserted_at
         FROM ${REALTIME_CDR_TABLE_SQL} AS c
         WHERE c.id > ?
         ORDER BY c.id ASC
