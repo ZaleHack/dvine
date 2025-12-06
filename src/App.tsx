@@ -25,6 +25,7 @@ import {
   Upload,
   UploadCloud,
   Phone,
+  Lock,
   PhoneIncoming,
   Building2,
   Car,
@@ -160,6 +161,18 @@ type SearchResponseFromApi = Partial<Omit<SearchResponse, 'hits' | 'tables_searc
   hits: RawHitsPayload;
   tables_searched?: string[] | null;
   error?: string;
+};
+
+type GeofencePoint = { lat: number; lng: number };
+
+type ActiveSurveillance = {
+  id: string;
+  number: string;
+  zone: GeofencePoint[];
+  startedAt: string;
+  triggered: boolean;
+  lastLocation?: string;
+  lastTimestamp?: string;
 };
 
 const extractHitsFromPayload = (hits: RawHitsPayload): RawSearchResult[] => {
@@ -1814,6 +1827,11 @@ const App: React.FC = () => {
   const [linkDiagram, setLinkDiagram] = useState<LinkDiagramData | null>(null);
   const [showMeetingPoints, setShowMeetingPoints] = useState(false);
   const [zoneMode, setZoneMode] = useState(false);
+  const [geofenceZone, setGeofenceZone] = useState<GeofencePoint[] | null>(null);
+  const [geofenceNumber, setGeofenceNumber] = useState('');
+  const [geofenceError, setGeofenceError] = useState('');
+  const [activeSurveillanceId, setActiveSurveillanceId] = useState<string | null>(null);
+  const [surveillances, setSurveillances] = useState<ActiveSurveillance[]>([]);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareTargetCase, setShareTargetCase] = useState<CdrCase | null>(null);
   const [shareDivisionUsers, setShareDivisionUsers] = useState<CaseShareUser[]>([]);
@@ -1932,6 +1950,18 @@ const App: React.FC = () => {
     () => getEffectiveCdrIdentifiers(),
     [getEffectiveCdrIdentifiers]
   );
+
+  useEffect(() => {
+    if (cdrIdentifierType !== 'phone' || activeSurveillanceId) return;
+    const latest = cdrIdentifierInput || cdrIdentifiers[cdrIdentifiers.length - 1] || '';
+    setGeofenceNumber(latest);
+  }, [cdrIdentifierInput, cdrIdentifiers, cdrIdentifierType, activeSurveillanceId]);
+
+  useEffect(() => {
+    if (geofenceError) {
+      setGeofenceError('');
+    }
+  }, [geofenceNumber, geofenceZone]);
 
   // États des statistiques
   const [statsData, setStatsData] = useState<DashboardStats | null>(null);
@@ -3808,6 +3838,101 @@ const App: React.FC = () => {
     }
   };
 
+  const pointInPolygon = useCallback((point: GeofencePoint, polygon: GeofencePoint[]) => {
+    const { lng: x, lat: y } = point;
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const xi = polygon[i].lng;
+      const yi = polygon[i].lat;
+      const xj = polygon[j].lng;
+      const yj = polygon[j].lat;
+      const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }, []);
+
+  const formatZoneLabel = useCallback((zone: GeofencePoint[] | null) => {
+    if (!zone || zone.length === 0) return '';
+    const avgLat = zone.reduce((sum, pt) => sum + pt.lat, 0) / zone.length;
+    const avgLng = zone.reduce((sum, pt) => sum + pt.lng, 0) / zone.length;
+    return `Centre ${avgLat.toFixed(3)}, ${avgLng.toFixed(3)} • ${zone.length} points`;
+  }, []);
+
+  const handleActivateSurveillance = () => {
+    if (!geofenceZone || geofenceZone.length < 3) {
+      setGeofenceError('Dessinez une zone sur la carte avant d’activer la surveillance.');
+      return;
+    }
+    const normalizedNumber = normalizeCdrNumber(geofenceNumber);
+    if (!normalizedNumber) {
+      setGeofenceError('Ajoutez un numéro de surveillance valide depuis le formulaire de recherche.');
+      return;
+    }
+    const now = new Date().toISOString();
+    const id = `${normalizedNumber}-${Date.now()}`;
+    const next: ActiveSurveillance = {
+      id,
+      number: normalizedNumber,
+      zone: geofenceZone,
+      startedAt: now,
+      triggered: false
+    };
+    setSurveillances((prev) => [next, ...prev]);
+    setActiveSurveillanceId(id);
+    setGeofenceError('');
+  };
+
+  const stopSurveillance = () => {
+    setActiveSurveillanceId(null);
+    setGeofenceNumber('');
+  };
+
+  const zoneLabel = useMemo(() => formatZoneLabel(geofenceZone), [formatZoneLabel, geofenceZone]);
+
+  useEffect(() => {
+    if (!activeSurveillanceId || !geofenceZone || geofenceZone.length < 3) return;
+    const current = surveillances.find((s) => s.id === activeSurveillanceId);
+    if (!current) return;
+    const normalizedTarget = normalizeCdrNumber(current.number);
+    const path = cdrResult?.path || [];
+    if (!normalizedTarget || path.length === 0) return;
+
+    const matchesTarget = (value: unknown) => {
+      if (!value) return false;
+      const normalized = normalizeCdrNumber(String(value));
+      return normalized === normalizedTarget;
+    };
+
+    const triggeredPoint = path.find((point) => {
+      const lat = parseFloat(point.latitude as string);
+      const lng = parseFloat(point.longitude as string);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+      const isInside = pointInPolygon({ lat, lng }, geofenceZone);
+      if (!isInside) return false;
+      return (
+        matchesTarget(point.tracked) ||
+        matchesTarget(point.number) ||
+        matchesTarget(point.caller) ||
+        matchesTarget(point.callee)
+      );
+    });
+
+    if (triggeredPoint && !current.triggered) {
+      const locationLabel = triggeredPoint.nom || `${triggeredPoint.latitude}, ${triggeredPoint.longitude}`;
+      const timestampLabel = triggeredPoint.callDate
+        ? `${triggeredPoint.callDate} ${triggeredPoint.startTime || triggeredPoint.endTime || ''}`.trim()
+        : undefined;
+      setSurveillances((prev) =>
+        prev.map((s) =>
+          s.id === activeSurveillanceId
+            ? { ...s, triggered: true, lastLocation: locationLabel, lastTimestamp: timestampLabel }
+            : s
+        )
+      );
+    }
+  }, [activeSurveillanceId, cdrResult, geofenceZone, normalizeCdrNumber, pointInPolygon, surveillances]);
+
   const fetchCases = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -4730,6 +4855,94 @@ const App: React.FC = () => {
                   onChange={setCdrItinerary}
                   activeColor="peer-checked:bg-indigo-500 dark:peer-checked:bg-indigo-500"
                 />
+              </div>
+
+              <div className="rounded-2xl border border-indigo-200/70 bg-gradient-to-br from-indigo-50 via-white to-sky-50 px-4 py-5 shadow-inner shadow-indigo-200/50 dark:border-indigo-500/30 dark:from-slate-900 dark:via-slate-900/70 dark:to-slate-900">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-indigo-500">Géofencing</p>
+                    <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Surveillance de zone</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Dessinez une zone sur la carte puis verrouillez le numéro recherché pour activer la surveillance.
+                    </p>
+                  </div>
+                  {activeSurveillanceId && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">
+                      <Lock className="h-4 w-4" />
+                      Numéro verrouillé
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-[2fr,1fr] sm:items-end">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      Numéro surveillé (issu du formulaire de recherche)
+                    </label>
+                    <div className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                      <input
+                        type="text"
+                        value={geofenceNumber}
+                        onChange={(e) => !activeSurveillanceId && setGeofenceNumber(normalizeCdrNumber(e.target.value))}
+                        disabled={Boolean(activeSurveillanceId)}
+                        placeholder="Saisissez un numéro ciblé"
+                        className="w-full rounded-xl border border-slate-200/70 bg-white/95 px-4 py-2 text-sm font-medium text-slate-800 shadow-inner focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:cursor-not-allowed disabled:bg-slate-50 dark:border-slate-700/60 dark:bg-slate-900/70 dark:text-slate-100"
+                      />
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Le numéro est automatiquement repris depuis vos critères de recherche.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 text-sm shadow-sm dark:border-slate-700/60 dark:bg-slate-900/70">
+                    <div className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <span>Zone sélectionnée</span>
+                      {zoneLabel && <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-100">{geofenceZone?.length || 0} points</span>}
+                    </div>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                      {zoneLabel || 'Aucune zone en cours - activez le mode dessin sur la carte.'}
+                    </p>
+                  </div>
+                </div>
+
+                {geofenceError && (
+                  <div className="mt-3 rounded-xl border border-rose-200/60 bg-rose-50/80 px-3 py-2 text-sm font-medium text-rose-700 shadow-sm dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-100">
+                    {geofenceError}
+                  </div>
+                )}
+
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setZoneMode(true);
+                      setGeofenceZone(null);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-md dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-100"
+                  >
+                    <Crosshair className="h-4 w-4" />
+                    Dessiner une zone
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleActivateSurveillance}
+                    disabled={Boolean(activeSurveillanceId) || !geofenceNumber}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Shield className="h-4 w-4" />
+                    Activer la surveillance
+                  </button>
+                  {activeSurveillanceId && (
+                    <button
+                      type="button"
+                      onClick={stopSurveillance}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:text-rose-600 dark:border-slate-700/60 dark:bg-slate-900/70 dark:text-slate-200"
+                    >
+                      <X className="h-4 w-4" />
+                      Terminer
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-wrap justify-end gap-3">
@@ -5708,6 +5921,8 @@ const App: React.FC = () => {
                           onToggleMeetingPoints={() => setShowMeetingPoints((v) => !v)}
                           zoneMode={zoneMode}
                           onZoneCreated={() => setZoneMode(false)}
+                          onZoneChange={setGeofenceZone}
+                          activeZone={geofenceZone ?? undefined}
                         />
                       ) : (
                         <div className="flex h-full w-full flex-col items-center justify-center bg-white/90 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
@@ -5727,6 +5942,83 @@ const App: React.FC = () => {
                         </div>
                       )}
                     </div>
+                  </div>
+                  <div className="fixed top-24 right-6 z-[1050] w-[26rem] max-h-[70vh] space-y-3 overflow-y-auto rounded-3xl border border-white/70 bg-white/95 p-5 shadow-2xl shadow-indigo-300/40 backdrop-blur-xl dark:border-slate-700/60 dark:bg-slate-900/90 dark:shadow-black/40">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-indigo-500">Surveillance en cours</p>
+                        <h4 className="text-xl font-semibold text-slate-900 dark:text-white">Géofencing live</h4>
+                      </div>
+                      <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-100">
+                        {surveillances.length} suivi{surveillances.length > 1 ? 's' : ''}
+                      </span>
+                    </div>
+
+                    {surveillances.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-slate-300/70 bg-slate-50/70 px-4 py-6 text-sm text-slate-600 shadow-inner dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-slate-300">
+                        Aucune surveillance active. Dessinez une zone et verrouillez un numéro pour commencer.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {surveillances.map((item) => {
+                          const isActive = item.id === activeSurveillanceId;
+                          return (
+                            <div
+                              key={item.id}
+                              className={`relative overflow-hidden rounded-2xl border p-4 shadow-sm transition ${
+                                isActive
+                                  ? 'border-indigo-200/80 bg-indigo-50/80 dark:border-indigo-500/40 dark:bg-indigo-500/10'
+                                  : 'border-slate-200/70 bg-white/90 dark:border-slate-700/60 dark:bg-slate-900/70'
+                              }`}
+                            >
+                              <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/30 via-transparent to-indigo-100/50 dark:from-white/5 dark:to-indigo-500/10" />
+                              <div className="relative flex items-start justify-between gap-3">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                    <Shield className="h-4 w-4 text-indigo-500" />
+                                    <span>Numéro surveillé</span>
+                                    {isActive && (
+                                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-100">
+                                        Actif
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.number}</p>
+                                  <p className="text-sm text-slate-600 dark:text-slate-300">{formatDistanceToNow(new Date(item.startedAt), { addSuffix: true, locale: fr })}</p>
+                                </div>
+                                {item.triggered ? (
+                                  <span className="inline-flex items-center gap-2 rounded-full bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-100">
+                                    <Bell className="h-4 w-4" />
+                                    Alerte zone
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                                    <Clock className="h-4 w-4" />
+                                    En attente
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative mt-3 space-y-2 rounded-xl bg-white/80 p-3 text-sm shadow-inner dark:bg-slate-800/70">
+                                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                                  <Crosshair className="h-4 w-4 text-indigo-500" />
+                                  <span>{formatZoneLabel(item.zone)}</span>
+                                </div>
+                                {item.lastLocation && (
+                                  <div className="flex items-start gap-2 text-rose-600 dark:text-rose-200">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <div>
+                                      <p className="font-semibold">Position détectée</p>
+                                      <p className="text-sm">{item.lastLocation}</p>
+                                      {item.lastTimestamp && <p className="text-xs text-slate-500 dark:text-slate-400">{item.lastTimestamp}</p>}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={() => setShowCdrMap(false)}
