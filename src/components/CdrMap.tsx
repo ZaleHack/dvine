@@ -198,6 +198,8 @@ interface Props {
   onToggleMeetingPoints?: () => void;
   zoneMode?: boolean;
   onZoneCreated?: () => void;
+  onZoneChange?: (points: { lat: number; lng: number }[] | null) => void;
+  activeZone?: { lat: number; lng: number }[];
 }
 
 const parseDurationToSeconds = (duration: string): number => {
@@ -1227,7 +1229,16 @@ const MapControlButton: React.FC<MapControlButtonProps> = ({
   );
 };
 
-const CdrMap: React.FC<Props> = ({ points: rawPoints, showRoute, showMeetingPoints, onToggleMeetingPoints, zoneMode, onZoneCreated }) => {
+const CdrMap: React.FC<Props> = ({
+  points: rawPoints,
+  showRoute,
+  showMeetingPoints,
+  onToggleMeetingPoints,
+  zoneMode,
+  onZoneCreated,
+  onZoneChange,
+  activeZone
+}) => {
   const points = useMemo<Point[]>(() => {
     if (!Array.isArray(rawPoints) || rawPoints.length === 0) {
       console.warn('[CdrMap] Aucun point fourni pour l\'affichage de la carte.');
@@ -1563,8 +1574,15 @@ const CdrMap: React.FC<Props> = ({ points: rawPoints, showRoute, showMeetingPoin
       setZoneShape(null);
       setCurrentPoints([]);
       setShowZoneInfo(false);
+      onZoneChange?.(null);
     }
-  }, [zoneMode]);
+  }, [zoneMode, onZoneChange]);
+
+  useEffect(() => {
+    if (activeZone && activeZone.length >= 3) {
+      setZoneShape(activeZone.map((pt) => L.latLng(pt.lat, pt.lng)));
+    }
+  }, [activeZone]);
 
   const pointInPolygon = (point: L.LatLng, polygon: L.LatLng[]) => {
     const x = point.lng;
@@ -2654,6 +2672,7 @@ const CdrMap: React.FC<Props> = ({ points: rawPoints, showRoute, showMeetingPoin
           setZoneShape(final);
           setShowZoneInfo(true);
           onZoneCreated && onZoneCreated();
+          onZoneChange?.(final.map((pt) => ({ lat: pt.lat, lng: pt.lng })));
         }
         setCurrentPoints([]);
       }
